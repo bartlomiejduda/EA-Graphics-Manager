@@ -7,14 +7,6 @@ License: GPL-3.0 License
 
 
 # Program tested on Python 3.7.0
-# It should be used with NHL 2002 (PS2)
-
-# Ver    Date        Author               Comment
-# v0.1   23.01.2021  Bartlomiej Duda      -
-# v0.2   28.01.2021  Bartlomiej Duda      -
-# v0.3   30.01.2021  Bartlomiej Duda      -
-# v0.4   31.01.2021  Bartlomiej Duda      Added BMP class
-# v0.5   02.02.2021  Bartlomiej Duda      New image types partially reverse engineered
 
 import os
 import sys
@@ -270,30 +262,3 @@ def export_data(in_file_path, out_folder_path):
     bd_logger("Ending export_data...")    
     
     
-    
-    
-def main():
-    '''
-    Main function of this program. If you are planning to use it,
-    you should adjust paths first.
-    '''   
-    main_switch = 1
-    # 1 - data export 
-    
-
-    if main_switch == 1:
-        p_in_file_path = "C:\\Users\\Arek\\Desktop\\EA SAMPLES\\NHL 2002 SSH\\awards.ssh"
-        p_out_folder_path = "C:\\Users\\Arek\\Desktop\\EA SAMPLES\\NHL 2002 SSH\\awards.ssh_OUT\\"
-              
-        export_data(p_in_file_path, p_out_folder_path)
-        
-    else:
-        bd_logger("Wrong option selected!")
-        
-        
-    
-    bd_logger("End of main...")    
-    
-    
-    
-main()
