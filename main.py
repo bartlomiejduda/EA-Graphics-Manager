@@ -8,15 +8,16 @@ License: GPL-3.0 License
 
 # Program tested on Python 3.7.0
 
-# Ver    Date        Author               Comment
-# v0.1   23.01.2021  Bartlomiej Duda      -
-# v0.2   28.01.2021  Bartlomiej Duda      -
-# v0.3   30.01.2021  Bartlomiej Duda      -
-# v0.4   31.01.2021  Bartlomiej Duda      Added BMP class
-# v0.5   02.02.2021  Bartlomiej Duda      New image types partially reverse engineered
-# v0.6   10.08.2021  Bartlomiej Duda      Added new modules, moved to new repository
+# Ver      Date        Author               Comment
+# v0.1     23.01.2021  Bartlomiej Duda      -
+# v0.2     28.01.2021  Bartlomiej Duda      -
+# v0.3     30.01.2021  Bartlomiej Duda      -
+# v0.4     31.01.2021  Bartlomiej Duda      Added BMP class
+# v0.5     02.02.2021  Bartlomiej Duda      New image types partially reverse engineered
+# v0.6     10.08.2021  Bartlomiej Duda      Added new modules, moved to new repository
+# v0.6.2   13.08.2021  Bartlomiej Duda      Enhanced GUI
 
-VERSION_NUM = "v0.6"
+VERSION_NUM = "v0.6.2"
 
 import ea_image_logic
 import tkinter as tk

@@ -19,6 +19,7 @@ import webbrowser
 import traceback
 import pyperclip  # pip install pyperclip
 from datetime import datetime
+import tkinter.ttk as ttk
 
 
 
@@ -49,6 +50,33 @@ class EA_MAN_GUI:
         self.main_frame.place(x=0, y=0, relwidth=1, relheight=1)
 
 
+        self.columns = ['a','b','c']
+        self.treeview_widget = ttk.Treeview(self.main_frame, height = 20, columns = self.columns, show = 'headings')
+        self.treeview_widget.place(x= 50, y= 70, width=200, height=200) 
+
 
         self.butt1 = tk.Button(self.main_frame, text="OPEN", command=lambda: self.open_file() )
         self.butt1.place(x= 10, y= 50, width=60, height=20)       
+        
+        
+        # menu
+        self.menubar = tk.Menu(master)
+        
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="Open File", command=lambda: open_file())
+        self.filemenu.add_command(label="Scan Directory", command=lambda: scan_dir())
+        self.filemenu.add_command(label="Save as...", command=lambda: save_as())
+        self.filemenu.add_command(label="Close File", command=lambda: close_font())
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Exit", command=master.destroy)
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+        
+        self.helpmenu = tk.Menu(self.menubar, tearoff=0)
+        self.helpmenu.add_command(label="About...", command=lambda: show_about_window())
+        self.menubar.add_cascade(label="Help", menu=self.helpmenu)
+        
+        
+        self.filemenu.entryconfig(2, state="disabled") 
+        self.filemenu.entryconfig(3, state="disabled") 
+        
+        master.config(menu=self.menubar)        
