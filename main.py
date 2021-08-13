@@ -16,8 +16,9 @@ License: GPL-3.0 License
 # v0.5     02.02.2021  Bartlomiej Duda      New image types partially reverse engineered
 # v0.6     10.08.2021  Bartlomiej Duda      Added new modules, moved to new repository
 # v0.6.2   13.08.2021  Bartlomiej Duda      Enhanced GUI
+# v0.6.3   13.08.2021  Bartlomiej Duda      Enhanced GUI
 
-VERSION_NUM = "v0.6.2"
+VERSION_NUM = "v0.6.3"
 
 import ea_image_logic
 import tkinter as tk
