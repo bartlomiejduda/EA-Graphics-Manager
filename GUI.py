@@ -60,7 +60,7 @@ class EA_MAN_GUI:
 
         #treeview widget
         self.treeview_widget = ttk.Treeview(show="tree")
-        self.treeview_widget.place(x= 10, y= 10, width=120, height=405)   
+        self.treeview_widget.place(x=10, y=10, width=120, height=405)   
    
         self.treeview_widget.insert('', tk.END, text='file1.SSH', iid=0, open=False)
         self.treeview_widget.insert('', tk.END, text='file2.FSH', iid=1, open=False)
@@ -71,11 +71,34 @@ class EA_MAN_GUI:
         self.treeview_widget.move(5, 0, 1)
         self.treeview_widget.move(6, 0, 1)
 
-                   
+
+        #header info
+        self.header_labelframe = tk.LabelFrame(self.main_frame, text="File Header")
+        self.header_labelframe.place(x=140, y=5, width=300, height=90)
+        
+        self.hl_sign = tk.Label(self.header_labelframe, text="Signature:", anchor="w")
+        self.hl_sign.place(x=5, y=5, width=60, height=20)   
+        self.ht_sign = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
+        self.ht_sign.place(x=70, y=5, width=60, height=20)  
+        
+        self.hl_f_size = tk.Label(self.header_labelframe, text="File Size:", anchor="w")
+        self.hl_f_size.place(x=5, y=35, width=60, height=20)   
+        self.ht_f_size = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
+        self.ht_f_size.place(x=70, y=35, width=60, height=20)  
+        
+        self.hl_obj_count = tk.Label(self.header_labelframe, text="Object Count:", anchor="w")
+        self.hl_obj_count.place(x=140, y=5, width=90, height=20)   
+        self.ht_obj_count = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
+        self.ht_obj_count.place(x=230, y=5, width=60, height=20)  
+        
+        self.hl_dir_id = tk.Label(self.header_labelframe, text="Directory ID:", anchor="w")
+        self.hl_dir_id.place(x=140, y=35, width=90, height=20)   
+        self.ht_dir_id = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
+        self.ht_dir_id.place(x=230, y=35, width=60, height=20)          
 
 
-        self.butt1 = tk.Button(self.main_frame, text="OPEN", command=lambda: self.open_file() )
-        self.butt1.place(x= 150, y= 70, width=60, height=20)       
+        #self.butt1 = tk.Button(self.main_frame, text="OPEN", command=lambda: self.open_file() )
+        #self.butt1.place(x=150, y=90, width=60, height=20)       
         
         
         # menu
@@ -107,19 +130,27 @@ class EA_MAN_GUI:
         try:
             in_file = filedialog.askopenfile(filetypes=self.allowed_filetypes, mode='rb')   
             in_file_path = in_file.name 
+            in_file_name = in_file_path.split("/")[-1]
         except:
             messagebox.showwarning("Warning", "Failed to open file!")
             return
         
         try:
             sign = in_file.read(4).decode("utf8")
+            in_file.seek(0)
             if sign not in self.allowed_signatures:
                 raise
         except:
             messagebox.showwarning("Warning", "File not supported!")
             return
         
-        ea_image_logic.bd_logger("Loading file...")
+        ea_image_logic.bd_logger("Loading file " + in_file_name + "...")
+        
+        ea_img = ea_image_logic.EA_IMAGE()
+        ea_img.parse_header(in_file, in_file_path, in_file_name)
+        
+        print("num_of_files: " + str(ea_img.num_of_entries) )
+        print("dir_id: " + str(ea_img.dir_id) )
             
      
     def add_to_tree(self):

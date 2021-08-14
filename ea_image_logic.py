@@ -96,6 +96,42 @@ class BMP_IMG:
         
 
 
+class EA_IMAGE:
+    def __init__(self):
+        self.sign = None
+        self.total_f_size = -1
+        self.num_of_entries = -1
+        self.dir_id = None
+        
+        self.f_name = None
+        self.f_path = None
+        self.f_endianess = None
+        self.f_size = None
+        
+    def parse_header(self, in_file, in_file_path, in_file_name):
+        self.sign = in_file.read(4).decode("utf8")
+        
+        self.f_path = in_file_path
+        self.f_name = in_file_name
+        self.f_size = os.path.getsize(self.f_path)
+        back_offset = in_file.tell()
+        
+        #check endianess
+        self.total_f_size = struct.unpack( "<L", in_file.read(4) )[0]
+        if self.total_f_size == self.f_size:
+            self.f_endianess = "<"
+        else:
+            in_file.seek(back_offset)
+            self.total_f_size = struct.unpack( ">L", in_file.read(4) )[0]
+            if self.total_f_size == self.f_size:
+                self.f_endianess = ">"
+            else:
+                raise "Can't get file endianess!"
+        
+        
+        self.num_of_entries = struct.unpack( self.f_endianess + "L", in_file.read(4) )[0]
+        self.dir_id = in_file.read(4).decode("utf8")
+
 
 
 def export_data(in_file_path, out_folder_path):
