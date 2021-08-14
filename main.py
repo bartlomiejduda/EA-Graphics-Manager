@@ -17,8 +17,9 @@ License: GPL-3.0 License
 # v0.6     10.08.2021  Bartlomiej Duda      Added new modules, moved to new repository
 # v0.6.2   13.08.2021  Bartlomiej Duda      Enhanced GUI
 # v0.6.3   13.08.2021  Bartlomiej Duda      Enhanced GUI
+# v0.6.4   14.08.2021  Bartlomiej Duda      Enhanced GUI
 
-VERSION_NUM = "v0.6.3"
+VERSION_NUM = "v0.6.4"
 
 import ea_image_logic
 import tkinter as tk
@@ -52,7 +53,7 @@ def main():
         root.mainloop()        
         
     else:
-        bd_logger("Wrong option selected!")
+        ea_image_logic.bd_logger("Wrong option selected!")
         
         
     

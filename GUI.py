@@ -5,10 +5,6 @@ Copyright © 2021  Bartłomiej Duda
 License: GPL-3.0 License 
 '''
 
-
-
-
-
 import os
 import sys
 import struct
@@ -21,6 +17,7 @@ import pyperclip  # pip install pyperclip
 from datetime import datetime
 import tkinter.ttk as ttk
 import center_tk_window    # pip install center_tk_window
+import ea_image_logic
 
 
 
@@ -30,9 +27,10 @@ import center_tk_window    # pip install center_tk_window
 #default app settings
 WINDOW_HEIGHT = 460
 WINDOW_WIDTH = 450
-
 MIN_WINDOW_HEIGHT = WINDOW_HEIGHT
 MIN_WINDOW_WIDTH = WINDOW_WIDTH  
+MAX_WINDOW_HEIGHT = WINDOW_HEIGHT
+MAX_WINDOW_WIDTH = WINDOW_WIDTH
 
 
 class EA_MAN_GUI:
@@ -41,27 +39,29 @@ class EA_MAN_GUI:
         self.VERSION_NUM = in_VERSION_NUM
         master.title("EA GRAPHICS MANAGER " + in_VERSION_NUM)
         master.minsize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT) 
+        master.maxsize(MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT) 
+        
+            
+        self.allowed_filetypes = [ ('EA Graphics files', ['*.fsh', '*.psh', '*.ssh', '*.msh', '*.xsh']), 
+                                   ('All files', ['*.*'])
+                                 ]     
+        
+        self.allowed_signatures = ( "SHPI", #PC games
+                                    "SHPP", #PS1 games 
+                                    "SHPS", #PS2 games
+                                    "ShpX", "SHPX", #XBOX games
+                                    "SHPM" #PSP games 
+                                  )
 
-        self.search_file_path = ""
-        self.search_file_name = ""
-        self.search_file_flag = 0
-
-        #main canvas
-        self.canv1 = tk.Canvas(master, height=WINDOW_HEIGHT, width=WINDOW_WIDTH) 
+        #main frame
         self.main_frame = tk.Frame(master, bg='#f0f0f0')
         self.main_frame.place(x=0, y=0, relwidth=1, relheight=1)
 
 
-        self.columns = ['a','b','c']
-        tubes = 10
-        #self.treeview_widget = ttk.Treeview(self.main_frame, height = 200, columns = self.columns, show = 'headings')
+        #treeview widget
         self.treeview_widget = ttk.Treeview(show="tree")
-        #self.treeview_widget.heading('#0', text='Departments', anchor='w')
-        
-        
-        #for n in range(int(tubes)):
-            #self.treeview_widget.insert('', tk.END, text = 'Tube ' + str(n+1), iid = n, values = ('Tube ' + str(n+1), "",""), open = 'True')
-            
+        self.treeview_widget.place(x= 10, y= 10, width=120, height=405)   
+   
         self.treeview_widget.insert('', tk.END, text='file1.SSH', iid=0, open=False)
         self.treeview_widget.insert('', tk.END, text='file2.FSH', iid=1, open=False)
         
@@ -70,23 +70,22 @@ class EA_MAN_GUI:
         self.treeview_widget.insert('', tk.END, text='title img', iid=6, open=False)
         self.treeview_widget.move(5, 0, 1)
         self.treeview_widget.move(6, 0, 1)
-        #self.treeview_widget.grid(row=0, column=0, sticky='nsew')
-        self.treeview_widget.place(x= 10, y= 10, width=120, height=405)   
+
                    
 
 
         self.butt1 = tk.Button(self.main_frame, text="OPEN", command=lambda: self.open_file() )
-        self.butt1.place(x= 60, y= 70, width=60, height=20)       
+        self.butt1.place(x= 150, y= 70, width=60, height=20)       
         
         
         # menu
         self.menubar = tk.Menu(master)
         
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
-        self.filemenu.add_command(label="Open File", command=lambda: open_file())
-        self.filemenu.add_command(label="Scan Directory", command=lambda: scan_dir())
-        self.filemenu.add_command(label="Save as...", command=lambda: save_as())
-        self.filemenu.add_command(label="Close File", command=lambda: close_font())
+        self.filemenu.add_command(label="Open File", command=lambda: self.open_file())
+        self.filemenu.add_command(label="Scan Directory", command=lambda: self.scan_dir())
+        self.filemenu.add_command(label="Save as...", command=lambda: self.save_as())
+        self.filemenu.add_command(label="Close File", command=lambda: self.close_font())
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Exit", command=master.destroy)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
@@ -100,6 +99,32 @@ class EA_MAN_GUI:
         self.filemenu.entryconfig(3, state="disabled") 
         
         master.config(menu=self.menubar)        
+    
+    
+    
+    
+    def open_file(self):
+        try:
+            in_file = filedialog.askopenfile(filetypes=self.allowed_filetypes, mode='rb')   
+            in_file_path = in_file.name 
+        except:
+            messagebox.showwarning("Warning", "Failed to open file!")
+            return
+        
+        try:
+            sign = in_file.read(4).decode("utf8")
+            if sign not in self.allowed_signatures:
+                raise
+        except:
+            messagebox.showwarning("Warning", "File not supported!")
+            return
+        
+        ea_image_logic.bd_logger("Loading file...")
+            
+     
+    def add_to_tree(self):
+        pass
+     
         
    
     def web_callback(self, url):
