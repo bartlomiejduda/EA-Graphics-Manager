@@ -34,6 +34,51 @@ MAX_WINDOW_WIDTH = WINDOW_WIDTH
 
 
 class EA_MAN_GUI:
+
+    
+    class TREE_MANAGER:
+    
+        class TREE_ITERATOR:
+            def __iter__(self):
+                self.a = 0
+                return self
+            
+            def __next__(self):
+                x = self.a
+                self.a += 1
+                return x       
+          
+        def __init__(self, in_widget):
+            self.obj_count = 0
+            self.objects_dict = {}
+            self.id_iterator = iter(self.TREE_ITERATOR())
+            self.tree_widget = in_widget
+            
+        def add_object(self, in_obj):
+            obj_id = next(self.id_iterator)
+            self.obj_count += 1
+            in_obj.tree_id = obj_id
+            print("tree_id: " + str(in_obj.tree_id) )
+            self.tree_widget.insert('', tk.END, text=in_obj.f_name, iid=in_obj.tree_id, open=True)
+            
+            #add object children
+            sub_id = 0
+            for obj_dir_entry in in_obj.dir_entry_list:
+                child_id = next(self.id_iterator)
+                obj_dir_entry.id = child_id
+                sub_id += 1
+                self.tree_widget.insert('', tk.END, text=obj_dir_entry.tag, iid=obj_dir_entry.id, open=True)
+                self.tree_widget.move(obj_dir_entry.id, in_obj.tree_id, sub_id)
+            
+        def remove_object(self, in_id):
+            self.objects_dict.pop(in_id)
+            
+        def get_object(self, in_id):
+            obj = self.objects_dict.get(in_id)
+            return obj
+      
+      
+    
     def __init__(self, master, in_VERSION_NUM):
         self.master = master
         self.VERSION_NUM = in_VERSION_NUM
@@ -60,16 +105,20 @@ class EA_MAN_GUI:
 
         #treeview widget
         self.treeview_widget = ttk.Treeview(show="tree")
+        self.tree_man = self.TREE_MANAGER(self.treeview_widget)
         self.treeview_widget.place(x=10, y=10, width=120, height=405)   
    
-        self.treeview_widget.insert('', tk.END, text='file1.SSH', iid=0, open=False)
-        self.treeview_widget.insert('', tk.END, text='file2.FSH', iid=1, open=False)
+   
+        #self.tree_man.add_object("aaa")
+        #self.tree_man.add_object("bbb")
+        #self.treeview_widget.insert('', tk.END, text='file1.SSH', iid=0, open=False)
+        #self.treeview_widget.insert('', tk.END, text='file2.FSH', iid=1, open=False)
         
-        # adding children of first node
-        self.treeview_widget.insert('', tk.END, text='bubbles img', iid=5, open=False)
-        self.treeview_widget.insert('', tk.END, text='title img', iid=6, open=False)
-        self.treeview_widget.move(5, 0, 1)
-        self.treeview_widget.move(6, 0, 1)
+        ## adding children of first node
+        #self.treeview_widget.insert('', tk.END, text='bubbles img', iid=5, open=False)
+        #self.treeview_widget.insert('', tk.END, text='title img', iid=6, open=False)
+        #self.treeview_widget.move(5, 0, 1)
+        #self.treeview_widget.move(6, 0, 1)
 
 
         #header info
@@ -128,10 +177,13 @@ class EA_MAN_GUI:
     
     def open_file(self):
         try:
-            in_file = filedialog.askopenfile(filetypes=self.allowed_filetypes, mode='rb')   
+            in_file = filedialog.askopenfile(filetypes=self.allowed_filetypes, mode='rb')  
+            if in_file == None:
+                return
             in_file_path = in_file.name 
             in_file_name = in_file_path.split("/")[-1]
-        except:
+        except Exception as e:
+            print(e)
             messagebox.showwarning("Warning", "Failed to open file!")
             return
         
@@ -148,9 +200,24 @@ class EA_MAN_GUI:
         
         ea_img = ea_image_logic.EA_IMAGE()
         ea_img.parse_header(in_file, in_file_path, in_file_name)
+        ea_img.parse_directory(in_file)
+
+        #set text
+        self.set_text_in_box(self.ht_sign, ea_img.sign)
+        self.set_text_in_box(self.ht_f_size, ea_img.total_f_size)
+        self.set_text_in_box(self.ht_obj_count, ea_img.num_of_entries)
+        self.set_text_in_box(self.ht_dir_id, ea_img.dir_id)
         
-        print("num_of_files: " + str(ea_img.num_of_entries) )
-        print("dir_id: " + str(ea_img.dir_id) )
+        
+        self.tree_man.add_object(ea_img)
+        
+        
+        
+    def set_text_in_box(self, in_box, in_text):
+        in_box.config(state="normal")
+        in_box.delete('1.0', tk.END)
+        in_box.insert(tk.END, in_text)
+        in_box.config(state="disabled")          
             
      
     def add_to_tree(self):

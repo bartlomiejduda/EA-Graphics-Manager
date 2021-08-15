@@ -97,6 +97,14 @@ class BMP_IMG:
 
 
 class EA_IMAGE:
+    
+    class DIR_ENTRY:
+        def __init__(self, in_id, in_tag, in_offset):
+            self.id = in_id
+            self.tag = in_tag
+            self.offset = in_offset
+        
+    
     def __init__(self):
         self.sign = None
         self.total_f_size = -1
@@ -106,7 +114,10 @@ class EA_IMAGE:
         self.f_name = None
         self.f_path = None
         self.f_endianess = None
+        self.f_endianess_desc = None
         self.f_size = None
+        self.tree_id = -1
+        self.dir_entry_list = []
         
     def parse_header(self, in_file, in_file_path, in_file_name):
         self.sign = in_file.read(4).decode("utf8")
@@ -120,17 +131,27 @@ class EA_IMAGE:
         self.total_f_size = struct.unpack( "<L", in_file.read(4) )[0]
         if self.total_f_size == self.f_size:
             self.f_endianess = "<"
+            self.f_endianess_desc = "little"
         else:
             in_file.seek(back_offset)
             self.total_f_size = struct.unpack( ">L", in_file.read(4) )[0]
             if self.total_f_size == self.f_size:
                 self.f_endianess = ">"
+                self.f_endianess_desc = "big"
             else:
                 raise "Can't get file endianess!"
         
         
         self.num_of_entries = struct.unpack( self.f_endianess + "L", in_file.read(4) )[0]
         self.dir_id = in_file.read(4).decode("utf8")
+        
+    def parse_directory(self, in_file):
+        for i in range(self.num_of_entries):
+            entry_id = -1
+            entry_tag = in_file.read(4).decode("utf8")
+            entry_offset = struct.unpack( self.f_endianess + "L", in_file.read(4) )[0]
+            ea_dir_entry = self.DIR_ENTRY(entry_id, entry_tag, entry_offset)
+            self.dir_entry_list.append( ea_dir_entry )
 
 
 
