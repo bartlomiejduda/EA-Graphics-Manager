@@ -20,8 +20,9 @@ License: GPL-3.0 License
 # v0.6.4   14.08.2021  Bartlomiej Duda      Enhanced GUI
 # v0.6.5   14.08.2021  Bartlomiej Duda      Enhanced GUI (file opening, header info), added EA_IMAGE class
 # v0.6.6   14.08.2021  Bartlomiej Duda      Enhanced GUI
+# v0.6.7   15.08.2021  Bartlomiej Duda      Enhanced GUI
 
-VERSION_NUM = "v0.6.6"
+VERSION_NUM = "v0.6.7"
 
 import ea_image_logic
 import tkinter as tk
@@ -46,8 +47,6 @@ def main():
         ea_image_logic.export_data(p_in_file_path, p_out_folder_path)
         
     elif main_switch == 2:
- 
-        
         #main window
         root = tk.Tk()
         ea_man_gui = GUI.EA_MAN_GUI(root, VERSION_NUM)
@@ -62,5 +61,5 @@ def main():
     ea_image_logic.bd_logger("End of main...")    
     
     
-    
-main()
+if __name__ == '__main__':   
+    main()

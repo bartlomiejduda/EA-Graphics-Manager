@@ -35,7 +35,19 @@ MAX_WINDOW_WIDTH = WINDOW_WIDTH
 
 class EA_MAN_GUI:
 
+    class RIGHT_CLICKER:
+        def __init__(self, e):
+            commands = ["Copy"]
+            menu = tk.Menu(None, tearoff=0, takefocus=0)
     
+            for txt in commands:
+                menu.add_command(label=txt, command=lambda e=e,txt=txt:self.click_command(e,txt))
+    
+            menu.tk_popup(e.x_root + 40, e.y_root + 10, entry="0")
+
+        def click_command(self, e, cmd):
+            e.widget.event_generate(f'<<{cmd}>>')
+
     class TREE_MANAGER:
     
         class TREE_ITERATOR:
@@ -104,9 +116,23 @@ class EA_MAN_GUI:
 
 
         #treeview widget
-        self.treeview_widget = ttk.Treeview(show="tree")
+        style = ttk.Style()
+        style.layout( "Treeview", [('Treeview.treearea', {'sticky': 'nswe'})] ) #get rid of the default border 
+        
+        self.tree_frame = tk.Frame(self.main_frame, bg=self.main_frame['bg'], highlightbackground="grey", highlightthickness=1)
+        self.tree_frame.place(x=10, y=10, width=120, height=435) 
+        
+        #style.configure("Treeview", foreground='#00337f',background="#ffc61e")
+        #style.configure("Treeview.Heading", background="purple",foreground='#00337f',font=(20))
+        #style.configure("Treeview.treearea", borderwidth=5)
+        
+        #style.configure("Treeview", lightcolor="#ffc61e", bordercolor="#ffc61e",
+                        #darkcolor="#ffc61e")        
+        
+        self.treeview_widget = ttk.Treeview(self.tree_frame, show="tree")
         self.tree_man = self.TREE_MANAGER(self.treeview_widget)
-        self.treeview_widget.place(x=10, y=10, width=120, height=405)   
+        self.treeview_widget.place(relx=0, rely=0, relwidth=1, relheight=1) 
+        #self.treeview_widget.config(borderwidth=5)
    
    
         #self.tree_man.add_object("aaa")
@@ -129,21 +155,25 @@ class EA_MAN_GUI:
         self.hl_sign.place(x=5, y=5, width=60, height=20)   
         self.ht_sign = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
         self.ht_sign.place(x=70, y=5, width=60, height=20)  
+        self.ht_sign.bind('<Button-3>', self.RIGHT_CLICKER)
         
         self.hl_f_size = tk.Label(self.header_labelframe, text="File Size:", anchor="w")
         self.hl_f_size.place(x=5, y=35, width=60, height=20)   
         self.ht_f_size = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
         self.ht_f_size.place(x=70, y=35, width=60, height=20)  
+        self.ht_f_size.bind('<Button-3>', self.RIGHT_CLICKER)
         
         self.hl_obj_count = tk.Label(self.header_labelframe, text="Object Count:", anchor="w")
         self.hl_obj_count.place(x=140, y=5, width=90, height=20)   
         self.ht_obj_count = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
         self.ht_obj_count.place(x=230, y=5, width=60, height=20)  
+        self.ht_obj_count.bind('<Button-3>', self.RIGHT_CLICKER)
         
         self.hl_dir_id = tk.Label(self.header_labelframe, text="Directory ID:", anchor="w")
         self.hl_dir_id.place(x=140, y=35, width=90, height=20)   
         self.ht_dir_id = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
-        self.ht_dir_id.place(x=230, y=35, width=60, height=20)          
+        self.ht_dir_id.place(x=230, y=35, width=60, height=20)
+        self.ht_dir_id.bind('<Button-3>', self.RIGHT_CLICKER)
 
 
         #self.butt1 = tk.Button(self.main_frame, text="OPEN", command=lambda: self.open_file() )
@@ -154,28 +184,32 @@ class EA_MAN_GUI:
         self.menubar = tk.Menu(master)
         
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
-        self.filemenu.add_command(label="Open File", command=lambda: self.open_file())
+        self.filemenu.add_command(label="Open File", command=lambda: self.open_file(None), accelerator="Ctrl+O")
+        master.bind_all("<Control-o>", self.open_file)
         self.filemenu.add_command(label="Scan Directory", command=lambda: self.scan_dir())
         self.filemenu.add_command(label="Save as...", command=lambda: self.save_as())
         self.filemenu.add_command(label="Close File", command=lambda: self.close_font())
         self.filemenu.add_separator()
-        self.filemenu.add_command(label="Exit", command=master.destroy)
+        self.filemenu.add_command(label="Quit", command=lambda: self.quit_program(None), accelerator="Ctrl+Q")
+        master.bind_all("<Control-q>", self.quit_program)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
         
         self.helpmenu = tk.Menu(self.menubar, tearoff=0)
         self.helpmenu.add_command(label="About...", command=lambda: self.show_about_window())
         self.menubar.add_cascade(label="Help", menu=self.helpmenu)
         
-        
+        self.filemenu.entryconfig(1, state="disabled")
         self.filemenu.entryconfig(2, state="disabled") 
         self.filemenu.entryconfig(3, state="disabled") 
         
         master.config(menu=self.menubar)        
     
     
-    
-    
-    def open_file(self):
+    def quit_program(self, event):
+        ea_image_logic.bd_logger("Quit GUI...")
+        self.master.destroy()
+        
+    def open_file(self, event):
         try:
             in_file = filedialog.askopenfile(filetypes=self.allowed_filetypes, mode='rb')  
             if in_file == None:
