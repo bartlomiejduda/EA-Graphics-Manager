@@ -47,6 +47,8 @@ class EA_MAN_GUI:
 
         def click_command(self, e, cmd):
             e.widget.event_generate(f'<<{cmd}>>')
+       
+
 
     class TREE_MANAGER:
     
@@ -119,66 +121,66 @@ class EA_MAN_GUI:
         style = ttk.Style()
         style.layout( "Treeview", [('Treeview.treearea', {'sticky': 'nswe'})] ) #get rid of the default border 
         
-        self.tree_frame = tk.Frame(self.main_frame, bg=self.main_frame['bg'], highlightbackground="grey", highlightthickness=1)
-        self.tree_frame.place(x=10, y=10, width=120, height=435) 
-        
-        #style.configure("Treeview", foreground='#00337f',background="#ffc61e")
-        #style.configure("Treeview.Heading", background="purple",foreground='#00337f',font=(20))
-        #style.configure("Treeview.treearea", borderwidth=5)
-        
-        #style.configure("Treeview", lightcolor="#ffc61e", bordercolor="#ffc61e",
-                        #darkcolor="#ffc61e")        
+        self.tree_frame = tk.Frame(self.main_frame, bg=self.main_frame['bg'], highlightbackground="grey", highlightthickness=1) #add custom border
+        self.tree_frame.place(x=10, y=10, width=120, height=435)   
         
         self.treeview_widget = ttk.Treeview(self.tree_frame, show="tree")
         self.tree_man = self.TREE_MANAGER(self.treeview_widget)
         self.treeview_widget.place(relx=0, rely=0, relwidth=1, relheight=1) 
-        #self.treeview_widget.config(borderwidth=5)
-   
-   
-        #self.tree_man.add_object("aaa")
-        #self.tree_man.add_object("bbb")
-        #self.treeview_widget.insert('', tk.END, text='file1.SSH', iid=0, open=False)
-        #self.treeview_widget.insert('', tk.END, text='file2.FSH', iid=1, open=False)
-        
-        ## adding children of first node
-        #self.treeview_widget.insert('', tk.END, text='bubbles img', iid=5, open=False)
-        #self.treeview_widget.insert('', tk.END, text='title img', iid=6, open=False)
-        #self.treeview_widget.move(5, 0, 1)
-        #self.treeview_widget.move(6, 0, 1)
+
 
 
         #header info
-        self.header_labelframe = tk.LabelFrame(self.main_frame, text="File Header")
-        self.header_labelframe.place(x=140, y=5, width=300, height=90)
+        self.file_header_labelframe = tk.LabelFrame(self.main_frame, text="File Header")
+        self.file_header_labelframe.place(x=140, y=5, width=300, height=90)
         
-        self.hl_sign = tk.Label(self.header_labelframe, text="Signature:", anchor="w")
-        self.hl_sign.place(x=5, y=5, width=60, height=20)   
-        self.ht_sign = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
-        self.ht_sign.place(x=70, y=5, width=60, height=20)  
-        self.ht_sign.bind('<Button-3>', self.RIGHT_CLICKER)
+        self.fh_label_sign = tk.Label(self.file_header_labelframe, text="Signature:", anchor="w")
+        self.fh_label_sign.place(x=5, y=5, width=60, height=20)   
+        self.fh_text_sign = tk.Text(self.file_header_labelframe, bg=self.file_header_labelframe['bg'], state="disabled")
+        self.fh_text_sign.place(x=70, y=5, width=60, height=20)  
+        self.fh_text_sign.bind('<Button-3>', self.RIGHT_CLICKER)
         
-        self.hl_f_size = tk.Label(self.header_labelframe, text="File Size:", anchor="w")
-        self.hl_f_size.place(x=5, y=35, width=60, height=20)   
-        self.ht_f_size = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
-        self.ht_f_size.place(x=70, y=35, width=60, height=20)  
-        self.ht_f_size.bind('<Button-3>', self.RIGHT_CLICKER)
+        self.fh_label_f_size = tk.Label(self.file_header_labelframe, text="File Size:", anchor="w")
+        self.fh_label_f_size.place(x=5, y=35, width=60, height=20)   
+        self.fh_text_f_size = tk.Text(self.file_header_labelframe, bg=self.file_header_labelframe['bg'], state="disabled")
+        self.fh_text_f_size.place(x=70, y=35, width=60, height=20)  
+        self.fh_text_f_size.bind('<Button-3>', self.RIGHT_CLICKER)
         
-        self.hl_obj_count = tk.Label(self.header_labelframe, text="Object Count:", anchor="w")
-        self.hl_obj_count.place(x=140, y=5, width=90, height=20)   
-        self.ht_obj_count = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
-        self.ht_obj_count.place(x=230, y=5, width=60, height=20)  
-        self.ht_obj_count.bind('<Button-3>', self.RIGHT_CLICKER)
+        self.fh_label_obj_count = tk.Label(self.file_header_labelframe, text="Object Count:", anchor="w")
+        self.fh_label_obj_count.place(x=140, y=5, width=90, height=20)   
+        self.fh_text_obj_count = tk.Text(self.file_header_labelframe, bg=self.file_header_labelframe['bg'], state="disabled")
+        self.fh_text_obj_count.place(x=230, y=5, width=60, height=20)  
+        self.fh_text_obj_count.bind('<Button-3>', self.RIGHT_CLICKER)
         
-        self.hl_dir_id = tk.Label(self.header_labelframe, text="Directory ID:", anchor="w")
-        self.hl_dir_id.place(x=140, y=35, width=90, height=20)   
-        self.ht_dir_id = tk.Text(self.header_labelframe, bg=self.header_labelframe['bg'], state="disabled")
-        self.ht_dir_id.place(x=230, y=35, width=60, height=20)
-        self.ht_dir_id.bind('<Button-3>', self.RIGHT_CLICKER)
+        self.fh_label_dir_id = tk.Label(self.file_header_labelframe, text="Directory ID:", anchor="w")
+        self.fh_label_dir_id.place(x=140, y=35, width=90, height=20)   
+        self.fh_text_dir_id = tk.Text(self.file_header_labelframe, bg=self.file_header_labelframe['bg'], state="disabled")
+        self.fh_text_dir_id.place(x=230, y=35, width=60, height=20)
+        self.fh_text_dir_id.bind('<Button-3>', self.RIGHT_CLICKER)
+        
+        
+        #entry header
+        self.entry_header_labelframe = tk.LabelFrame(self.main_frame, text="Entry Header")
+        self.entry_header_labelframe.place(x=140, y=100, width=300, height=190)    
+        
+        self.eh_label_rec_id = tk.Label(self.entry_header_labelframe, text="Record Type:", anchor="w")
+        self.eh_label_rec_id.place(x=5, y=5, width=80, height=20)   
+        self.eh_text_rec_id = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_rec_id.place(x=90, y=5, width=200, height=20)  
+        self.eh_text_rec_id.bind('<Button-3>', self.RIGHT_CLICKER)     
+        
+        self.eh_label_size_of_the_block = tk.Label(self.entry_header_labelframe, text="Size Of The Block:", anchor="w")
+        self.eh_label_size_of_the_block.place(x=5, y=35, width=120, height=20)   
+        self.eh_text_size_of_the_block = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_size_of_the_block.place(x=110, y=35, width=180, height=20)  
+        self.eh_text_size_of_the_block.bind('<Button-3>', self.RIGHT_CLICKER)   
+        
+        self.eh_label_width = tk.Label(self.entry_header_labelframe, text="Width:", anchor="w")
+        self.eh_label_width.place(x=5, y=65, width=80, height=20)   
+        self.eh_text_width = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_width.place(x=70, y=65, width=60, height=20)  
+        self.eh_text_width.bind('<Button-3>', self.RIGHT_CLICKER)          
 
-
-        #self.butt1 = tk.Button(self.main_frame, text="OPEN", command=lambda: self.open_file() )
-        #self.butt1.place(x=150, y=90, width=60, height=20)       
-        
         
         # menu
         self.menubar = tk.Menu(master)
@@ -237,10 +239,10 @@ class EA_MAN_GUI:
         ea_img.parse_directory(in_file)
 
         #set text
-        self.set_text_in_box(self.ht_sign, ea_img.sign)
-        self.set_text_in_box(self.ht_f_size, ea_img.total_f_size)
-        self.set_text_in_box(self.ht_obj_count, ea_img.num_of_entries)
-        self.set_text_in_box(self.ht_dir_id, ea_img.dir_id)
+        self.set_text_in_box(self.fh_text_sign, ea_img.sign)
+        self.set_text_in_box(self.fh_text_f_size, ea_img.total_f_size)
+        self.set_text_in_box(self.fh_text_obj_count, ea_img.num_of_entries)
+        self.set_text_in_box(self.fh_text_dir_id, ea_img.dir_id)
         
         
         self.tree_man.add_object(ea_img)
@@ -254,10 +256,6 @@ class EA_MAN_GUI:
         in_box.config(state="disabled")          
             
      
-    def add_to_tree(self):
-        pass
-     
-        
    
     def web_callback(self, url):
         webbrowser.open_new(url)   

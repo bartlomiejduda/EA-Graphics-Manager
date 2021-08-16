@@ -21,8 +21,9 @@ License: GPL-3.0 License
 # v0.6.5   14.08.2021  Bartlomiej Duda      Enhanced GUI (file opening, header info), added EA_IMAGE class
 # v0.6.6   14.08.2021  Bartlomiej Duda      Enhanced GUI
 # v0.6.7   15.08.2021  Bartlomiej Duda      Enhanced GUI
+# v0.6.8   17.08.2021  Bartlomiej Duda      Enhanced GUI (added entry header info)
 
-VERSION_NUM = "v0.6.7"
+VERSION_NUM = "v0.6.8"
 
 import ea_image_logic
 import tkinter as tk
