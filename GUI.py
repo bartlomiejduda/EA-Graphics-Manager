@@ -34,9 +34,10 @@ MAX_WINDOW_WIDTH = WINDOW_WIDTH
 
 
 class EA_MAN_GUI:
-
+            
     class RIGHT_CLICKER:
-        def __init__(self, e):
+        def __init__(self, out_class, e):
+            self.out_class = out_class
             commands = ["Copy"]
             menu = tk.Menu(None, tearoff=0, takefocus=0)
     
@@ -46,7 +47,8 @@ class EA_MAN_GUI:
             menu.tk_popup(e.x_root + 40, e.y_root + 10, entry="0")
 
         def click_command(self, e, cmd):
-            e.widget.event_generate(f'<<{cmd}>>')
+            self.out_class.master.clipboard_clear()
+            e.widget.event_generate(f'<<{cmd}>>')   
        
 
 
@@ -124,9 +126,11 @@ class EA_MAN_GUI:
         self.tree_frame = tk.Frame(self.main_frame, bg=self.main_frame['bg'], highlightbackground="grey", highlightthickness=1) #add custom border
         self.tree_frame.place(x=10, y=10, width=120, height=435)   
         
-        self.treeview_widget = ttk.Treeview(self.tree_frame, show="tree")
+        self.treeview_widget = ttk.Treeview(self.tree_frame, show="tree", selectmode="browse")
         self.tree_man = self.TREE_MANAGER(self.treeview_widget)
         self.treeview_widget.place(relx=0, rely=0, relwidth=1, relheight=1) 
+        
+        self.treeview_widget.bind("<<TreeviewSelect>>", self.treeview_widget_select)
 
 
 
@@ -138,48 +142,86 @@ class EA_MAN_GUI:
         self.fh_label_sign.place(x=5, y=5, width=60, height=20)   
         self.fh_text_sign = tk.Text(self.file_header_labelframe, bg=self.file_header_labelframe['bg'], state="disabled")
         self.fh_text_sign.place(x=70, y=5, width=60, height=20)  
-        self.fh_text_sign.bind('<Button-3>', self.RIGHT_CLICKER)
+        self.fh_text_sign.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event) )
+        
+        
+        #lambda event, arg=data: self.on_mouse_down(event, arg)
         
         self.fh_label_f_size = tk.Label(self.file_header_labelframe, text="File Size:", anchor="w")
         self.fh_label_f_size.place(x=5, y=35, width=60, height=20)   
         self.fh_text_f_size = tk.Text(self.file_header_labelframe, bg=self.file_header_labelframe['bg'], state="disabled")
         self.fh_text_f_size.place(x=70, y=35, width=60, height=20)  
-        self.fh_text_f_size.bind('<Button-3>', self.RIGHT_CLICKER)
+        self.fh_text_f_size.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))
         
         self.fh_label_obj_count = tk.Label(self.file_header_labelframe, text="Object Count:", anchor="w")
         self.fh_label_obj_count.place(x=140, y=5, width=90, height=20)   
         self.fh_text_obj_count = tk.Text(self.file_header_labelframe, bg=self.file_header_labelframe['bg'], state="disabled")
         self.fh_text_obj_count.place(x=230, y=5, width=60, height=20)  
-        self.fh_text_obj_count.bind('<Button-3>', self.RIGHT_CLICKER)
+        self.fh_text_obj_count.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))
         
         self.fh_label_dir_id = tk.Label(self.file_header_labelframe, text="Directory ID:", anchor="w")
         self.fh_label_dir_id.place(x=140, y=35, width=90, height=20)   
         self.fh_text_dir_id = tk.Text(self.file_header_labelframe, bg=self.file_header_labelframe['bg'], state="disabled")
         self.fh_text_dir_id.place(x=230, y=35, width=60, height=20)
-        self.fh_text_dir_id.bind('<Button-3>', self.RIGHT_CLICKER)
+        self.fh_text_dir_id.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))
         
         
         #entry header
         self.entry_header_labelframe = tk.LabelFrame(self.main_frame, text="Entry Header")
-        self.entry_header_labelframe.place(x=140, y=100, width=300, height=190)    
+        self.entry_header_labelframe.place(x=140, y=100, width=300, height=180)    
         
         self.eh_label_rec_id = tk.Label(self.entry_header_labelframe, text="Record Type:", anchor="w")
         self.eh_label_rec_id.place(x=5, y=5, width=80, height=20)   
         self.eh_text_rec_id = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
         self.eh_text_rec_id.place(x=90, y=5, width=200, height=20)  
-        self.eh_text_rec_id.bind('<Button-3>', self.RIGHT_CLICKER)     
+        self.eh_text_rec_id.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))     
         
         self.eh_label_size_of_the_block = tk.Label(self.entry_header_labelframe, text="Size Of The Block:", anchor="w")
         self.eh_label_size_of_the_block.place(x=5, y=35, width=120, height=20)   
         self.eh_text_size_of_the_block = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
-        self.eh_text_size_of_the_block.place(x=110, y=35, width=180, height=20)  
-        self.eh_text_size_of_the_block.bind('<Button-3>', self.RIGHT_CLICKER)   
+        self.eh_text_size_of_the_block.place(x=110, y=35, width=60, height=20)  
+        self.eh_text_size_of_the_block.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))   
         
         self.eh_label_width = tk.Label(self.entry_header_labelframe, text="Width:", anchor="w")
         self.eh_label_width.place(x=5, y=65, width=80, height=20)   
         self.eh_text_width = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
         self.eh_text_width.place(x=70, y=65, width=60, height=20)  
-        self.eh_text_width.bind('<Button-3>', self.RIGHT_CLICKER)          
+        self.eh_text_width.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))    
+        
+        self.eh_label_height = tk.Label(self.entry_header_labelframe, text="Height:", anchor="w")
+        self.eh_label_height.place(x=140, y=65, width=80, height=20)   
+        self.eh_text_height = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_height.place(x=200, y=65, width=60, height=20)  
+        self.eh_text_height.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))  
+        
+        self.eh_label_center_x = tk.Label(self.entry_header_labelframe, text="Center X:", anchor="w")
+        self.eh_label_center_x.place(x=5, y=95, width=80, height=20)   
+        self.eh_text_center_x = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_center_x.place(x=70, y=95, width=60, height=20)  
+        self.eh_text_center_x.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))  
+        
+        self.eh_label_center_y = tk.Label(self.entry_header_labelframe, text="Center Y:", anchor="w")
+        self.eh_label_center_y.place(x=140, y=95, width=80, height=20)   
+        self.eh_text_center_y = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_center_y.place(x=200, y=95, width=60, height=20)  
+        self.eh_text_center_y.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))   
+        
+        self.eh_label_left_x = tk.Label(self.entry_header_labelframe, text="Left X:", anchor="w")
+        self.eh_label_left_x.place(x=5, y=125, width=80, height=20)   
+        self.eh_text_left_x = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_left_x.place(x=70, y=125, width=60, height=20)  
+        self.eh_text_left_x.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event)) 
+        
+        self.eh_label_left_y = tk.Label(self.entry_header_labelframe, text="Left Y:", anchor="w")
+        self.eh_label_left_y.place(x=140, y=125, width=80, height=20)   
+        self.eh_text_left_y = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_left_y.place(x=200, y=125, width=60, height=20)  
+        self.eh_text_left_y.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))   
+        
+        
+        #preview 
+        self.preview_labelframe = tk.LabelFrame(self.main_frame, text="Preview")
+        self.preview_labelframe.place(x=140, y=285, width=300, height=160)         
 
         
         # menu
@@ -205,6 +247,11 @@ class EA_MAN_GUI:
         self.filemenu.entryconfig(3, state="disabled") 
         
         master.config(menu=self.menubar)        
+    
+    
+    def treeview_widget_select(self, event):
+        item = self.treeview_widget.selection()[0]
+        print("you clicked on", self.treeview_widget.item(item,"text"))
     
     
     def quit_program(self, event):
