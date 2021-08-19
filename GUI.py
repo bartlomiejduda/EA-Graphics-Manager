@@ -105,6 +105,11 @@ class EA_MAN_GUI:
         master.minsize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT) 
         master.maxsize(MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT) 
         
+        try:
+            self.master.iconbitmap('img\\icon_bd.ico')
+        except:
+            logger.console_logger("Can't load the icon file!")        
+        
             
         self.allowed_filetypes = [ ('EA Graphics files', ['*.fsh', '*.psh', '*.ssh', '*.msh', '*.xsh']), 
                                    ('All files', ['*.*'])
@@ -183,7 +188,13 @@ class EA_MAN_GUI:
         self.eh_label_size_of_the_block.place(x=5, y=35, width=120, height=20)   
         self.eh_text_size_of_the_block = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
         self.eh_text_size_of_the_block.place(x=110, y=35, width=60, height=20)  
-        self.eh_text_size_of_the_block.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))   
+        self.eh_text_size_of_the_block.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event)) 
+        
+        self.eh_label_mipmaps_count = tk.Label(self.entry_header_labelframe, text="Mipmaps:", anchor="w")
+        self.eh_label_mipmaps_count.place(x=185, y=35, width=70, height=20)   
+        self.eh_text_mipmaps_count = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_mipmaps_count.place(x=250, y=35, width=40, height=20)  
+        self.eh_text_mipmaps_count.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))           
         
         self.eh_label_width = tk.Label(self.entry_header_labelframe, text="Width:", anchor="w")
         self.eh_label_width.place(x=5, y=65, width=80, height=20)   
@@ -320,6 +331,11 @@ class EA_MAN_GUI:
         log_window = tk.Toplevel(height=200, width=400)
         log_window.wm_title("GUI log")
         
+        try:
+            log_window.iconbitmap('img\\icon_bd.ico')
+        except:
+            logger.console_logger("Can't load the icon file!")            
+        
         log_field = tk.Text(log_window)
         log_field.place(x=0, y=0, width=400, height=160)
         
@@ -329,7 +345,7 @@ class EA_MAN_GUI:
         
         close_button = tk.Button(log_window, text="Close")
         close_button.place(x=210, y=170, width=60, height=20)     
-        close_button.bind('<Button-1>', lambda event, arg=log_window: self.close_GUI_log(arg, event))
+        close_button.bind('<Button-1>', lambda event, arg=log_window: self.close_toplevel_window(arg, event))
         
         self.set_text_in_box(log_field, self.GUI_log_text)
         
@@ -343,15 +359,20 @@ class EA_MAN_GUI:
         messagebox.showinfo("Info", "Log has been copied to the clipboard!")
         wind.destroy()
    
-    def close_GUI_log(self, wind, event):
+    def close_toplevel_window(self, wind, event):
         wind.destroy()
    
     def web_callback(self, url):
         webbrowser.open_new(url)   
         
     def show_about_window(self):
-            t = tk.Toplevel()
-            t.wm_title("About")
+            about_window = tk.Toplevel()
+            about_window.wm_title("About")
+            
+            try:
+                about_window.iconbitmap('img\\icon_bd.ico')
+            except:
+                logger.console_logger("Can't load the icon file!")              
             
             a_text = ( "EA Graphics Manager\n"
                        "Version: " + self.VERSION_NUM + "\n"
@@ -367,15 +388,19 @@ class EA_MAN_GUI:
                         "go to my github page:" )
             a_text4 = ( "https://github.com/bartlomiejduda" )
             
-            l = tk.Label(t, text=a_text)
+            l = tk.Label(about_window, text=a_text)
             l.pack(side="top", fill="both", padx=10)
-            l2 = tk.Label(t, text=a_text2, fg="blue", cursor="hand2")
+            l2 = tk.Label(about_window, text=a_text2, fg="blue", cursor="hand2")
             l2.bind("<Button-1>", lambda e: self.web_callback(a_text2))
             l2.pack(side="top", anchor='n')
-            l3 = tk.Label(t, text=a_text3)
+            l3 = tk.Label(about_window, text=a_text3)
             l3.pack(side="top", fill="both", padx=10)        
-            l4 = tk.Label(t, text=a_text4, fg="blue", cursor="hand2")
+            l4 = tk.Label(about_window, text=a_text4, fg="blue", cursor="hand2")
             l4.bind("<Button-1>", lambda e: self.web_callback(a_text4))
-            l4.pack(side="top", anchor='n')    
+            l4.pack(side="top", anchor='n') 
+            close_button = tk.Button(about_window, text="Close")
+            close_button.pack()
+            close_button.bind('<Button-1>', lambda event, arg=about_window: self.close_toplevel_window(arg, event))
         
-            center_tk_window.center_on_screen(t)
+            center_tk_window.center_on_screen(about_window)
+            
