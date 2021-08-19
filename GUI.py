@@ -14,10 +14,11 @@ from PIL import ImageTk, Image
 import webbrowser
 import traceback
 import pyperclip  # pip install pyperclip
-from datetime import datetime
+import datetime
 import tkinter.ttk as ttk
 import center_tk_window    # pip install center_tk_window
 import ea_image_logic
+import logger
 
 
 
@@ -74,7 +75,6 @@ class EA_MAN_GUI:
             obj_id = next(self.id_iterator)
             self.obj_count += 1
             in_obj.tree_id = obj_id
-            print("tree_id: " + str(in_obj.tree_id) )
             self.tree_widget.insert('', tk.END, text=in_obj.f_name, iid=in_obj.tree_id, open=True)
             
             #add object children
@@ -96,6 +96,9 @@ class EA_MAN_GUI:
       
     
     def __init__(self, master, in_VERSION_NUM):
+        logger.console_logger("GUI init...")
+        self.GUI_log_text = ""
+        self.GUI_logger("GUI init...")
         self.master = master
         self.VERSION_NUM = in_VERSION_NUM
         master.title("EA GRAPHICS MANAGER " + in_VERSION_NUM)
@@ -238,6 +241,10 @@ class EA_MAN_GUI:
         master.bind_all("<Control-q>", self.quit_program)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
         
+        self.toolsmenu = tk.Menu(self.menubar, tearoff=0)
+        self.toolsmenu.add_command(label="Show GUI Log", command=lambda: self.show_GUI_log())
+        self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)        
+        
         self.helpmenu = tk.Menu(self.menubar, tearoff=0)
         self.helpmenu.add_command(label="About...", command=lambda: self.show_about_window())
         self.menubar.add_cascade(label="Help", menu=self.helpmenu)
@@ -255,7 +262,7 @@ class EA_MAN_GUI:
     
     
     def quit_program(self, event):
-        ea_image_logic.bd_logger("Quit GUI...")
+        logger.console_logger("Quit GUI...")
         self.master.destroy()
         
     def open_file(self, event):
@@ -279,7 +286,8 @@ class EA_MAN_GUI:
             messagebox.showwarning("Warning", "File not supported!")
             return
         
-        ea_image_logic.bd_logger("Loading file " + in_file_name + "...")
+        logger.console_logger("Loading file " + in_file_name + "...")
+        self.GUI_logger("Loading file " + in_file_name + "...")
         
         ea_img = ea_image_logic.EA_IMAGE()
         ea_img.parse_header(in_file, in_file_path, in_file_name)
@@ -300,9 +308,43 @@ class EA_MAN_GUI:
         in_box.config(state="normal")
         in_box.delete('1.0', tk.END)
         in_box.insert(tk.END, in_text)
-        in_box.config(state="disabled")          
+        in_box.config(state="disabled")      
+        
+    def GUI_logger(self, in_str):
+        now = datetime.datetime.now()
+        new_log_str = now.strftime("%d-%m-%Y %H:%M:%S") + " " + in_str + "\n"
+        self.GUI_log_text += new_log_str
+        
             
-     
+    def show_GUI_log(self):
+        log_window = tk.Toplevel(height=200, width=400)
+        log_window.wm_title("GUI log")
+        
+        log_field = tk.Text(log_window)
+        log_field.place(x=0, y=0, width=400, height=160)
+        
+        copy_button = tk.Button(log_window, text="Copy")
+        copy_button.place(x=140, y=170, width=60, height=20)
+        copy_button.bind('<Button-1>', lambda event, arg=log_field, arg2=log_window: self.copy_GUI_log_msg(arg, arg2, event))
+        
+        close_button = tk.Button(log_window, text="Close")
+        close_button.place(x=210, y=170, width=60, height=20)     
+        close_button.bind('<Button-1>', lambda event, arg=log_window: self.close_GUI_log(arg, event))
+        
+        self.set_text_in_box(log_field, self.GUI_log_text)
+        
+        center_tk_window.center_on_screen(log_window)
+   
+   
+    def copy_GUI_log_msg(self, txt_field, wind, event):
+        self.master.clipboard_clear()
+        log_txt = txt_field.get("1.0",tk.END)
+        self.master.clipboard_append(log_txt)
+        messagebox.showinfo("Info", "Log has been copied to the clipboard!")
+        wind.destroy()
+   
+    def close_GUI_log(self, wind, event):
+        wind.destroy()
    
     def web_callback(self, url):
         webbrowser.open_new(url)   

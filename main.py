@@ -23,13 +23,15 @@ License: GPL-3.0 License
 # v0.6.7   15.08.2021  Bartlomiej Duda      Enhanced GUI
 # v0.6.8   17.08.2021  Bartlomiej Duda      Enhanced GUI (added entry header info)
 # v0.6.9   18.08.2021  Bartlomiej Duda      Enhanced GUI
+# v0.6.10  19.08.2021  Bartlomiej Duda      Enhanced GUI, added "logger" file
 
-VERSION_NUM = "v0.6.9"
+VERSION_NUM = "v0.6.10"
 
 import ea_image_logic
 import tkinter as tk
 import GUI
 import center_tk_window    # pip install center_tk_window
+import logger
 
 
     
@@ -56,11 +58,11 @@ def main():
         root.mainloop()        
         
     else:
-        ea_image_logic.bd_logger("Wrong option selected!")
+        logger.console_logger("Wrong option selected!")
         
         
     
-    ea_image_logic.bd_logger("End of main...")    
+    logger.console_logger("End of main...")    
     
     
 if __name__ == '__main__':   

@@ -11,17 +11,8 @@ License: GPL-3.0 License
 import os
 import sys
 import struct
-import datetime
 from PIL import Image
-
-
-def bd_logger(in_str):
-    '''
-    Function for logging debug messages
-    '''   
-    now = datetime.datetime.now()
-    print(now.strftime("%d-%m-%Y %H:%M:%S") + " " + in_str)    
-
+import logger
 
 
 class BMP_IMG:
@@ -159,7 +150,7 @@ def export_data(in_file_path, out_folder_path):
     '''
     Function for exporting data from EA graphics files
     '''    
-    bd_logger("Starting export_data...")  
+    logger.console_logger("Starting export_data...")  
     
     if not os.path.exists(out_folder_path):
         os.makedirs(out_folder_path)      
@@ -169,11 +160,11 @@ def export_data(in_file_path, out_folder_path):
     try:
         magic = struct.unpack("4s", ssh_file.read(4))[0].decode("utf8")
     except:
-        bd_logger("Can't read magic! Aborting!")
+        logger.console_logger("Can't read magic! Aborting!")
         return
         
     if magic not in ("SHPS", "SHPP", "SHPM"):
-        bd_logger("It is not supported EA graphics file! Aborting!")
+        logger.console_logger("It is not supported EA graphics file! Aborting!")
         return
     
     ssh_file.read(4) # total file size
@@ -279,7 +270,7 @@ def export_data(in_file_path, out_folder_path):
             
             
         else:
-            bd_logger("Unsupported image type " + str(image_type) + "! Skipping!")
+            logger.console_logger("Unsupported image type " + str(image_type) + "! Skipping!")
             ssh_file.seek(back_offset)
             continue
                       
@@ -310,12 +301,12 @@ def export_data(in_file_path, out_folder_path):
             img.save(out_file_path)
             img.close()
         except:
-            bd_logger("Can't flip image " + file_name + "...")
+            logger.console_logger("Can't flip image " + file_name + "...")
 
         ssh_file.seek(back_offset)
     
 
     ssh_file.close()
-    bd_logger("Ending export_data...")    
+    logger.console_logger("Ending export_data...")    
     
     
