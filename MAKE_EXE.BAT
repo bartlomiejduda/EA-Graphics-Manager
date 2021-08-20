@@ -3,6 +3,7 @@
 
 :: Ver    Date        Name
 :: v0.1   19.08.2021  Bartlomiej Duda
+:: v0.2   20.08.2021  Bartlomiej Duda
 
 @ECHO OFF
 echo Starting make...
@@ -11,15 +12,30 @@ echo.
 
 setlocal enabledelayedexpansion
 
+set OUT_DIR="EA_Graphics_Manager_v0.6.12"
+
 echo STEP 1
-rm -rf main.build
-rm -rf main.exe
-rm -rf main.cmd
+rm -rf dist 
+rm -rf build 
+rm -rf __pycache__
+rm -rf !OUT_DIR!
+rm -rf main.spec
+
+
 
 echo STEP 2
-python -m nuitka --mingw64 main.py --windows-disable-console
-rm -rf main.build
-rm -rf main.cmd
+mkdir !OUT_DIR!
+set PYTHONOPTIMIZE=1 && pyinstaller --onefile -i .\img\icon_bd.ico --splash .\img\loading.png --upx-dir c:\upx\ .\main.pyw
+move .\dist\main.exe .\!OUT_DIR!\EA_Graphics_Manager.exe
+xcopy ".\img" "!OUT_DIR!\img" /E /I
+copy ".\docs\readme.txt" ".\!OUT_DIR!\readme.txt"
+
+echo STEP 3
+rm -rf dist 
+rm -rf build 
+rm -rf __pycache__
+rm -rf main.spec
+
 
 echo Ending make...
 pause

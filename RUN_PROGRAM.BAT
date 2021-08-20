@@ -5,13 +5,12 @@
 :: v0.1   19.08.2021  Bartlomiej Duda
 
 @ECHO OFF
-echo Starting execute...
+echo Executing program...
 echo.
 echo.
 
 setlocal enabledelayedexpansion
 
-python main.py --windows-disable-console
+python main.pyw --windows-disable-console
 
-echo Ending execute...
-pause
+echo Ending program...
