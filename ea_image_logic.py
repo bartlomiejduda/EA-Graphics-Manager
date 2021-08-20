@@ -94,6 +94,8 @@ class EA_IMAGE:
             self.id = in_id
             self.tag = in_tag
             self.offset = in_offset
+            self.header = None 
+            self.data = None
         
     
     def __init__(self):
@@ -107,8 +109,31 @@ class EA_IMAGE:
         self.f_endianess = None
         self.f_endianess_desc = None
         self.f_size = None
-        self.tree_id = -1
         self.dir_entry_list = []
+        self.ea_image_id = -1
+        self.dir_entry_id = 0
+        
+        
+        self.allowed_signatures = ( "SHPI", #PC games
+                                    "SHPP", #PS1 games 
+                                    "SHPS", #PS2 games
+                                    "ShpX", "SHPX", #XBOX games
+                                    "SHPM" #PSP games 
+                                  )        
+    
+    
+    def set_ea_image_id(self, in_ea_image_id):
+        self.ea_image_id = in_ea_image_id
+    
+    def check_file_signature(self, in_file):
+        try:
+            sign = in_file.read(4).decode("utf8")
+            in_file.seek(0)
+            if sign not in self.allowed_signatures:
+                raise
+            return 0
+        except:
+            return -1   
         
     def parse_header(self, in_file, in_file_path, in_file_name):
         self.sign = in_file.read(4).decode("utf8")
@@ -138,7 +163,8 @@ class EA_IMAGE:
         
     def parse_directory(self, in_file):
         for i in range(self.num_of_entries):
-            entry_id = -1
+            self.dir_entry_id += 1
+            entry_id = str(self.ea_image_id) + "_direntry_" + str(self.dir_entry_id)
             entry_tag = in_file.read(4).decode("utf8")
             entry_offset = struct.unpack( self.f_endianess + "L", in_file.read(4) )[0]
             ea_dir_entry = self.DIR_ENTRY(entry_id, entry_tag, entry_offset)

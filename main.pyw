@@ -26,8 +26,9 @@ License: GPL-3.0 License
 # v0.6.10  19.08.2021  Bartlomiej Duda      Enhanced GUI, added "logger" file
 # v0.6.11  19.08.2021  Bartlomiej Duda      Enhanced GUI, added "make_exe" script 
 # v0.6.12  20.08.2021  Bartlomiej Duda      Enhanced "make_exe" script
+# v0.6.13  20.08.2021  Bartlomiej Duda      Enhanced GUI (better treeview logic)
 
-VERSION_NUM = "v0.6.12"
+VERSION_NUM = "v0.6.13"
 
 import ea_image_logic
 import tkinter as tk

@@ -59,44 +59,21 @@ class EA_MAN_GUI:
 
 
     class TREE_MANAGER:
-    
-        class TREE_ITERATOR:
-            def __iter__(self):
-                self.a = 0
-                return self
-            
-            def __next__(self):
-                x = self.a
-                self.a += 1
-                return x       
-          
+         
         def __init__(self, in_widget):
-            self.obj_count = 0
-            self.objects_dict = {}
-            self.id_iterator = iter(self.TREE_ITERATOR())
             self.tree_widget = in_widget
             
         def add_object(self, in_obj):
-            obj_id = next(self.id_iterator)
-            self.obj_count += 1
-            in_obj.tree_id = obj_id
-            self.tree_widget.insert('', tk.END, text=in_obj.f_name, iid=in_obj.tree_id, open=True)
+            self.tree_widget.insert('', tk.END, text=in_obj.f_name, iid=in_obj.ea_image_id, open=True) # add file to tree, eg. "awards.ssh"
             
             #add object children
             sub_id = 0
             for obj_dir_entry in in_obj.dir_entry_list:
-                child_id = next(self.id_iterator)
-                obj_dir_entry.id = child_id
                 sub_id += 1
                 self.tree_widget.insert('', tk.END, text=obj_dir_entry.tag, iid=obj_dir_entry.id, open=True)
-                self.tree_widget.move(obj_dir_entry.id, in_obj.tree_id, sub_id)
+                self.tree_widget.move(obj_dir_entry.id, in_obj.ea_image_id, sub_id)
             
-        def remove_object(self, in_id):
-            self.objects_dict.pop(in_id)
-            
-        def get_object(self, in_id):
-            obj = self.objects_dict.get(in_id)
-            return obj
+
       
       
     
@@ -122,14 +99,11 @@ class EA_MAN_GUI:
             
         self.allowed_filetypes = [ ('EA Graphics files', ['*.fsh', '*.psh', '*.ssh', '*.msh', '*.xsh']), 
                                    ('All files', ['*.*'])
-                                 ]     
+                                 ]    
         
-        self.allowed_signatures = ( "SHPI", #PC games
-                                    "SHPP", #PS1 games 
-                                    "SHPS", #PS2 games
-                                    "ShpX", "SHPX", #XBOX games
-                                    "SHPM" #PSP games 
-                                  )
+        self.ea_image_id = 0
+        self.opened_ea_images_count = 0
+        self.opened_ea_images = []
 
         #main frame
         self.main_frame = tk.Frame(master, bg='#f0f0f0')
@@ -278,7 +252,10 @@ class EA_MAN_GUI:
     
     def treeview_widget_select(self, event):
         item = self.treeview_widget.selection()[0]
-        print("you clicked on", self.treeview_widget.item(item,"text"))
+        item_text = self.treeview_widget.item(item,"text")
+        item_iid = self.treeview_widget.focus()
+        print("you clicked on", item_text)
+        print("iid: ", item_iid)
     
     
     def quit_program(self, event):
@@ -297,19 +274,22 @@ class EA_MAN_GUI:
             messagebox.showwarning("Warning", "Failed to open file!")
             return
         
-        try:
-            sign = in_file.read(4).decode("utf8")
-            in_file.seek(0)
-            if sign not in self.allowed_signatures:
-                raise
-        except:
+        ea_img = ea_image_logic.EA_IMAGE()
+        check_result = ea_img.check_file_signature(in_file)
+        
+        if check_result != 0:
             messagebox.showwarning("Warning", "File not supported!")
             return
         
         logger.console_logger("Loading file " + in_file_name + "...")
         self.GUI_logger("Loading file " + in_file_name + "...")
         
-        ea_img = ea_image_logic.EA_IMAGE()
+        self.ea_image_id += 1
+        self.opened_ea_images_count += 1  
+        ea_img.set_ea_image_id(self.ea_image_id)
+        self.opened_ea_images.append(ea_img)
+        
+        
         ea_img.parse_header(in_file, in_file_path, in_file_name)
         ea_img.parse_directory(in_file)
 
@@ -319,6 +299,7 @@ class EA_MAN_GUI:
         self.set_text_in_box(self.fh_text_obj_count, ea_img.num_of_entries)
         self.set_text_in_box(self.fh_text_dir_id, ea_img.dir_id)
         
+
         
         self.tree_man.add_object(ea_img)
         
