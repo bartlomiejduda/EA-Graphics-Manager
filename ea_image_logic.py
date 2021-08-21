@@ -94,8 +94,45 @@ class EA_IMAGE:
             self.id = in_id
             self.tag = in_tag
             self.offset = in_offset
-            self.header = None 
-            self.data = None
+            self.raw_header = None 
+            self.raw_data = None
+            self.bmp_image_data = None
+            
+            self.h_record_id = None
+            self.h_size_of_the_block = None 
+            self.h_width = None 
+            self.h_height = None
+            self.h_center_x = None 
+            self.h_center_y = None 
+            self.h_left_x_pos = None 
+            self.h_top_y_pos = None 
+            self.h_mipmaps_count = None 
+            
+        def set_header(self, in_file, endianess):
+            self.h_record_id = self.get_uint8(in_file, endianess)
+            self.h_size_of_the_block = self.get_uint24(in_file, endianess)
+            self.h_width = self.get_uint16(in_file, endianess)
+            self.h_height = self.get_uint16(in_file, endianess)
+            self.h_center_x = self.get_uint16(in_file, endianess)
+            self.h_center_y = self.get_uint16(in_file, endianess)
+            self.h_left_x_pos = -1 #TODO
+            self.h_top_y_pos = -1 #TODO
+            self.h_mipmaps_count = -1 #TODO          
+            
+        def get_uint8(self, in_file, endianess):
+            result = struct.unpack(endianess + "B", in_file.read(1))[0]
+            return result
+        
+        def get_uint16(self, in_file, endianess):
+            result = struct.unpack(endianess + "H", in_file.read(2))[0]
+            return result            
+        
+        def get_uint24(self, in_file, endianess):
+            if endianess == "<":
+                result = struct.unpack(endianess + "I", in_file.read(3) + b'\x00')[0]
+            else:
+                result = struct.unpack(endianess + "I", b'\x00' + in_file.read(3))[0]
+            return result            
         
     
     def __init__(self):
@@ -168,6 +205,12 @@ class EA_IMAGE:
             entry_tag = in_file.read(4).decode("utf8")
             entry_offset = struct.unpack( self.f_endianess + "L", in_file.read(4) )[0]
             ea_dir_entry = self.DIR_ENTRY(entry_id, entry_tag, entry_offset)
+            
+            back_offset = in_file.tell()
+            in_file.seek(entry_offset)
+            ea_dir_entry.set_header(in_file, self.f_endianess)
+            in_file.seek(back_offset)
+            
             self.dir_entry_list.append( ea_dir_entry )
 
 

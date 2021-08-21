@@ -113,6 +113,7 @@ class EA_MAN_GUI:
         #treeview widget
         style = ttk.Style()
         style.layout( "Treeview", [('Treeview.treearea', {'sticky': 'nswe'})] ) #get rid of the default border 
+        style.configure('Treeview', indent=10)
         
         self.tree_frame = tk.Frame(self.main_frame, bg=self.main_frame['bg'], highlightbackground="grey", highlightthickness=1) #add custom border
         self.tree_frame.place(x=10, y=10, width=120, height=435)   
