@@ -16,7 +16,7 @@ import traceback
 import pyperclip  # pip install pyperclip
 import datetime
 import tkinter.ttk as ttk
-import center_tk_window    # pip install center_tk_window
+import center_tk_window  # pip install center_tk_window
 import ea_image_logic
 import logger
 
@@ -66,12 +66,24 @@ class EA_MAN_GUI:
         def add_object(self, in_obj):
             self.tree_widget.insert('', tk.END, text=in_obj.f_name, iid=in_obj.ea_image_id, open=True) # add file to tree, eg. "awards.ssh"
             
-            #add object children
+            #add object children (ea images etc.)
             sub_id = 0
             for obj_dir_entry in in_obj.dir_entry_list:
                 sub_id += 1
                 self.tree_widget.insert('', tk.END, text=obj_dir_entry.tag, iid=obj_dir_entry.id, open=True)
                 self.tree_widget.move(obj_dir_entry.id, in_obj.ea_image_id, sub_id)
+                
+        def get_object(self, in_id, in_ea_images):
+            for ea_img in in_ea_images:
+                if int(in_id) == int(ea_img.ea_image_id):
+                    return ea_img
+            logger.console_logger("Warning! Couldn't find matching ea_img object!")
+            
+        def get_object_dir(self, in_ea_img, in_iid):
+            for ea_dir in in_ea_img.dir_entry_list:
+                if in_iid == ea_dir.id:
+                    return ea_dir
+                    
             
 
       
@@ -112,10 +124,10 @@ class EA_MAN_GUI:
 
         #treeview widget
         style = ttk.Style()
-        style.layout( "Treeview", [('Treeview.treearea', {'sticky': 'nswe'})] ) #get rid of the default border 
+        style.layout( "Treeview", [('Treeview.treearea', {'sticky': 'nswe'})] ) #get rid of the default treeview border 
         style.configure('Treeview', indent=10)
         
-        self.tree_frame = tk.Frame(self.main_frame, bg=self.main_frame['bg'], highlightbackground="grey", highlightthickness=1) #add custom border
+        self.tree_frame = tk.Frame(self.main_frame, bg=self.main_frame['bg'], highlightbackground="grey", highlightthickness=1) #add custom treeview border
         self.tree_frame.place(x=10, y=10, width=120, height=435)   
         
         self.treeview_widget = ttk.Treeview(self.tree_frame, show="tree", selectmode="browse")
@@ -162,11 +174,11 @@ class EA_MAN_GUI:
         self.entry_header_labelframe = tk.LabelFrame(self.main_frame, text="Entry Header")
         self.entry_header_labelframe.place(x=140, y=100, width=300, height=180)    
         
-        self.eh_label_rec_id = tk.Label(self.entry_header_labelframe, text="Record Type:", anchor="w")
-        self.eh_label_rec_id.place(x=5, y=5, width=80, height=20)   
-        self.eh_text_rec_id = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
-        self.eh_text_rec_id.place(x=90, y=5, width=200, height=20)  
-        self.eh_text_rec_id.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))     
+        self.eh_label_rec_type = tk.Label(self.entry_header_labelframe, text="Record Type:", anchor="w")
+        self.eh_label_rec_type.place(x=5, y=5, width=80, height=20)   
+        self.eh_text_rec_type = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_rec_type.place(x=90, y=5, width=200, height=20)  
+        self.eh_text_rec_type.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))     
         
         self.eh_label_size_of_the_block = tk.Label(self.entry_header_labelframe, text="Size Of The Block:", anchor="w")
         self.eh_label_size_of_the_block.place(x=5, y=35, width=120, height=20)   
@@ -210,11 +222,11 @@ class EA_MAN_GUI:
         self.eh_text_left_x.place(x=70, y=125, width=60, height=20)  
         self.eh_text_left_x.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event)) 
         
-        self.eh_label_left_y = tk.Label(self.entry_header_labelframe, text="Left Y:", anchor="w")
-        self.eh_label_left_y.place(x=140, y=125, width=80, height=20)   
-        self.eh_text_left_y = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
-        self.eh_text_left_y.place(x=200, y=125, width=60, height=20)  
-        self.eh_text_left_y.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))   
+        self.eh_label_top_y = tk.Label(self.entry_header_labelframe, text="Left Y:", anchor="w")
+        self.eh_label_top_y.place(x=140, y=125, width=80, height=20)   
+        self.eh_text_top_y = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
+        self.eh_text_top_y.place(x=200, y=125, width=60, height=20)  
+        self.eh_text_top_y.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))   
         
         
         #preview 
@@ -255,8 +267,41 @@ class EA_MAN_GUI:
         item = self.treeview_widget.selection()[0]
         item_text = self.treeview_widget.item(item,"text")
         item_iid = self.treeview_widget.focus()
-        print("you clicked on", item_text)
-        print("iid: ", item_iid)
+        item_id = item_iid.split("_")[0]
+        print("item_text: ", item_text)
+        print("item_id: ", item_id) 
+        print("item_iid: ", item_iid)
+        
+        ea_img = self.tree_man.get_object(item_id, self.opened_ea_images)
+        ea_dir = self.tree_man.get_object_dir(ea_img, item_iid)
+        
+        #set text for header
+        self.set_text_in_box(self.fh_text_sign, ea_img.sign)
+        self.set_text_in_box(self.fh_text_f_size, ea_img.total_f_size)
+        self.set_text_in_box(self.fh_text_obj_count, ea_img.num_of_entries)
+        self.set_text_in_box(self.fh_text_dir_id, ea_img.dir_id)
+        
+        #set tex for dir entry
+        if "direntry" in item_iid:
+            self.set_text_in_box(self.eh_text_rec_type, ea_dir.get_entry_type())
+            self.set_text_in_box(self.eh_text_size_of_the_block, ea_dir.h_size_of_the_block)
+            self.set_text_in_box(self.eh_text_mipmaps_count, ea_dir.h_mipmaps_count)
+            self.set_text_in_box(self.eh_text_width, ea_dir.h_width)
+            self.set_text_in_box(self.eh_text_height, ea_dir.h_height)
+            self.set_text_in_box(self.eh_text_center_x, ea_dir.h_center_x)
+            self.set_text_in_box(self.eh_text_center_y, ea_dir.h_center_y)
+            self.set_text_in_box(self.eh_text_left_x, ea_dir.h_left_x_pos)
+            self.set_text_in_box(self.eh_text_top_y, ea_dir.h_top_y_pos)    
+        else:
+            self.set_text_in_box(self.eh_text_rec_type, "")
+            self.set_text_in_box(self.eh_text_size_of_the_block, "")
+            self.set_text_in_box(self.eh_text_mipmaps_count, "")
+            self.set_text_in_box(self.eh_text_width, "")
+            self.set_text_in_box(self.eh_text_height, "")
+            self.set_text_in_box(self.eh_text_center_x, "")
+            self.set_text_in_box(self.eh_text_center_y, "")
+            self.set_text_in_box(self.eh_text_left_x, "")
+            self.set_text_in_box(self.eh_text_top_y, "")             
     
     
     def quit_program(self, event):
@@ -294,14 +339,24 @@ class EA_MAN_GUI:
         ea_img.parse_header(in_file, in_file_path, in_file_name)
         ea_img.parse_directory(in_file)
 
-        #set text
+        #set text for header
         self.set_text_in_box(self.fh_text_sign, ea_img.sign)
         self.set_text_in_box(self.fh_text_f_size, ea_img.total_f_size)
         self.set_text_in_box(self.fh_text_obj_count, ea_img.num_of_entries)
         self.set_text_in_box(self.fh_text_dir_id, ea_img.dir_id)
         
+        #set tex for the first entry
+        self.set_text_in_box(self.eh_text_rec_type, ea_img.dir_entry_list[0].get_entry_type())
+        self.set_text_in_box(self.eh_text_size_of_the_block, ea_img.dir_entry_list[0].h_size_of_the_block)
+        self.set_text_in_box(self.eh_text_mipmaps_count, ea_img.dir_entry_list[0].h_mipmaps_count)
+        self.set_text_in_box(self.eh_text_width, ea_img.dir_entry_list[0].h_width)
+        self.set_text_in_box(self.eh_text_height, ea_img.dir_entry_list[0].h_height)
+        self.set_text_in_box(self.eh_text_center_x, ea_img.dir_entry_list[0].h_center_x)
+        self.set_text_in_box(self.eh_text_center_y, ea_img.dir_entry_list[0].h_center_y)
+        self.set_text_in_box(self.eh_text_left_x, ea_img.dir_entry_list[0].h_left_x_pos)
+        self.set_text_in_box(self.eh_text_top_y, ea_img.dir_entry_list[0].h_top_y_pos)
 
-        
+
         self.tree_man.add_object(ea_img)
         
         

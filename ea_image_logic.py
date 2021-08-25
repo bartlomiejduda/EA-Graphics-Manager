@@ -90,11 +90,16 @@ class BMP_IMG:
 class EA_IMAGE:
     
     class DIR_ENTRY:
+        
+        entry_types = {  2:  "2 | 0x02 | SKEWED IMAGE",
+                         33: "33_type_TEST"
+                           }
         def __init__(self, in_id, in_tag, in_offset):
             self.id = in_id
             self.tag = in_tag
             self.offset = in_offset
             self.raw_header = None 
+            self.raw_data_offset = None
             self.raw_data = None
             self.bmp_image_data = None
             
@@ -117,7 +122,16 @@ class EA_IMAGE:
             self.h_center_y = self.get_uint16(in_file, endianess)
             self.h_left_x_pos = -1 #TODO
             self.h_top_y_pos = -1 #TODO
-            self.h_mipmaps_count = -1 #TODO          
+            self.h_mipmaps_count = -1 #TODO  
+            
+        def set_raw_data(self, in_file, in_offset):
+            self.raw_data_offset = in_offset
+            in_file.seek(self.raw_data_offset)
+            self.raw_data = in_file.read(self.h_size_of_the_block)
+            
+        def get_entry_type(self):
+            result = self.entry_types.get(self.h_record_id, str(self.h_record_id) + " - UNKNOWN_TYPE")
+            return result
             
         def get_uint8(self, in_file, endianess):
             result = struct.unpack(endianess + "B", in_file.read(1))[0]
@@ -180,7 +194,7 @@ class EA_IMAGE:
         self.f_size = os.path.getsize(self.f_path)
         back_offset = in_file.tell()
         
-        #check endianess
+        #check endianess & file validity
         self.total_f_size = struct.unpack( "<L", in_file.read(4) )[0]
         if self.total_f_size == self.f_size:
             self.f_endianess = "<"
@@ -192,7 +206,9 @@ class EA_IMAGE:
                 self.f_endianess = ">"
                 self.f_endianess_desc = "big"
             else:
-                raise "Can't get file endianess!"
+                logger.console_logger("Warning! Can't get file endianess! File may be broken! Using little endian as default!")
+                self.f_endianess = "<"
+                self.f_endianess_desc = "little"
         
         
         self.num_of_entries = struct.unpack( self.f_endianess + "L", in_file.read(4) )[0]
@@ -208,10 +224,12 @@ class EA_IMAGE:
             
             back_offset = in_file.tell()
             in_file.seek(entry_offset)
-            ea_dir_entry.set_header(in_file, self.f_endianess)
+            ea_dir_entry.set_header(in_file, self.f_endianess) #read entry header and set all values 
+            entry_data_offset = in_file.tell()
+            ea_dir_entry.set_raw_data(in_file, entry_data_offset) #read raw entry data and set values
             in_file.seek(back_offset)
             
-            self.dir_entry_list.append( ea_dir_entry )
+            self.dir_entry_list.append( ea_dir_entry ) #dir entry is now filled an can be added to the list
 
 
 
