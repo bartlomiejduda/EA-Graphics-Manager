@@ -91,9 +91,11 @@ class EA_IMAGE:
     
     class DIR_ENTRY:
         
-        entry_types = {  2:  "2 | 0x02 | SKEWED IMAGE",
-                         33: "33_type_TEST"
-                           }
+        entry_types = {  
+                         2:  "2 | 0x02 | SKEWED IMAGE",
+                         98: "98 | 0x62 | DXT5"
+                      }
+        
         def __init__(self, in_id, in_tag, in_offset):
             self.id = in_id
             self.tag = in_tag
@@ -120,9 +122,9 @@ class EA_IMAGE:
             self.h_height = self.get_uint16(in_file, endianess)
             self.h_center_x = self.get_uint16(in_file, endianess)
             self.h_center_y = self.get_uint16(in_file, endianess)
-            self.h_left_x_pos = -1 #TODO
-            self.h_top_y_pos = -1 #TODO
-            self.h_mipmaps_count = -1 #TODO  
+            self.h_left_x_pos = self.get_uint16(in_file, endianess)
+            self.h_top_y_pos = self.get_uint16(in_file, endianess)
+            self.h_mipmaps_count = "" #TODO
             
         def set_raw_data(self, in_file, in_offset):
             self.raw_data_offset = in_offset
@@ -139,7 +141,21 @@ class EA_IMAGE:
         
         def get_uint16(self, in_file, endianess):
             result = struct.unpack(endianess + "H", in_file.read(2))[0]
-            return result            
+            return result
+        
+        def get_uint12_uint4(self, in_file, endianess):
+            bytes2 = in_file.read(2)
+            val_int = struct.unpack(endianess + "H", bytes2)[0]
+            val_str = bin(val_int).lstrip('0b')
+            
+            out_str1 = val_str[0:12] + "0000"
+            out_int1 = int(out_str1, 2)
+            
+            out_str2 = "000000000000" + val_str[12:16]
+            out_int2 = int(out_str2, 2)
+            
+            out_list = [out_int1, out_int2]
+            return out_list        
         
         def get_uint24(self, in_file, endianess):
             if endianess == "<":

@@ -222,7 +222,7 @@ class EA_MAN_GUI:
         self.eh_text_left_x.place(x=70, y=125, width=60, height=20)  
         self.eh_text_left_x.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event)) 
         
-        self.eh_label_top_y = tk.Label(self.entry_header_labelframe, text="Left Y:", anchor="w")
+        self.eh_label_top_y = tk.Label(self.entry_header_labelframe, text="Top Y:", anchor="w")
         self.eh_label_top_y.place(x=140, y=125, width=80, height=20)   
         self.eh_text_top_y = tk.Text(self.entry_header_labelframe, bg=self.entry_header_labelframe['bg'], state="disabled")
         self.eh_text_top_y.place(x=200, y=125, width=60, height=20)  
@@ -268,9 +268,6 @@ class EA_MAN_GUI:
         item_text = self.treeview_widget.item(item,"text")
         item_iid = self.treeview_widget.focus()
         item_id = item_iid.split("_")[0]
-        print("item_text: ", item_text)
-        print("item_id: ", item_id) 
-        print("item_iid: ", item_iid)
         
         ea_img = self.tree_man.get_object(item_id, self.opened_ea_images)
         ea_dir = self.tree_man.get_object_dir(ea_img, item_iid)

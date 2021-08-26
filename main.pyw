@@ -29,8 +29,9 @@ License: GPL-3.0 License
 # v0.6.13  20.08.2021  Bartlomiej Duda      Enhanced GUI (better treeview logic)
 # v0.6.14  20.08.2021  Bartlomiej Duda      Enhanced ea_image_logic
 # v0.6.15  25.08.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI
+# v0.6.16  26.08.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI
 
-VERSION_NUM = "v0.6.15"
+VERSION_NUM = "v0.6.16"
 
 import ea_image_logic
 import tkinter as tk
