@@ -134,7 +134,16 @@ class EA_MAN_GUI:
         self.tree_man = self.TREE_MANAGER(self.treeview_widget)
         self.treeview_widget.place(relx=0, rely=0, relwidth=1, relheight=1) 
         
-        self.treeview_widget.bind("<<TreeviewSelect>>", self.treeview_widget_select)
+        #self.treeview_widget.bind("<<TreeviewSelect>>", self.treeview_widget_select)
+        self.treeview_widget.bind("<Button-1>", self.treeview_widget_select)
+        self.treeview_widget.bind("<Button-3>", self.treeview_widget_select)
+        
+        
+        # TODO
+        #self.treeview_scrollbar = Scrollbar(self.main_frame, orient="vertical")
+        #self.treeview_scrollbar.place(x=10, y=10, width=20, height=435)   
+        #self.treeview_widget.config(yscrollcommand=self.treeview_scrollbar.set)
+        #self.treeview_scrollbar.config(command=self.treeview_widget.yview)        
 
 
 
@@ -264,10 +273,14 @@ class EA_MAN_GUI:
     
     
     def treeview_widget_select(self, event):
-        item = self.treeview_widget.selection()[0]
-        item_text = self.treeview_widget.item(item,"text")
-        item_iid = self.treeview_widget.focus()
+        item_iid = self.treeview_widget.identify_row(event.y)
+        print("item_iid: ", item_iid)
+        
+        if item_iid == "": 
+            return #quit if nothing is selected
+        
         item_id = item_iid.split("_")[0]
+            
         
         ea_img = self.tree_man.get_object(item_id, self.opened_ea_images)
         ea_dir = self.tree_man.get_object_dir(ea_img, item_iid)
@@ -298,8 +311,21 @@ class EA_MAN_GUI:
             self.set_text_in_box(self.eh_text_center_x, "")
             self.set_text_in_box(self.eh_text_center_y, "")
             self.set_text_in_box(self.eh_text_left_x, "")
-            self.set_text_in_box(self.eh_text_top_y, "")             
+            self.set_text_in_box(self.eh_text_top_y, "")   
+            
+        if event.num == 3:
+            self.treeview_widget.selection_set(item_iid)
+            self.treeview_rightclick_popup(event)        
     
+    
+    
+    def treeview_rightclick_popup(self, event):
+        #create right-click popup menu
+        self.tree_rclick_popup = tk.Menu(self.master, tearoff=0)
+        self.tree_rclick_popup.add_command(label="Properties") 
+        self.tree_rclick_popup.add_command(label="Close File")     
+        self.tree_rclick_popup.tk_popup(event.x_root + 45, event.y_root + 10, entry="0")
+     
     
     def quit_program(self, event):
         logger.console_logger("Quit GUI...")
@@ -335,6 +361,10 @@ class EA_MAN_GUI:
         
         ea_img.parse_header(in_file, in_file_path, in_file_name)
         ea_img.parse_directory(in_file)
+        
+        # check if there are any bin attachments 
+        # and add them to the list if found
+        ea_img.parse_bin_attachments(in_file)        
 
         #set text for header
         self.set_text_in_box(self.fh_text_sign, ea_img.sign)

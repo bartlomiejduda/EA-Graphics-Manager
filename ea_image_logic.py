@@ -122,9 +122,9 @@ class EA_IMAGE:
             self.h_height = self.get_uint16(in_file, endianess)
             self.h_center_x = self.get_uint16(in_file, endianess)
             self.h_center_y = self.get_uint16(in_file, endianess)
-            self.h_left_x_pos = self.get_uint16(in_file, endianess)
-            self.h_top_y_pos = self.get_uint16(in_file, endianess)
-            self.h_mipmaps_count = "" #TODO
+            self.h_left_x_pos, unk1 = self.get_uint12_uint4(in_file, endianess)
+            self.h_top_y_pos, self.h_mipmaps_count = self.get_uint12_uint4(in_file, endianess)
+
             
         def set_raw_data(self, in_file, in_offset):
             self.raw_data_offset = in_offset
@@ -146,16 +146,16 @@ class EA_IMAGE:
         def get_uint12_uint4(self, in_file, endianess):
             bytes2 = in_file.read(2)
             val_int = struct.unpack(endianess + "H", bytes2)[0]
-            val_str = bin(val_int).lstrip('0b')
+            val_str = bin(val_int).lstrip('0b').zfill(16)
             
-            out_str1 = val_str[0:12] + "0000"
-            out_int1 = int(out_str1, 2)
+            uint4_str = val_str[0:4]
+            uint4_int = int(uint4_str, 2)
             
-            out_str2 = "000000000000" + val_str[12:16]
-            out_int2 = int(out_str2, 2)
+            uint12_str = val_str[4:16]
+            uint12_int = int(uint12_str, 2)
             
-            out_list = [out_int1, out_int2]
-            return out_list        
+            out_list = [uint12_int, uint4_int]
+            return out_list
         
         def get_uint24(self, in_file, endianess):
             if endianess == "<":
@@ -240,12 +240,24 @@ class EA_IMAGE:
             
             back_offset = in_file.tell()
             in_file.seek(entry_offset)
-            ea_dir_entry.set_header(in_file, self.f_endianess) #read entry header and set all values 
-            entry_data_offset = in_file.tell()
-            ea_dir_entry.set_raw_data(in_file, entry_data_offset) #read raw entry data and set values
-            in_file.seek(back_offset)
             
+            self.parse_image_header_and_data_data(in_file, ea_dir_entry) 
+           
+            in_file.seek(back_offset)
             self.dir_entry_list.append( ea_dir_entry ) #dir entry is now filled an can be added to the list
+
+            
+    
+    def parse_image_header_and_data_data(self, in_file, ea_dir_entry):
+        ea_dir_entry.set_header(in_file, self.f_endianess) #read entry header and set all values 
+        entry_data_offset = in_file.tell()
+        ea_dir_entry.set_raw_data(in_file, entry_data_offset) #read raw entry data and set values    
+        
+    def parse_bin_attachments(self, in_file):
+        
+        for ea_dir_entry in self.dir_entry_list:
+            print("e_id: ", ea_dir_entry.id, " e_offset: ", ea_dir_entry.offset, " e_size: ", ea_dir_entry.h_size_of_the_block)
+        
 
 
 
