@@ -31,42 +31,53 @@ License: GPL-3.0 License
 # v0.6.15  25.08.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI
 # v0.6.16  26.08.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI
 # v0.6.17  28.08.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI
+# v0.7.0   28.08.2021  Bartlomiej Duda      Added stub for console mode, Enhanced ea_image_logic & GUI
 
-VERSION_NUM = "v0.6.17"
+VERSION_NUM = "v0.7.0"
 
 import ea_image_logic
 import tkinter as tk
 import GUI
-import center_tk_window    # pip install center_tk_window
+import center_tk_window  # pip install center_tk_window
 import logger
+import argparse
 
 
-    
 def main():
     '''
     Main function of this program.
+    If you want to work in console mode, you have to specify correct arguments.
+    GUI mode is the default one. No arguments are required if you want to work in GUI mode.
     '''   
-    main_switch = 2
-    # 1 - data export test
-    # 2 - GUI test
-    
 
-    if main_switch == 1:
-        p_in_file_path = "E:\\XENTAX\\EA SSH FSH Research\\EA SAMPLES\\NHL 2002 SSH\\awards.ssh"
-        p_out_folder_path = "E:\\XENTAX\\EA SSH FSH Research\\EA SAMPLES\\NHL 2002 SSH\\awards.ssh_OUT\\"
-              
-        ea_image_logic.export_data(p_in_file_path, p_out_folder_path)
+    
+    parser = argparse.ArgumentParser(description='Program to parse EA graphics files.')
+    parser.add_argument('-d', '--dir', metavar='', help='Extract images from all files in specified directory')
+    parser.add_argument('-e', '--extract', metavar='', help='Extract images from specified file')
+    parser.add_argument('-o', '--out', metavar='', help='Output directory')
+    args = parser.parse_args()    
+    
+    if (args.dir is not None and args.extract is not None):
+        logger.console_logger("You can't use \"dir\" and \"extract\" arguments at the same time. Exiting...")   
+        return
+    
+    elif (args.dir is not None and args.out is not None):
+        logger.console_logger("Extracting from specified directory...")
+        # TODO 
         
-    elif main_switch == 2:
-        #main window
+    elif (args.extract is not None and args.out is not None):
+        logger.console_logger("Extracting from specified file...")
+        # TODO
+        
+    elif (args.dir is None and args.extract is None and args.out is None):
+        #GUI mode
         root = tk.Tk()
         ea_man_gui = GUI.EA_MAN_GUI(root, VERSION_NUM)
         center_tk_window.center_on_screen(root)
         root.mainloop()        
         
     else:
-        logger.console_logger("Wrong option selected!")
-        
+        logger.console_logger("No valid arguments were specified. Exiting...")
         
     
     logger.console_logger("End of main...")    

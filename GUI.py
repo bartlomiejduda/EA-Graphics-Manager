@@ -386,6 +386,7 @@ class EA_MAN_GUI:
 
         self.tree_man.add_object(ea_img)
         
+        in_file.close()
         
         
     def set_text_in_box(self, in_box, in_text):

@@ -99,7 +99,8 @@ class EA_IMAGE:
         def __init__(self, in_id, in_tag, in_offset):
             self.id = in_id
             self.tag = in_tag
-            self.offset = in_offset
+            self.start_offset = in_offset
+            self.end_offset = None
             self.raw_header = None 
             self.raw_data_offset = None
             self.raw_data = None
@@ -114,6 +115,7 @@ class EA_IMAGE:
             self.h_left_x_pos = None 
             self.h_top_y_pos = None 
             self.h_mipmaps_count = None 
+            self.bin_attachments_list = []
             
         def set_header(self, in_file, endianess):
             self.h_record_id = self.get_uint8(in_file, endianess)
@@ -164,6 +166,27 @@ class EA_IMAGE:
                 result = struct.unpack(endianess + "I", b'\x00' + in_file.read(3))[0]
             return result            
         
+    class BIN_ATTACH_ENTRY(DIR_ENTRY):
+        def __init__(self, in_id, in_offset):
+            self.id = in_id
+            self.tag = None
+            self.start_offset = in_offset
+            self.end_offset = None
+            self.raw_header = None 
+            self.raw_data_offset = None
+            self.raw_data = None
+            
+            self.h_record_id = None
+            self.h_size_of_the_block = None 
+
+            
+        def set_tag(self, in_tag):
+            self.tag = in_tag
+
+    
+    class PALETTE_ENTRY(DIR_ENTRY):
+        pass    
+    
     
     def __init__(self):
         self.sign = None
@@ -241,22 +264,36 @@ class EA_IMAGE:
             back_offset = in_file.tell()
             in_file.seek(entry_offset)
             
-            self.parse_image_header_and_data_data(in_file, ea_dir_entry) 
+            self.parse_image_header_and_data(in_file, ea_dir_entry) 
            
             in_file.seek(back_offset)
             self.dir_entry_list.append( ea_dir_entry ) #dir entry is now filled an can be added to the list
 
             
     
-    def parse_image_header_and_data_data(self, in_file, ea_dir_entry):
+    def parse_image_header_and_data(self, in_file, ea_dir_entry):
         ea_dir_entry.set_header(in_file, self.f_endianess) #read entry header and set all values 
         entry_data_offset = in_file.tell()
         ea_dir_entry.set_raw_data(in_file, entry_data_offset) #read raw entry data and set values    
         
     def parse_bin_attachments(self, in_file):
         
-        for ea_dir_entry in self.dir_entry_list:
-            print("e_id: ", ea_dir_entry.id, " e_offset: ", ea_dir_entry.offset, " e_size: ", ea_dir_entry.h_size_of_the_block)
+        entry_num = 0
+        for i in range(self.num_of_entries):
+            ea_dir_entry = self.dir_entry_list[i]
+            entry_num += 1
+            
+            if (entry_num == self.num_of_entries):
+                ea_dir_entry.end_offset = self.total_f_size
+            else:
+                ea_dir_entry.end_offset = self.dir_entry_list[i+1].start_offset
+                
+            print("e_id: ", ea_dir_entry.id, " e_start_offset: ", ea_dir_entry.start_offset, " e_size: ", ea_dir_entry.h_size_of_the_block, "e_end_offset: ", ea_dir_entry.end_offset)
+            
+            if (ea_dir_entry.h_size_of_the_block == 0 and ea_dir_entry.start_offset + ea_dir_entry.h_size_of_the_block == ea_dir_entry.end_offset):
+                continue # no binary attachments for this entry
+            else:
+                bin_att_entry = self.BIN_ATTACH_ENTRY
         
 
 
