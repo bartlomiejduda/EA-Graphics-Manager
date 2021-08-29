@@ -66,12 +66,21 @@ class EA_MAN_GUI:
         def add_object(self, in_obj):
             self.tree_widget.insert('', tk.END, text=in_obj.f_name, iid=in_obj.ea_image_id, open=True) # add file to tree, eg. "awards.ssh"
             
-            #add object children (ea images etc.)
+            # add object children (ea images) to tree
             sub_id = 0
-            for obj_dir_entry in in_obj.dir_entry_list:
+            for dir_entry in in_obj.dir_entry_list:
                 sub_id += 1
-                self.tree_widget.insert('', tk.END, text=obj_dir_entry.tag, iid=obj_dir_entry.id, open=True)
-                self.tree_widget.move(obj_dir_entry.id, in_obj.ea_image_id, sub_id)
+                self.tree_widget.insert('', tk.END, text=dir_entry.tag, iid=dir_entry.id, open=False)
+                self.tree_widget.move(dir_entry.id, in_obj.ea_image_id, sub_id)
+                
+                # add binary attachments to tree
+                bin_att_sub_id = 0
+                for bin_att_entry in dir_entry.bin_attachments_list:
+                    bin_att_sub_id += 1
+                    self.tree_widget.insert('', tk.END, text=bin_att_entry.tag, iid=bin_att_entry.id, open=True)
+                    self.tree_widget.move(bin_att_entry.id, dir_entry.id, bin_att_sub_id)     
+                    #self.tree_widget.item(bin_att_entry.id, open=False)
+                    
                 
         def get_object(self, in_id, in_ea_images):
             for ea_img in in_ea_images:
@@ -83,7 +92,13 @@ class EA_MAN_GUI:
             for ea_dir in in_ea_img.dir_entry_list:
                 if in_iid == ea_dir.id:
                     return ea_dir
-                    
+            logger.console_logger("Warning! Couldn't find matching DIR object!")
+            
+        def get_object_bin_attach(self, in_dir_entry, in_iid):
+            for bin_attach in in_dir_entry.bin_attachments_list:
+                if in_iid == bin_attach.id:
+                    return bin_attach
+            logger.console_logger("Warning! Couldn't find matching BIN_ATTACHMENT object!")
             
 
       
@@ -283,7 +298,7 @@ class EA_MAN_GUI:
             
         
         ea_img = self.tree_man.get_object(item_id, self.opened_ea_images)
-        ea_dir = self.tree_man.get_object_dir(ea_img, item_iid)
+        
         
         #set text for header
         self.set_text_in_box(self.fh_text_sign, ea_img.sign)
@@ -292,7 +307,8 @@ class EA_MAN_GUI:
         self.set_text_in_box(self.fh_text_dir_id, ea_img.dir_id)
         
         #set tex for dir entry
-        if "direntry" in item_iid:
+        if "direntry" in item_iid and "binattach" not in item_iid:
+            ea_dir = self.tree_man.get_object_dir(ea_img, item_iid)
             self.set_text_in_box(self.eh_text_rec_type, ea_dir.get_entry_type())
             self.set_text_in_box(self.eh_text_size_of_the_block, ea_dir.h_size_of_the_block)
             self.set_text_in_box(self.eh_text_mipmaps_count, ea_dir.h_mipmaps_count)
@@ -301,7 +317,23 @@ class EA_MAN_GUI:
             self.set_text_in_box(self.eh_text_center_x, ea_dir.h_center_x)
             self.set_text_in_box(self.eh_text_center_y, ea_dir.h_center_y)
             self.set_text_in_box(self.eh_text_left_x, ea_dir.h_left_x_pos)
-            self.set_text_in_box(self.eh_text_top_y, ea_dir.h_top_y_pos)    
+            self.set_text_in_box(self.eh_text_top_y, ea_dir.h_top_y_pos) 
+            
+        elif "binattach" in item_iid:
+            dir_iid = item_iid.split("_binattach")[0]
+            ea_dir = self.tree_man.get_object_dir(ea_img, dir_iid)
+            bin_attach = self.tree_man.get_object_bin_attach(ea_dir, item_iid)
+            self.set_text_in_box(self.eh_text_rec_type, bin_attach.get_entry_type())
+            self.set_text_in_box(self.eh_text_size_of_the_block, bin_attach.h_size_of_the_block)   
+            self.set_text_in_box(self.eh_text_mipmaps_count, "")
+            self.set_text_in_box(self.eh_text_width, "")
+            self.set_text_in_box(self.eh_text_height, "")
+            self.set_text_in_box(self.eh_text_center_x, "")
+            self.set_text_in_box(self.eh_text_center_y, "")
+            self.set_text_in_box(self.eh_text_left_x, "")
+            self.set_text_in_box(self.eh_text_top_y, "")            
+            
+            
         else:
             self.set_text_in_box(self.eh_text_rec_type, "")
             self.set_text_in_box(self.eh_text_size_of_the_block, "")
@@ -360,11 +392,11 @@ class EA_MAN_GUI:
         
         
         ea_img.parse_header(in_file, in_file_path, in_file_name)
-        ea_img.parse_directory(in_file)
+        ea_img.parse_directory(in_file)  
         
         # check if there are any bin attachments 
         # and add them to the list if found
-        ea_img.parse_bin_attachments(in_file)        
+        ea_img.parse_bin_attachments(in_file)           
 
         #set text for header
         self.set_text_in_box(self.fh_text_sign, ea_img.sign)

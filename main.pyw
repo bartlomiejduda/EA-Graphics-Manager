@@ -32,8 +32,9 @@ License: GPL-3.0 License
 # v0.6.16  26.08.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI
 # v0.6.17  28.08.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI
 # v0.7.0   28.08.2021  Bartlomiej Duda      Added stub for console mode, Enhanced ea_image_logic & GUI
+# v0.7.1   29.08.2021  Bartlomiej Duda      Enhanced ea_image_logic (added parsing for binary attachments), Enhanced GUI
 
-VERSION_NUM = "v0.7.0"
+VERSION_NUM = "v0.7.1"
 
 import ea_image_logic
 import tkinter as tk

@@ -4,6 +4,7 @@
 :: Ver    Date        Name
 :: v0.1   19.08.2021  Bartlomiej Duda
 :: v0.2   20.08.2021  Bartlomiej Duda
+:: v0.3   29.08.2021  Bartlomiej Duda
 
 @ECHO OFF
 echo Starting make...
@@ -12,7 +13,7 @@ echo.
 
 setlocal enabledelayedexpansion
 
-set OUT_DIR="EA_Graphics_Manager_v0.6.12"
+set OUT_DIR="EA_Graphics_Manager_v0.7.1"
 
 echo STEP 1
 rm -rf dist 
@@ -29,6 +30,7 @@ set PYTHONOPTIMIZE=1 && pyinstaller --onefile -i .\img\icon_bd.ico --splash .\im
 move .\dist\main.exe .\!OUT_DIR!\EA_Graphics_Manager.exe
 xcopy ".\img" "!OUT_DIR!\img" /E /I
 copy ".\docs\readme.txt" ".\!OUT_DIR!\readme.txt"
+copy ".\LICENSE" ".\!OUT_DIR!\license.txt"
 
 echo STEP 3
 rm -rf dist 

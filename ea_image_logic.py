@@ -91,9 +91,16 @@ class EA_IMAGE:
     
     class DIR_ENTRY:
         
+        header_size = 16
+        
         entry_types = {  
                          2:  "2 | 0x02 | SKEWED IMAGE",
-                         98: "98 | 0x62 | DXT5"
+                         33: "33 | 0x21 | PALETTE",
+                         98: "98 | 0x62 | DXT5",
+                         105: "105 | 0x69 | METAL BIN",
+                         111: "111 | 0x6F | COMMENT",
+                         112: "112 | 0x70 | IMG NAME",
+                         124: "124 | 0x7C | HOT SPOT"
                       }
         
         def __init__(self, in_id, in_tag, in_offset):
@@ -116,6 +123,7 @@ class EA_IMAGE:
             self.h_top_y_pos = None 
             self.h_mipmaps_count = None 
             self.bin_attachments_list = []
+            self.if_next_entry_exist_flag = None
             
         def set_header(self, in_file, endianess):
             self.h_record_id = self.get_uint8(in_file, endianess)
@@ -128,14 +136,26 @@ class EA_IMAGE:
             self.h_top_y_pos, self.h_mipmaps_count = self.get_uint12_uint4(in_file, endianess)
 
             
-        def set_raw_data(self, in_file, in_offset):
-            self.raw_data_offset = in_offset
+        def set_raw_data(self, in_file, in_data_start_offset, in_data_end_offset=0):
+            zero_size_flag = -1
+            
+            if self.h_size_of_the_block == 0:
+                zero_size_flag = 1
+                self.h_size_of_the_block = in_data_end_offset - in_data_start_offset
+            
+            self.raw_data_offset = in_data_start_offset
             in_file.seek(self.raw_data_offset)
-            self.raw_data = in_file.read(self.h_size_of_the_block)
+            
+            if zero_size_flag == 1:
+                self.if_next_entry_exist_flag = False
+                self.raw_data = in_file.read(self.h_size_of_the_block)
+            else:
+                self.if_next_entry_exist_flag = True
+                self.raw_data = in_file.read(self.h_size_of_the_block - self.header_size)
             
         def get_entry_type(self):
             result = self.entry_types.get(self.h_record_id, str(self.h_record_id) + " - UNKNOWN_TYPE")
-            return result
+            return result    
             
         def get_uint8(self, in_file, endianess):
             result = struct.unpack(endianess + "B", in_file.read(1))[0]
@@ -164,9 +184,27 @@ class EA_IMAGE:
                 result = struct.unpack(endianess + "I", in_file.read(3) + b'\x00')[0]
             else:
                 result = struct.unpack(endianess + "I", b'\x00' + in_file.read(3))[0]
-            return result            
+            return result   
         
-    class BIN_ATTACH_ENTRY(DIR_ENTRY):
+        
+        def get_uint32(self, in_file, endianess):
+            result = struct.unpack(endianess + "L", in_file.read(4))[0]
+            return result          
+        
+        def get_uint64(self, in_file, endianess):
+            result = struct.unpack(endianess + "Q", in_file.read(8))[0]
+            return result        
+        
+    class BIN_ATTACHMENT_ENTRY(DIR_ENTRY):
+        
+        entry_tags = {  
+                         33: "palette 0x21",
+                         105: "metal bin",
+                         111: "comment",
+                         112: "img name",
+                         124: "hot spot"
+                      }        
+        
         def __init__(self, in_id, in_offset):
             self.id = in_id
             self.tag = None
@@ -180,12 +218,56 @@ class EA_IMAGE:
             self.h_size_of_the_block = None 
 
             
-        def set_tag(self, in_tag):
-            self.tag = in_tag
-
+        def set_tag(self, in_entry_id):
+            self.tag = self.entry_tags.get(in_entry_id, str(in_entry_id) + " - UNKNOWN_TYPE")
+                
+            
     
-    class PALETTE_ENTRY(DIR_ENTRY):
-        pass    
+    class METAL_BIN_ENTRY(BIN_ATTACHMENT_ENTRY):
+        header_size = 16
+        
+        def set_header(self, in_file, endianess):
+            self.h_record_id = self.get_uint8(in_file, endianess)
+            self.h_size_of_the_block = self.get_uint24(in_file, endianess)      
+            self.h_data_size = self.get_uint16(in_file, endianess)
+            self.h_flags = self.get_uint16(in_file, endianess)
+            self.h_unknown = self.get_uint64(in_file, endianess)
+            
+    
+    class COMMENT_ENTRY(BIN_ATTACHMENT_ENTRY):
+        header_size = 8
+        
+        def set_header(self, in_file, endianess):
+            self.h_record_id = self.get_uint8(in_file, endianess)
+            self.h_size_of_the_block = self.get_uint24(in_file, endianess)  
+            self.h_comment_length = self.get_uint32(in_file, endianess) 
+            
+    class IMG_NAME_ENTRY(BIN_ATTACHMENT_ENTRY):
+        header_size = 4
+        
+        def set_header(self, in_file, endianess):
+            self.h_record_id = self.get_uint8(in_file, endianess)
+            self.h_size_of_the_block = self.get_uint24(in_file, endianess)  
+            
+    class HOT_SPOT_ENTRY(BIN_ATTACHMENT_ENTRY):
+        header_size = 8
+        
+        def set_header(self, in_file, endianess):
+            self.h_record_id = self.get_uint8(in_file, endianess)
+            self.h_size_of_the_block = self.get_uint24(in_file, endianess)  
+            self.num_of_pairs = self.get_uint32(in_file, endianess)  
+
+    class PALETTE_ENTRY(BIN_ATTACHMENT_ENTRY):
+        header_size = 16
+        
+        def set_header(self, in_file, endianess):
+            self.h_record_id = self.get_uint8(in_file, endianess)
+            self.h_size_of_the_block = self.get_uint24(in_file, endianess)  
+            #TODO
+  
+
+
+     
     
     
     def __init__(self):
@@ -254,6 +336,8 @@ class EA_IMAGE:
         self.dir_id = in_file.read(4).decode("utf8")
         
     def parse_directory(self, in_file):
+        
+        # creating directory entries
         for i in range(self.num_of_entries):
             self.dir_entry_id += 1
             entry_id = str(self.ea_image_id) + "_direntry_" + str(self.dir_entry_id)
@@ -261,39 +345,84 @@ class EA_IMAGE:
             entry_offset = struct.unpack( self.f_endianess + "L", in_file.read(4) )[0]
             ea_dir_entry = self.DIR_ENTRY(entry_id, entry_tag, entry_offset)
             
-            back_offset = in_file.tell()
-            in_file.seek(entry_offset)
+            self.dir_entry_list.append( ea_dir_entry ) #dir entry is now initialized and can be added to the list
             
-            self.parse_image_header_and_data(in_file, ea_dir_entry) 
-           
-            in_file.seek(back_offset)
-            self.dir_entry_list.append( ea_dir_entry ) #dir entry is now filled an can be added to the list
-
-            
-    
-    def parse_image_header_and_data(self, in_file, ea_dir_entry):
-        ea_dir_entry.set_header(in_file, self.f_endianess) #read entry header and set all values 
-        entry_data_offset = in_file.tell()
-        ea_dir_entry.set_raw_data(in_file, entry_data_offset) #read raw entry data and set values    
-        
-    def parse_bin_attachments(self, in_file):
-        
+         
+        # updating end offset for each entry  
+        # and parsing image data
         entry_num = 0
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
             entry_num += 1
             
+            # set end offset for DIR entry
             if (entry_num == self.num_of_entries):
                 ea_dir_entry.end_offset = self.total_f_size
             else:
-                ea_dir_entry.end_offset = self.dir_entry_list[i+1].start_offset
-                
-            print("e_id: ", ea_dir_entry.id, " e_start_offset: ", ea_dir_entry.start_offset, " e_size: ", ea_dir_entry.h_size_of_the_block, "e_end_offset: ", ea_dir_entry.end_offset)
+                ea_dir_entry.end_offset = self.dir_entry_list[i+1].start_offset   
             
-            if (ea_dir_entry.h_size_of_the_block == 0 and ea_dir_entry.start_offset + ea_dir_entry.h_size_of_the_block == ea_dir_entry.end_offset):
-                continue # no binary attachments for this entry
+            in_file.seek(ea_dir_entry.start_offset)    
+            self.parse_image_header_and_data(in_file, ea_dir_entry) 
+            
+
+            
+    
+    def parse_image_header_and_data(self, in_file, ea_dir_entry):
+        ea_dir_entry.set_header(in_file, self.f_endianess) #read entry header and set all values 
+        ea_dir_entry.set_raw_data(in_file, ea_dir_entry.start_offset, ea_dir_entry.end_offset) #read raw entry data and set values    
+        
+    def parse_bin_attachments(self, in_file):
+        
+        for i in range(self.num_of_entries):
+            ea_dir_entry = self.dir_entry_list[i]
+            
+            
+            if (ea_dir_entry.if_next_entry_exist_flag is False and ea_dir_entry.start_offset + ea_dir_entry.h_size_of_the_block == ea_dir_entry.end_offset):
+                pass # no binary attachments for this DIR entry
             else:
-                bin_att_entry = self.BIN_ATTACH_ENTRY
+                
+                # there are some binary attachments (1 or more)
+                bin_att_id_count = 0
+                in_file.seek(ea_dir_entry.start_offset + ea_dir_entry.h_size_of_the_block) # seek to offset of the first bin attachment
+                
+                while 1:
+                    bin_att_start_offset = in_file.tell()
+                    bin_att_id_count += 1
+                    bin_att_id = ea_dir_entry.id + "_binattach_" + str(bin_att_id_count)
+                    
+                    bin_att_rec_id = struct.unpack(self.f_endianess + "B", in_file.read(1))[0]
+                    in_file.seek(bin_att_start_offset)
+
+
+                    if bin_att_rec_id == 105:
+                        bin_att_entry = self.METAL_BIN_ENTRY(bin_att_id, bin_att_start_offset)
+                    elif bin_att_rec_id == 111:
+                        bin_att_entry = self.COMMENT_ENTRY(bin_att_id, bin_att_start_offset)
+                    elif bin_att_rec_id == 112:
+                        bin_att_entry = self.IMG_NAME_ENTRY(bin_att_id, bin_att_start_offset)
+                    elif bin_att_rec_id == 124:
+                        bin_att_entry = self.HOT_SPOT_ENTRY(bin_att_id, bin_att_start_offset)
+                    else:
+                        logger.console_logger("Unknown bin attachment entry! Aborting!")
+                        break
+                        
+                    bin_att_entry.set_tag(bin_att_rec_id)
+                    back_offset = in_file.tell()
+                    bin_att_entry.set_header(in_file, self.f_endianess)
+                    bin_att_entry.set_raw_data(in_file, in_file.tell(), ea_dir_entry.end_offset)
+                    
+                    bin_att_entry.start_offset = bin_att_start_offset
+                    bin_att_entry.end_offset = in_file.tell()
+                    
+                    print("bin_att_id: ", bin_att_entry.id, "bin_att_tag: ", bin_att_entry.tag)
+                    
+                    ea_dir_entry.bin_attachments_list.append( bin_att_entry ) # binary attachment is now parsed
+                                                                              # and can be added to the list
+                    
+                    
+                    if bin_att_entry.end_offset >= ea_dir_entry.end_offset:
+                        break  # no more binary attachment for this DIR entry
+                    
         
 
 
