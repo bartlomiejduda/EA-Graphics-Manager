@@ -96,11 +96,35 @@ class EA_IMAGE:
         entry_types = {  
                          2:  "2 | 0x02 | SKEWED IMAGE",
                          33: "33 | 0x21 | PALETTE",
+                         34: "34 | 0x22 | PALETTE",
+                         35: "35 | 0x23 | PALETTE",
+                         36: "36 | 0x24 | PALETTE",
+                         41: "41 | 0x29 | PALETTE",
+                         42: "42 | 0x2A | PALETTE",
+                         45: "45 | 0x2D | PALETTE",
+                         64: "64 | 0x40 | 4-BIT IMG",
+                         65: "65 | 0x41 | 8-BIT IMG",
+                         66: "66 | 0x42 | 16-BIT IMG",
+                         96: "96 | 0x60 | DXT1",
+                         97: "97 | 0x61 | DXT3",
                          98: "98 | 0x62 | DXT5",
+                         99: "99 | 0x63 | ETC1",
+                         100: "100 | 0x64 | PVRTC",
+                         102: "102 | 0x66 | 24-BIT IMG",
+                         104: "104 | 0x68 | 16-BIT IMG (484)",
                          105: "105 | 0x69 | METAL BIN",
+                         106: "106 | 0x6A | 32-BIT IMG (1010102)",
+                         109: "109 | 0x6D | 16-BIT IMG (A4R4G4B4)",
                          111: "111 | 0x6F | COMMENT",
                          112: "112 | 0x70 | IMG NAME",
-                         124: "124 | 0x7C | HOT SPOT"
+                         120: "120 | 0x78 | 16-BIT IMG (A0R5G6B5)",
+                         121: "121 | 0x79 | IMG PAL-16",
+                         123: "123 | 0x7B | IMG PAL-256",
+                         124: "124 | 0x7C | HOT SPOT",
+                         125: "125 | 0x7D | 32-BIT IMG (A8R8G8B8)",
+                         126: "126 | 0x7E | 16-BIT IMG (A1R5G5B5)",
+                         127: "127 | 0x7F | 24-BIT IMG (A0R8G8B8)",
+                         131: "131 | 0x83 | 16-BIT IMG REFPACK"
                       }
         
         def __init__(self, in_id, in_tag, in_offset):
@@ -199,6 +223,12 @@ class EA_IMAGE:
         
         entry_tags = {  
                          33: "palette 0x21",
+                         34: "palette 0x22",
+                         35: "palette 0x23",
+                         36: "palette 0x24",
+                         41: "palette 0x29",
+                         42: "palette 0x2A",
+                         45: "palette 0x2D",
                          105: "metal bin",
                          111: "comment",
                          112: "img name",
@@ -263,7 +293,13 @@ class EA_IMAGE:
         def set_header(self, in_file, endianess):
             self.h_record_id = self.get_uint8(in_file, endianess)
             self.h_size_of_the_block = self.get_uint24(in_file, endianess)  
-            #TODO
+            self.pal_width = self.get_uint16(in_file, endianess)
+            self.pal_height = self.get_uint16(in_file, endianess)
+            self.pal_entries = self.get_uint16(in_file, endianess)
+            self.unk1 = self.get_uint16(in_file, endianess)
+            self.unk2 = self.get_uint16(in_file, endianess)
+            self.unk3 = self.get_uint16(in_file, endianess)
+
   
 
 
@@ -349,7 +385,7 @@ class EA_IMAGE:
             
          
         # updating end offset for each entry  
-        # and parsing image data
+        # and parsing DIR entry data
         entry_num = 0
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -362,14 +398,17 @@ class EA_IMAGE:
                 ea_dir_entry.end_offset = self.dir_entry_list[i+1].start_offset   
             
             in_file.seek(ea_dir_entry.start_offset)    
-            self.parse_image_header_and_data(in_file, ea_dir_entry) 
+            self.parse_DIR_entry_header_and_data(in_file, ea_dir_entry) 
             
 
             
     
-    def parse_image_header_and_data(self, in_file, ea_dir_entry):
+    def parse_DIR_entry_header_and_data(self, in_file, ea_dir_entry):
         ea_dir_entry.set_header(in_file, self.f_endianess) #read entry header and set all values 
-        ea_dir_entry.set_raw_data(in_file, ea_dir_entry.start_offset, ea_dir_entry.end_offset) #read raw entry data and set values    
+        
+        ea_dir_entry.set_raw_data(in_file, 
+                                  ea_dir_entry.start_offset + ea_dir_entry.header_size, 
+                                  ea_dir_entry.end_offset) #read raw entry data and set values    
         
     def parse_bin_attachments(self, in_file):
         
@@ -402,8 +441,10 @@ class EA_IMAGE:
                         bin_att_entry = self.IMG_NAME_ENTRY(bin_att_id, bin_att_start_offset)
                     elif bin_att_rec_id == 124:
                         bin_att_entry = self.HOT_SPOT_ENTRY(bin_att_id, bin_att_start_offset)
+                    elif bin_att_rec_id in (33, 34, 35, 36, 41, 42, 45):
+                        bin_att_entry = self.PALETTE_ENTRY(bin_att_id, bin_att_start_offset)
                     else:
-                        logger.console_logger("Unknown bin attachment entry! Aborting!")
+                        logger.console_logger("Unknown bin attachment entry (" + str(hex(bin_att_rec_id)) + ")! Aborting!")
                         break
                         
                     bin_att_entry.set_tag(bin_att_rec_id)
@@ -414,7 +455,7 @@ class EA_IMAGE:
                     bin_att_entry.start_offset = bin_att_start_offset
                     bin_att_entry.end_offset = in_file.tell()
                     
-                    print("bin_att_id: ", bin_att_entry.id, "bin_att_tag: ", bin_att_entry.tag)
+                    #print("bin_att_id: ", bin_att_entry.id, "bin_att_tag: ", bin_att_entry.tag)
                     
                     ea_dir_entry.bin_attachments_list.append( bin_att_entry ) # binary attachment is now parsed
                                                                               # and can be added to the list

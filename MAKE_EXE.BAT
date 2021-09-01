@@ -1,10 +1,7 @@
 
 :: BAT script for making exe file
+:: Created on 19.08.2021 by Bartlomiej Duda
 
-:: Ver    Date        Name
-:: v0.1   19.08.2021  Bartlomiej Duda
-:: v0.2   20.08.2021  Bartlomiej Duda
-:: v0.3   29.08.2021  Bartlomiej Duda
 
 @ECHO OFF
 echo Starting make...
@@ -13,7 +10,7 @@ echo.
 
 setlocal enabledelayedexpansion
 
-set OUT_DIR="EA_Graphics_Manager_v0.7.1"
+set OUT_DIR="EA_Graphics_Manager_v0.7.2"
 
 echo STEP 1
 rm -rf dist 

@@ -6,6 +6,7 @@ License: GPL-3.0 License
 '''
 
 import os
+import time
 import sys
 import struct
 import tkinter as tk
@@ -79,7 +80,6 @@ class EA_MAN_GUI:
                     bin_att_sub_id += 1
                     self.tree_widget.insert('', tk.END, text=bin_att_entry.tag, iid=bin_att_entry.id, open=True)
                     self.tree_widget.move(bin_att_entry.id, dir_entry.id, bin_att_sub_id)     
-                    #self.tree_widget.item(bin_att_entry.id, open=False)
                     
                 
         def get_object(self, in_id, in_ea_images):
@@ -117,9 +117,10 @@ class EA_MAN_GUI:
         master.title("EA GRAPHICS MANAGER " + in_VERSION_NUM)
         master.minsize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT) 
         master.maxsize(MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT) 
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
         
         try:
-            self.master.iconbitmap('img\\icon_bd.ico')
+            self.master.iconbitmap(self.current_dir + '\img\\icon_bd.ico')
         except:
             logger.console_logger("Can't load the icon file!")        
         
@@ -149,7 +150,6 @@ class EA_MAN_GUI:
         self.tree_man = self.TREE_MANAGER(self.treeview_widget)
         self.treeview_widget.place(relx=0, rely=0, relwidth=1, relheight=1) 
         
-        #self.treeview_widget.bind("<<TreeviewSelect>>", self.treeview_widget_select)
         self.treeview_widget.bind("<Button-1>", self.treeview_widget_select)
         self.treeview_widget.bind("<Button-3>", self.treeview_widget_select)
         
@@ -265,8 +265,8 @@ class EA_MAN_GUI:
         self.filemenu.add_command(label="Open File", command=lambda: self.open_file(None), accelerator="Ctrl+O")
         master.bind_all("<Control-o>", self.open_file)
         self.filemenu.add_command(label="Scan Directory", command=lambda: self.scan_dir())
-        self.filemenu.add_command(label="Save as...", command=lambda: self.save_as())
-        self.filemenu.add_command(label="Close File", command=lambda: self.close_font())
+        #self.filemenu.add_command(label="Save as...", command=lambda: self.save_as())
+        #self.filemenu.add_command(label="Close File", command=lambda: self.close_font())
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Quit", command=lambda: self.quit_program(None), accelerator="Ctrl+Q")
         master.bind_all("<Control-q>", self.quit_program)
@@ -281,18 +281,19 @@ class EA_MAN_GUI:
         self.menubar.add_cascade(label="Help", menu=self.helpmenu)
         
         self.filemenu.entryconfig(1, state="disabled")
-        self.filemenu.entryconfig(2, state="disabled") 
-        self.filemenu.entryconfig(3, state="disabled") 
+        #self.filemenu.entryconfig(2, state="disabled") 
+        #self.filemenu.entryconfig(3, state="disabled") 
         
         master.config(menu=self.menubar)        
     
     
     def treeview_widget_select(self, event):
         item_iid = self.treeview_widget.identify_row(event.y)
-        print("item_iid: ", item_iid)
         
         if item_iid == "": 
             return #quit if nothing is selected
+        
+        print(item_iid)
         
         item_id = item_iid.split("_")[0]
             
@@ -347,16 +348,75 @@ class EA_MAN_GUI:
             
         if event.num == 3:
             self.treeview_widget.selection_set(item_iid)
-            self.treeview_rightclick_popup(event)        
+            self.treeview_rightclick_popup(event, item_iid)        
     
     
     
-    def treeview_rightclick_popup(self, event):
+    def treeview_rightclick_popup(self, event, item_iid):
         #create right-click popup menu
         self.tree_rclick_popup = tk.Menu(self.master, tearoff=0)
-        self.tree_rclick_popup.add_command(label="Properties") 
-        self.tree_rclick_popup.add_command(label="Close File")     
-        self.tree_rclick_popup.tk_popup(event.x_root + 45, event.y_root + 10, entry="0")
+        if "direntry" not in item_iid and "binattach" not in item_iid:
+            self.tree_rclick_popup.add_command(label="Close File", command=lambda: self.treeview_rclick_close(item_iid))  
+            self.tree_rclick_popup.tk_popup(event.x_root + 45, event.y_root + 10, entry="0")
+        elif "direntry" in item_iid and "binattach" not in item_iid:
+            self.tree_rclick_popup.add_command(label="Export Raw Image Data", command=lambda: self.treeview_rclick_export_raw(item_iid)) 
+            #self.tree_rclick_popup.add_command(label="Export Image As BMP") 
+            #self.tree_rclick_popup.add_command(label="Export Image Details As XML") 
+            #self.tree_rclick_popup.add_command(label="Import Raw Image Data")
+            #self.tree_rclick_popup.add_command(label="Import Image From BMP") 
+           # self.tree_rclick_popup.add_command(label="Import Image Details From XML") 
+            self.tree_rclick_popup.tk_popup(event.x_root + 105, event.y_root + 10, entry="0")
+        elif "direntry" in item_iid and "binattach" in item_iid:
+            self.tree_rclick_popup.add_command(label="Export Raw Binary Data", command=lambda: self.treeview_rclick_export_raw(item_iid)) 
+            #self.tree_rclick_popup.add_command(label="Import Raw Binary Data")
+            self.tree_rclick_popup.tk_popup(event.x_root + 85, event.y_root + 10, entry="0")
+        else:
+            logger.console_logger("Warning! Unsupported entry in right-click popup!")
+
+      
+    def treeview_rclick_close(self, item_iid):
+        ea_img = self.tree_man.get_object(item_iid, self.opened_ea_images)
+        self.treeview_widget.delete(item_iid)  #removing item from treeview
+        del ea_img #removing object from memory
+        
+        self.set_text_in_box(self.fh_text_sign, "")
+        self.set_text_in_box(self.fh_text_f_size, "")
+        self.set_text_in_box(self.fh_text_obj_count, "")
+        self.set_text_in_box(self.fh_text_dir_id, "")  
+        
+    def treeview_rclick_export_raw(self, item_iid):
+        ea_img = self.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
+        
+        out_file = None
+        try:
+            out_file = filedialog.asksaveasfile(mode='wb+', defaultextension=".bin", 
+                                            initialfile=ea_img.f_name + "_" + item_iid, 
+                                            filetypes=( ("BIN files", "*.bin"), ("all files", "*.*")))
+        except:
+            messagebox.showwarning("Warning", "Failed to save file!")
+        if out_file is None: 
+            return   
+        
+        out_data = None 
+        
+        if "direntry" in item_iid and "binattach" not in item_iid:
+            # get raw image data 
+            ea_dir = self.tree_man.get_object_dir(ea_img, item_iid)
+            out_data = ea_dir.raw_data
+        elif "direntry" in item_iid and "binattach" in item_iid:
+            # get raw bin attachment data
+            dir_iid = item_iid.split("_binattach")[0]
+            ea_dir = self.tree_man.get_object_dir(ea_img, dir_iid)
+            bin_attach = self.tree_man.get_object_bin_attach(ea_dir, item_iid)  
+            out_data = bin_attach.raw_data
+        else:
+            logger.console_logger("Warning! Unsupported entry while saving output binary data!")
+        
+        
+        out_file.write(out_data)
+        out_file.close()    
+        messagebox.showinfo("Info", "File saved successfully!")
+        
      
     
     def quit_program(self, event):
@@ -396,7 +456,9 @@ class EA_MAN_GUI:
         
         # check if there are any bin attachments 
         # and add them to the list if found
-        ea_img.parse_bin_attachments(in_file)           
+        ea_img.parse_bin_attachments(in_file)  
+        
+        
 
         #set text for header
         self.set_text_in_box(self.fh_text_sign, ea_img.sign)
@@ -476,7 +538,8 @@ class EA_MAN_GUI:
             about_window.wm_title("About")
             
             try:
-                about_window.iconbitmap('img\\icon_bd.ico')
+                
+                about_window.iconbitmap(self.current_dir + '\img\\icon_bd.ico')
             except:
                 logger.console_logger("Can't load the icon file!")              
             

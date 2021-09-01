@@ -1,8 +1,6 @@
 
 :: BAT script for running Python program
-
-:: Ver    Date        Name
-:: v0.1   19.08.2021  Bartlomiej Duda
+:: Created on 19.08.2021 by Bartlomiej Duda
 
 @ECHO OFF
 echo Executing program...
@@ -11,6 +9,6 @@ echo.
 
 setlocal enabledelayedexpansion
 
-python main.pyw --windows-disable-console
+start pythonw main.pyw
 
 echo Ending program...

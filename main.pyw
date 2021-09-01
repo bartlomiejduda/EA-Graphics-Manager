@@ -33,8 +33,9 @@ License: GPL-3.0 License
 # v0.6.17  28.08.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI
 # v0.7.0   28.08.2021  Bartlomiej Duda      Added stub for console mode, Enhanced ea_image_logic & GUI
 # v0.7.1   29.08.2021  Bartlomiej Duda      Enhanced ea_image_logic (added parsing for binary attachments), Enhanced GUI
+# v0.7.2   01.09.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI (added exporting raw data)
 
-VERSION_NUM = "v0.7.1"
+VERSION_NUM = "v0.7.2"
 
 import ea_image_logic
 import tkinter as tk
@@ -78,7 +79,7 @@ def main():
         root.mainloop()        
         
     else:
-        logger.console_logger("No valid arguments were specified. Exiting...")
+        logger.console_logger("Invalid arguments! Exiting...")
         
     
     logger.console_logger("End of main...")    
