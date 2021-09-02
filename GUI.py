@@ -6,7 +6,6 @@ License: GPL-3.0 License
 '''
 
 import os
-import time
 import sys
 import struct
 import tkinter as tk
@@ -20,12 +19,6 @@ import tkinter.ttk as ttk
 import center_tk_window  # pip install center_tk_window
 import ea_image_logic
 import logger
-
-try:
-    import pyi_splash
-except:
-    pass
-
 
 
 # Program tested on Python 3.7.0
@@ -108,10 +101,6 @@ class EA_MAN_GUI:
         logger.console_logger("GUI init...")
         self.GUI_log_text = ""
         self.GUI_logger("GUI init...")
-        try:
-            pyi_splash.close()
-        except:
-            pass
         self.master = master
         self.VERSION_NUM = in_VERSION_NUM
         master.title("EA GRAPHICS MANAGER " + in_VERSION_NUM)

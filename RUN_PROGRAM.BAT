@@ -7,8 +7,6 @@ echo Executing program...
 echo.
 echo.
 
-setlocal enabledelayedexpansion
-
-start pythonw main.pyw
+.\bin\main.exe
 
 echo Ending program...

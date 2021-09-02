@@ -10,7 +10,7 @@ echo.
 
 setlocal enabledelayedexpansion
 
-set OUT_DIR="EA_Graphics_Manager_v0.7.2"
+set OUT_DIR="EA_Graphics_Manager_v0.7.3"
 
 echo STEP 1
 rm -rf dist 
@@ -20,14 +20,15 @@ rm -rf !OUT_DIR!
 rm -rf main.spec
 
 
-
 echo STEP 2
 mkdir !OUT_DIR!
-set PYTHONOPTIMIZE=1 && pyinstaller --onefile -i .\img\icon_bd.ico --splash .\img\loading.png --upx-dir c:\upx\ .\main.pyw
-move .\dist\main.exe .\!OUT_DIR!\EA_Graphics_Manager.exe
-xcopy ".\img" "!OUT_DIR!\img" /E /I
+set PYTHONOPTIMIZE=1 && pyinstaller --onedir -i .\img\icon_bd.ico --noupx .\main.py
+xcopy ".\dist\main" "!OUT_DIR!\bin" /E /I
+xcopy ".\img" "!OUT_DIR!\bin\img" /E /I
 copy ".\docs\readme.txt" ".\!OUT_DIR!\readme.txt"
 copy ".\LICENSE" ".\!OUT_DIR!\license.txt"
+copy ".\RUN_PROGRAM.BAT" ".\!OUT_DIR!\RUN_PROGRAM.BAT"
+
 
 echo STEP 3
 rm -rf dist 
