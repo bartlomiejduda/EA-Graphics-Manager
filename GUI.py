@@ -36,21 +36,22 @@ MAX_WINDOW_WIDTH = WINDOW_WIDTH
 class EA_MAN_GUI:
             
     class RIGHT_CLICKER:
-        def __init__(self, out_class, e):
+        def __init__(self, out_class, event):
+            
             self.out_class = out_class
-            commands = ["Copy"]
+            event.widget.focus_set() #focusing on text widget
+            event.widget.tag_add("sel","1.0","end") #selecting everything from text widget
+
             menu = tk.Menu(None, tearoff=0, takefocus=0)
-    
-            for txt in commands:
-                menu.add_command(label=txt, command=lambda e=e,txt=txt:self.click_command(e,txt))
-    
-            menu.tk_popup(e.x_root + 40, e.y_root + 10, entry="0")
+            menu.add_command(label="Copy", command=lambda e=event,txt="Copy":self.click_command(event,"Copy"))
+            menu.tk_popup(event.x_root + 40, event.y_root + 10, entry="0")
+            
 
-        def click_command(self, e, cmd):
+        def click_command(self, event, cmd):
             self.out_class.master.clipboard_clear()
-            e.widget.event_generate(f'<<{cmd}>>')   
-       
-
+            event.widget.event_generate(f'<<{cmd}>>')  
+            event.widget.tag_remove("sel","1.0","end")
+            
 
     class TREE_MANAGER:
          
@@ -142,16 +143,8 @@ class EA_MAN_GUI:
         self.treeview_widget.bind("<Button-1>", self.treeview_widget_select)
         self.treeview_widget.bind("<Button-3>", self.treeview_widget_select)
         
-        
-        # TODO
-        #self.treeview_scrollbar = Scrollbar(self.main_frame, orient="vertical")
-        #self.treeview_scrollbar.place(x=10, y=10, width=20, height=435)   
-        #self.treeview_widget.config(yscrollcommand=self.treeview_scrollbar.set)
-        #self.treeview_scrollbar.config(command=self.treeview_widget.yview)        
 
-
-
-        #header info
+        #file header info
         self.file_header_labelframe = tk.LabelFrame(self.main_frame, text="File Header")
         self.file_header_labelframe.place(x=140, y=5, width=300, height=90)
         
@@ -160,9 +153,6 @@ class EA_MAN_GUI:
         self.fh_text_sign = tk.Text(self.file_header_labelframe, bg=self.file_header_labelframe['bg'], state="disabled")
         self.fh_text_sign.place(x=70, y=5, width=60, height=20)  
         self.fh_text_sign.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event) )
-        
-        
-        #lambda event, arg=data: self.on_mouse_down(event, arg)
         
         self.fh_label_f_size = tk.Label(self.file_header_labelframe, text="File Size:", anchor="w")
         self.fh_label_f_size.place(x=5, y=35, width=60, height=20)   
@@ -183,7 +173,7 @@ class EA_MAN_GUI:
         self.fh_text_dir_id.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))
         
         
-        #entry header
+        #entry header info
         self.entry_header_labelframe = tk.LabelFrame(self.main_frame, text="Entry Header")
         self.entry_header_labelframe.place(x=140, y=100, width=300, height=180)    
         
@@ -242,7 +232,7 @@ class EA_MAN_GUI:
         self.eh_text_top_y.bind('<Button-3>', lambda event, arg=self: self.RIGHT_CLICKER(arg, event))   
         
         
-        #preview 
+        #entry preview 
         self.preview_labelframe = tk.LabelFrame(self.main_frame, text="Preview")
         self.preview_labelframe.place(x=140, y=285, width=300, height=160)         
 
@@ -253,9 +243,6 @@ class EA_MAN_GUI:
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="Open File", command=lambda: self.open_file(None), accelerator="Ctrl+O")
         master.bind_all("<Control-o>", self.open_file)
-        self.filemenu.add_command(label="Scan Directory", command=lambda: self.scan_dir())
-        #self.filemenu.add_command(label="Save as...", command=lambda: self.save_as())
-        #self.filemenu.add_command(label="Close File", command=lambda: self.close_font())
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Quit", command=lambda: self.quit_program(None), accelerator="Ctrl+Q")
         master.bind_all("<Control-q>", self.quit_program)
@@ -269,9 +256,6 @@ class EA_MAN_GUI:
         self.helpmenu.add_command(label="About...", command=lambda: self.show_about_window())
         self.menubar.add_cascade(label="Help", menu=self.helpmenu)
         
-        self.filemenu.entryconfig(1, state="disabled")
-        #self.filemenu.entryconfig(2, state="disabled") 
-        #self.filemenu.entryconfig(3, state="disabled") 
         
         master.config(menu=self.menubar)        
     
@@ -282,7 +266,7 @@ class EA_MAN_GUI:
         if item_iid == "": 
             return #quit if nothing is selected
         
-        print(item_iid)
+        logger.console_logger("Loading item " + str(item_iid) + "...")
         
         item_id = item_iid.split("_")[0]
             
@@ -296,7 +280,7 @@ class EA_MAN_GUI:
         self.set_text_in_box(self.fh_text_obj_count, ea_img.num_of_entries)
         self.set_text_in_box(self.fh_text_dir_id, ea_img.dir_id)
         
-        #set tex for dir entry
+        #set text for dir entry
         if "direntry" in item_iid and "binattach" not in item_iid:
             ea_dir = self.tree_man.get_object_dir(ea_img, item_iid)
             self.set_text_in_box(self.eh_text_rec_type, ea_dir.get_entry_type())
@@ -309,6 +293,12 @@ class EA_MAN_GUI:
             self.set_text_in_box(self.eh_text_left_x, ea_dir.h_left_x_pos)
             self.set_text_in_box(self.eh_text_top_y, ea_dir.h_top_y_pos) 
             
+            try:
+                self.hex_preview.destroy()
+            except:
+                pass
+        
+        #set text and preview for bin attach entry    
         elif "binattach" in item_iid:
             dir_iid = item_iid.split("_binattach")[0]
             ea_dir = self.tree_man.get_object_dir(ea_img, dir_iid)
@@ -321,7 +311,18 @@ class EA_MAN_GUI:
             self.set_text_in_box(self.eh_text_center_x, "")
             self.set_text_in_box(self.eh_text_center_y, "")
             self.set_text_in_box(self.eh_text_left_x, "")
-            self.set_text_in_box(self.eh_text_top_y, "")            
+            self.set_text_in_box(self.eh_text_top_y, "")
+            
+            
+            try:
+                self.hex_preview.destroy()
+            except:
+                pass
+            
+            #set hex preview
+            preview_hex_string = bin_attach.raw_data.decode('utf8', 'backslashreplace').replace("\000", '.')
+            self.hex_preview = tk.Label(self.preview_labelframe, text=preview_hex_string, anchor="nw", justify="left", wraplength=300)
+            self.hex_preview.place(x=5, y=5, width=285, height=130) 
             
             
         else:
@@ -333,7 +334,12 @@ class EA_MAN_GUI:
             self.set_text_in_box(self.eh_text_center_x, "")
             self.set_text_in_box(self.eh_text_center_y, "")
             self.set_text_in_box(self.eh_text_left_x, "")
-            self.set_text_in_box(self.eh_text_top_y, "")   
+            self.set_text_in_box(self.eh_text_top_y, "") 
+            
+            try:
+                self.hex_preview.destroy()
+            except:
+                pass
             
         if event.num == 3:
             self.treeview_widget.selection_set(item_iid)
@@ -354,7 +360,7 @@ class EA_MAN_GUI:
             #self.tree_rclick_popup.add_command(label="Import Raw Image Data")
             #self.tree_rclick_popup.add_command(label="Import Image From BMP") 
            # self.tree_rclick_popup.add_command(label="Import Image Details From XML") 
-            self.tree_rclick_popup.tk_popup(event.x_root + 105, event.y_root + 10, entry="0")
+            self.tree_rclick_popup.tk_popup(event.x_root + 85, event.y_root + 10, entry="0")
         elif "direntry" in item_iid and "binattach" in item_iid:
             self.tree_rclick_popup.add_command(label="Export Raw Binary Data", command=lambda: self.treeview_rclick_export_raw(item_iid)) 
             #self.tree_rclick_popup.add_command(label="Import Raw Binary Data")

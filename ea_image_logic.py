@@ -462,12 +462,14 @@ class EA_IMAGE:
                     
                     
                     if bin_att_entry.end_offset >= ea_dir_entry.end_offset:
-                        break  # no more binary attachment for this DIR entry
+                        break  # no more binary attachments for this DIR entry
                     
         
 
 
 
+
+#legacy code 
 def export_data(in_file_path, out_folder_path):
     '''
     Function for exporting data from EA graphics files

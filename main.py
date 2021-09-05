@@ -35,8 +35,9 @@ License: GPL-3.0 License
 # v0.7.1   29.08.2021  Bartlomiej Duda      Enhanced ea_image_logic (added parsing for binary attachments), Enhanced GUI
 # v0.7.2   01.09.2021  Bartlomiej Duda      Enhanced ea_image_logic & GUI (added exporting raw data)
 # v0.7.3   02.09.2021  Bartlomiej Duda      Updated "make_exe" script, Updated readme file
+# v0.8.0   05.09.2021  Bartlomiej Duda      Added preview for binary attachments
 
-VERSION_NUM = "v0.7.3"
+VERSION_NUM = "v0.8.0"
 
 import ea_image_logic
 import tkinter as tk
