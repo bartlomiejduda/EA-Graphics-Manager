@@ -11,6 +11,7 @@ import struct
 import tkinter as tk
 from tkinter import messagebox, StringVar, OptionMenu, filedialog, ttk, Text, LabelFrame, Radiobutton, Scrollbar
 from PIL import ImageTk, Image
+import io
 import webbrowser
 import traceback
 import pyperclip  # pip install pyperclip
@@ -294,9 +295,40 @@ class EA_MAN_GUI:
             self.set_text_in_box(self.eh_text_top_y, ea_dir.h_top_y_pos) 
             
             try:
-                self.hex_preview.destroy()
+                self.preview_instance.destroy()
             except:
                 pass
+            
+            
+            #image preview logic
+            if ea_dir.is_img_convert_supported == True:
+                try:
+                    canv_height = 130
+                    canv_width = 285
+                    img_stream = io.BytesIO(ea_dir.img_convert_data)
+                    pil_img = Image.open(img_stream).transpose(Image.FLIP_TOP_BOTTOM)   
+                    
+                    if pil_img.height > canv_height:
+                        ratio = canv_height / pil_img.height
+                        pil_img = pil_img.resize((int(pil_img.width * ratio), canv_height))    
+                    
+                    
+                    self.ph_img = ImageTk.PhotoImage(pil_img)
+                    
+                    self.preview_instance = tk.Canvas(self.preview_labelframe, bg='white', width=canv_width, height=canv_height)
+                    self.preview_instance.create_image(canv_width/2, canv_height/2, anchor="center", image=self.ph_img)
+                    self.preview_instance.place(x=5, y=5)
+
+                except Exception as e: 
+                    logger.console_logger("Error occured while generating preview for " + str(item_iid) + "...")
+                    print(e)
+                    
+            else:
+                preview_text = "Preview for this image type is not supported..."
+                self.preview_instance = tk.Label(self.preview_labelframe, text=preview_text, anchor="nw", justify="left", wraplength=300)
+                self.preview_instance.place(x=5, y=5, width=285, height=130)                
+            
+            
         
         #set text and preview for bin attach entry    
         elif "binattach" in item_iid:
@@ -315,14 +347,20 @@ class EA_MAN_GUI:
             
             
             try:
-                self.hex_preview.destroy()
+                self.preview_instance.destroy()
             except:
                 pass
             
-            #set hex preview
-            preview_hex_string = bin_attach.raw_data.decode('utf8', 'backslashreplace').replace("\000", '.')
-            self.hex_preview = tk.Label(self.preview_labelframe, text=preview_hex_string, anchor="nw", justify="left", wraplength=300)
-            self.hex_preview.place(x=5, y=5, width=285, height=130) 
+
+            if bin_attach.h_record_id in (33, 34, 35, 36, 41, 42, 45): # palette types
+                pass #TODO - add preview for palettes
+            elif bin_attach.h_record_id in (105, 111, 112, 124): # binary types
+                #set hex preview
+                preview_hex_string = bin_attach.raw_data.decode('utf8', 'backslashreplace').replace("\000", '.')[0:200] #limit preview to 200 characters
+                self.preview_instance = tk.Label(self.preview_labelframe, text=preview_hex_string, anchor="nw", justify="left", wraplength=300)
+                self.preview_instance.place(x=5, y=5, width=285, height=130) 
+            else:
+                logger.console_logger("Warning! Unknown binary attachment! Can't load preview!")
             
             
         else:
@@ -337,7 +375,7 @@ class EA_MAN_GUI:
             self.set_text_in_box(self.eh_text_top_y, "") 
             
             try:
-                self.hex_preview.destroy()
+                self.preview_instance.destroy()
             except:
                 pass
             
@@ -449,10 +487,16 @@ class EA_MAN_GUI:
         ea_img.parse_header(in_file, in_file_path, in_file_name)
         ea_img.parse_directory(in_file)  
         
-        # check if there are any bin attachments 
-        # and add them to the list if found
+        #check if there are any bin attachments 
+        #and add them to the list if found
         ea_img.parse_bin_attachments(in_file)  
         
+        #convert all supported images
+        #in the ea_img file
+        try:
+            ea_img.convert_images()
+        except Exception as e:
+            print(e)
         
 
         #set text for header
