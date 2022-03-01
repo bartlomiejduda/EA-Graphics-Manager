@@ -14,7 +14,7 @@ import argparse
 # Program tested on Python 3.7.0
 
 
-VERSION_NUM = "v0.10.0"
+VERSION_NUM = 'v0.10.1'
 
 
 def main():

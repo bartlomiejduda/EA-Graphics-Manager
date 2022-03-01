@@ -30,3 +30,4 @@
 # v0.8.0   	05.09.2021  	Bartlomiej Duda      Added preview for binary attachments
 # v0.9.0   	12.09.2021  	Bartlomiej Duda      Added experimental support for imgage type "2" conversion and preview
 # v0.10.0  	01.03.2022  	Bartlomiej Duda      Project cleanup, migration to PyCharm + venv
+# v0.10.1  	01.03.2022  	Bartlomiej Duda      Updated make_exe script
