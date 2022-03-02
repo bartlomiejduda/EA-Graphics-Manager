@@ -15,7 +15,7 @@ import datetime
 import tkinter.ttk as ttk
 import center_tk_window
 import ea_image_logic
-import logger
+from logger import get_logger
 
 
 # Program tested on Python 3.7.0
@@ -28,6 +28,9 @@ MIN_WINDOW_HEIGHT = WINDOW_HEIGHT
 MIN_WINDOW_WIDTH = WINDOW_WIDTH
 MAX_WINDOW_HEIGHT = WINDOW_HEIGHT
 MAX_WINDOW_WIDTH = WINDOW_WIDTH
+
+
+logger = get_logger("GUI")
 
 
 class EAManGui:
@@ -90,28 +93,25 @@ class EAManGui:
             for ea_img in in_ea_images:
                 if int(in_id) == int(ea_img.ea_image_id):
                     return ea_img
-            logger.console_logger("Warning! Couldn't find matching ea_img object!")
+            logger.warning("Warning! Couldn't find matching ea_img object!")
 
         @staticmethod
         def get_object_dir(in_ea_img, in_iid):
             for ea_dir in in_ea_img.dir_entry_list:
                 if in_iid == ea_dir.id:
                     return ea_dir
-            logger.console_logger("Warning! Couldn't find matching DIR object!")
+            logger.warning("Warning! Couldn't find matching DIR object!")
 
         @staticmethod
         def get_object_bin_attach(in_dir_entry, in_iid):
             for bin_attach in in_dir_entry.bin_attachments_list:
                 if in_iid == bin_attach.id:
                     return bin_attach
-            logger.console_logger(
-                "Warning! Couldn't find matching BIN_ATTACHMENT object!"
-            )
+            logger.warning("Warning! Couldn't find matching BIN_ATTACHMENT object!")
 
     def __init__(self, master, in_version_num):
-        logger.console_logger("GUI init...")
+        logger.info("GUI init...")
         self.GUI_log_text = ""
-        self.gui_logger("GUI init...")
         self.master = master
         self.VERSION_NUM = in_version_num
         master.title("EA GRAPHICS MANAGER " + in_version_num)
@@ -121,8 +121,8 @@ class EAManGui:
 
         try:
             self.master.iconbitmap(self.current_dir + "\\img\\icon_bd.ico")
-        except Exception:
-            logger.console_logger("Can't load the icon file!")
+        except tk.TclError:
+            logger.error("Can't load the icon file!")
 
         self.allowed_filetypes = [
             ("EA Graphics files", ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh"]),
@@ -375,9 +375,7 @@ class EAManGui:
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
         self.toolsmenu = tk.Menu(self.menubar, tearoff=0)
-        self.toolsmenu.add_command(
-            label="Show GUI Log", command=lambda: self.show_gui_log()
-        )
+        self.toolsmenu.add_command(label="Options", command=lambda: None)
         self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
 
         self.helpmenu = tk.Menu(self.menubar, tearoff=0)
@@ -394,7 +392,7 @@ class EAManGui:
         if item_iid == "":
             return  # quit if nothing is selected
 
-        logger.console_logger("Loading item " + str(item_iid) + "...")
+        logger.info("Loading item " + str(item_iid) + "...")
 
         item_id = item_iid.split("_")[0]
 
@@ -457,7 +455,7 @@ class EAManGui:
                     self.preview_instance.place(x=5, y=5)
 
                 except Exception as e:
-                    logger.console_logger(
+                    logger.error(
                         "Error occured while generating preview for "
                         + str(item_iid)
                         + "..."
@@ -515,7 +513,7 @@ class EAManGui:
                 )
                 self.preview_instance.place(x=5, y=5, width=285, height=130)
             else:
-                logger.console_logger(
+                logger.warning(
                     "Warning! Unknown binary attachment! Can't load preview!"
                 )
 
@@ -572,7 +570,7 @@ class EAManGui:
                 event.x_root + 85, event.y_root + 10, entry="0"
             )
         else:
-            logger.console_logger("Warning! Unsupported entry in right-click popup!")
+            logger.warning("Warning! Unsupported entry in right-click popup!")
 
     def treeview_rclick_close(self, item_iid):
         ea_img = self.tree_man.get_object(item_iid, self.opened_ea_images)
@@ -613,7 +611,7 @@ class EAManGui:
             bin_attach = self.tree_man.get_object_bin_attach(ea_dir, item_iid)
             out_data = bin_attach.raw_data
         else:
-            logger.console_logger(
+            logger.warning(
                 "Warning! Unsupported entry while saving output binary data!"
             )
 
@@ -622,7 +620,7 @@ class EAManGui:
         messagebox.showinfo("Info", "File saved successfully!")
 
     def quit_program(self, event):
-        logger.console_logger("Quit GUI...")
+        logger.info("Quit GUI...")
         self.master.destroy()
 
     def open_file(self, event):
@@ -646,8 +644,7 @@ class EAManGui:
             messagebox.showwarning("Warning", "File not supported!")
             return
 
-        logger.console_logger("Loading file " + in_file_name + "...")
-        self.gui_logger("Loading file " + in_file_name + "...")
+        logger.info("Loading file " + in_file_name + "...")
 
         self.ea_image_id += 1
         self.opened_ea_images_count += 1
@@ -702,43 +699,6 @@ class EAManGui:
         in_box.insert(tk.END, in_text)
         in_box.config(state="disabled")
 
-    def gui_logger(self, in_str):
-        now = datetime.datetime.now()
-        new_log_str = now.strftime("%d-%m-%Y %H:%M:%S") + " " + in_str + "\n"
-        self.GUI_log_text += new_log_str
-
-    def show_gui_log(self):
-        log_window = tk.Toplevel(height=200, width=400)
-        log_window.wm_title("GUI log")
-
-        try:
-            log_window.iconbitmap("img\\icon_bd.ico")
-        except Exception:
-            logger.console_logger("Can't load the icon file!")
-
-        log_field = tk.Text(log_window)
-        log_field.place(x=0, y=0, width=400, height=160)
-
-        copy_button = tk.Button(log_window, text="Copy")
-        copy_button.place(x=140, y=170, width=60, height=20)
-        copy_button.bind(
-            "<Button-1>",
-            lambda event, arg=log_field, arg2=log_window: self.copy_gui_log_msg(
-                arg, arg2, event
-            ),
-        )
-
-        close_button = tk.Button(log_window, text="Close")
-        close_button.place(x=210, y=170, width=60, height=20)
-        close_button.bind(
-            "<Button-1>",
-            lambda event, arg=log_window: self.close_toplevel_window(arg, event),
-        )
-
-        self.set_text_in_box(log_field, self.GUI_log_text)
-
-        center_tk_window.center_on_screen(log_window)
-
     def copy_gui_log_msg(self, txt_field, wind, event):
         self.master.clipboard_clear()
         log_txt = txt_field.get("1.0", tk.END)
@@ -760,8 +720,8 @@ class EAManGui:
 
         try:
             about_window.iconbitmap(self.current_dir + "\\img\\icon_bd.ico")
-        except Exception:
-            logger.console_logger("Can't load the icon file!")
+        except tk.TclError:
+            logger.error("Can't load the icon file!")
 
         a_text = (
             "EA Graphics Manager\n"

@@ -10,7 +10,9 @@ License: GPL-3.0 License
 
 import os
 import struct
-import logger
+from logger import get_logger
+
+logger = get_logger("ea_image_logic")
 
 
 class BmpImg:
@@ -365,7 +367,7 @@ class EAImage:
                 self.f_endianess = ">"
                 self.f_endianess_desc = "big"
             else:
-                logger.console_logger(
+                logger.warning(
                     "Warning! Can't get file endianess! File may be broken! Using little endian as default!"
                 )
                 self.f_endianess = "<"
@@ -465,7 +467,7 @@ class EAImage:
                             bin_att_id, bin_att_start_offset
                         )
                     else:
-                        logger.console_logger(
+                        logger.error(
                             "Unknown bin attachment entry ("
                             + str(hex(bin_att_rec_id))
                             + ")! Aborting!"
@@ -500,7 +502,7 @@ class EAImage:
             entry_type = ea_dir_entry.h_record_id
 
             if entry_type not in conv_images_supported_types:
-                logger.console_logger(
+                logger.warning(
                     "Warning! Entry type "
                     + str(entry_type)
                     + " is not supported"
@@ -509,7 +511,7 @@ class EAImage:
                 continue
 
             else:
-                logger.console_logger(
+                logger.info(
                     "Converting image type "
                     + str(entry_type)
                     + ", number "

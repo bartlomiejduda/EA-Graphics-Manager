@@ -5,12 +5,24 @@ Copyright © 2021  Bartłomiej Duda
 License: GPL-3.0 License 
 """
 
-import datetime
+import logging
 
 
-def console_logger(in_str):
-    """
-    Function for logging debug messages to Python console
-    """
-    now = datetime.datetime.now()
-    print(now.strftime("%d-%m-%Y %H:%M:%S") + " " + in_str)
+def get_logger(name):
+    logger = logging.getLogger(name)
+
+    c_handler = logging.StreamHandler()
+    f_handler = logging.FileHandler("log.txt")
+    logger.setLevel(logging.DEBUG)
+
+    log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    datetime_format = "%Y-%m-%d %H:%M:%S"
+    c_format = logging.Formatter(log_format, datetime_format)
+    f_format = logging.Formatter(log_format, datetime_format)
+    c_handler.setFormatter(c_format)
+    f_handler.setFormatter(f_format)
+
+    logger.addHandler(c_handler)
+    logger.addHandler(f_handler)
+
+    return logger
