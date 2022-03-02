@@ -11,7 +11,6 @@ from tkinter import messagebox, filedialog
 from PIL import ImageTk, Image
 import io
 import webbrowser
-import datetime
 import tkinter.ttk as ttk
 import center_tk_window
 import ea_image_logic
@@ -30,7 +29,7 @@ MAX_WINDOW_HEIGHT = WINDOW_HEIGHT
 MAX_WINDOW_WIDTH = WINDOW_WIDTH
 
 
-logger = get_logger("GUI")
+logger = get_logger(__name__)
 
 
 class EAManGui:
@@ -119,10 +118,12 @@ class EAManGui:
         master.maxsize(MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT)
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
 
+        icon_dir = None
         try:
-            self.master.iconbitmap(self.current_dir + "\\img\\icon_bd.ico")
+            icon_dir = self.current_dir + "\\..\\img\\icon_bd.ico"
+            self.master.iconbitmap(icon_dir)
         except tk.TclError:
-            logger.error("Can't load the icon file!")
+            logger.error("Can't load the icon file from " + icon_dir)
 
         self.allowed_filetypes = [
             ("EA Graphics files", ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh"]),

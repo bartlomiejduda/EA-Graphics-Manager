@@ -9,12 +9,12 @@ License: GPL-3.0 License
 
 
 import tkinter as tk
-import GUI
+import GUI.GUI_main as GUI
 import center_tk_window
 from logger import get_logger
 
 
-VERSION_NUM = "v0.10.2"
+VERSION_NUM = "v0.10.3"
 
 logger = get_logger("main")
 

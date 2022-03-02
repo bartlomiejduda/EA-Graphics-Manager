@@ -12,7 +12,7 @@ import os
 import struct
 from logger import get_logger
 
-logger = get_logger("ea_image_logic")
+logger = get_logger(__name__)
 
 
 class BmpImg:
