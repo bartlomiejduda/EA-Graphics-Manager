@@ -3,17 +3,18 @@ Program for editing FSH, SSH, XSH, PSH and MSH images from EA games.
 
 Technologies used: Python 3.7, tkinter
 
-This tool is not finished yet.
+This program is not finished yet.
 
-<img src="img\usage.gif">
+<img src="src\data\img\usage.gif">
 
 
 # Building on Windows
 
-1. Install PyCharm 2021.3.2 (Community Edition)
-2. Install virtualenv and activate it
-3. Install all libraries from requirements.txt
-4. Run the main.py file
+1. Install  **[Python 3.7.0](https://www.python.org/downloads/release/python-370/)**
+2. Install **[PyCharm 2021.3.2 (Community Edition)](https://www.jetbrains.com/pycharm/download/#section=windows)**
+3. Install virtualenv and activate it
+4. Install all libraries from requirements.txt
+5. Run the src\main.py file
 
 # Building on Linux/MacOS
 

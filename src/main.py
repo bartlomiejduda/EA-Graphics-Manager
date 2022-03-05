@@ -6,17 +6,18 @@ License: GPL-3.0 License
 """
 
 # Program tested on Python 3.7.0
-
-
+import os
 import tkinter as tk
-import GUI.GUI_main as GUI
+from src.GUI.GUI_main import EAManGui
 import center_tk_window
-from logger import get_logger
+from src.logger import get_logger
 
 
-VERSION_NUM = "v0.10.3"
+VERSION_NUM = "v0.11.0"
 
 logger = get_logger("main")
+
+MAIN_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 
 def main():
@@ -29,7 +30,7 @@ def main():
     logger.info("Starting main...")
 
     root = tk.Tk()
-    GUI.EAManGui(root, VERSION_NUM)  # start GUI
+    EAManGui(root, VERSION_NUM, MAIN_DIRECTORY)  # start GUI
     root.lift()
     center_tk_window.center_on_screen(root)
     root.mainloop()

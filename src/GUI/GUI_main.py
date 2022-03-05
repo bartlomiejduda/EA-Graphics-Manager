@@ -13,8 +13,8 @@ import io
 import webbrowser
 import tkinter.ttk as ttk
 import center_tk_window
-import ea_image_logic
-from logger import get_logger
+from src import ea_image_logic
+from src.logger import get_logger
 
 
 # Program tested on Python 3.7.0
@@ -108,11 +108,12 @@ class EAManGui:
                     return bin_attach
             logger.warning("Warning! Couldn't find matching BIN_ATTACHMENT object!")
 
-    def __init__(self, master, in_version_num):
+    def __init__(self, master, in_version_num, in_main_directory):
         logger.info("GUI init...")
         self.GUI_log_text = ""
         self.master = master
         self.VERSION_NUM = in_version_num
+        self.MAIN_DIRECTORY = in_main_directory
         master.title("EA GRAPHICS MANAGER " + in_version_num)
         master.minsize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
         master.maxsize(MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT)
@@ -120,7 +121,7 @@ class EAManGui:
 
         icon_dir = None
         try:
-            icon_dir = self.current_dir + "\\..\\img\\icon_bd.ico"
+            icon_dir = self.MAIN_DIRECTORY + "\\data\\img\\icon_bd.ico"
             self.master.iconbitmap(icon_dir)
         except tk.TclError:
             logger.error("Can't load the icon file from " + icon_dir)

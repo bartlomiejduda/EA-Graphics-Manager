@@ -15,7 +15,9 @@ def get_logger(name):
     f_handler = logging.FileHandler("log.txt")
     logger.setLevel(logging.DEBUG)
 
-    log_format = "%(asctime)s - %(name)s - line %(lineno)d - %(levelname)s - %(message)s"
+    log_format = (
+        "%(asctime)s - %(name)s - line %(lineno)d - %(levelname)s - %(message)s"
+    )
     datetime_format = "%Y-%m-%d %H:%M:%S"
     c_format = logging.Formatter(log_format, datetime_format)
     f_format = logging.Formatter(log_format, datetime_format)
