@@ -13,7 +13,7 @@ from src.GUI.GUI_main import EAManGui
 from src.logger import get_logger
 
 
-VERSION_NUM = "v0.11.2"
+VERSION_NUM = "v0.11.3"
 
 logger = get_logger("main")
 
@@ -23,8 +23,7 @@ MAIN_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 def main():
     """
     Main function of this program.
-    If you want to work in console mode, you have to specify correct arguments.
-    GUI mode is the default one. No arguments are required if you want to work in GUI mode.
+    It will run EA Graphics Manager in GUI mode.
     """
 
     logger.info("Starting main...")
