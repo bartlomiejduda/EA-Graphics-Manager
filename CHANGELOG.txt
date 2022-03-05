@@ -2,6 +2,7 @@
 
 # Ver      	Date        	Author               Comment
 
+# v0.11.2   06.03.2022      Bartlomiej Duda      Updated readme
 # v0.11.1   05.03.2022      Bartlomiej Duda      Fixing pylint errors
 # v0.11.0   05.03.2022      Bartlomiej Duda      Moved code to "src" directory, enhanced build process
 # v0.10.3   03.03.2022      Bartlomiej Duda      Enhanced logging
