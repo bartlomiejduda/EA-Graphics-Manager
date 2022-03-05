@@ -2,18 +2,17 @@
 
 """
 Copyright © 2021  Bartłomiej Duda
-License: GPL-3.0 License 
+License: GPL-3.0 License
 """
 
 import os
 import tkinter as tk
-from tkinter import messagebox, filedialog
-from PIL import ImageTk, Image
 import io
 import webbrowser
-import tkinter.ttk as ttk
+from tkinter import messagebox, filedialog, ttk
 import center_tk_window
-from src import ea_image_logic
+from PIL import ImageTk, Image
+from src.EA_Image import ea_image_main
 from src.logger import get_logger
 
 
@@ -124,7 +123,7 @@ class EAManGui:
             icon_dir = self.MAIN_DIRECTORY + "\\data\\img\\icon_bd.ico"
             self.master.iconbitmap(icon_dir)
         except tk.TclError:
-            logger.error("Can't load the icon file from " + icon_dir)
+            logger.error("Can't load the icon file from %s", icon_dir)
 
         self.allowed_filetypes = [
             ("EA Graphics files", ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh"]),
@@ -365,13 +364,13 @@ class EAManGui:
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(
             label="Open File",
-            command=lambda: self.open_file(None),
+            command=lambda: self.open_file(),
             accelerator="Ctrl+O",
         )
         master.bind_all("<Control-o>", self.open_file)
         self.filemenu.add_separator()
         self.filemenu.add_command(
-            label="Quit", command=lambda: self.quit_program(None), accelerator="Ctrl+Q"
+            label="Quit", command=lambda: self.quit_program(), accelerator="Ctrl+Q"
         )
         master.bind_all("<Control-q>", self.quit_program)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
@@ -394,7 +393,7 @@ class EAManGui:
         if item_iid == "":
             return  # quit if nothing is selected
 
-        logger.info("Loading item " + str(item_iid) + "...")
+        logger.info("Loading item %s...", str(item_iid))
 
         item_id = item_iid.split("_")[0]
 
@@ -458,9 +457,8 @@ class EAManGui:
 
                 except Exception as e:
                     logger.error(
-                        "Error occured while generating preview for "
-                        + str(item_iid)
-                        + "..."
+                        "Error occured while generating preview for %s...",
+                        str(item_iid),
                     )
                     print(e)
 
@@ -621,11 +619,11 @@ class EAManGui:
         out_file.close()
         messagebox.showinfo("Info", "File saved successfully!")
 
-    def quit_program(self, event):
+    def quit_program(self):
         logger.info("Quit GUI...")
         self.master.destroy()
 
-    def open_file(self, event):
+    def open_file(self):
         try:
             in_file = filedialog.askopenfile(
                 filetypes=self.allowed_filetypes, mode="rb"
@@ -639,14 +637,14 @@ class EAManGui:
             messagebox.showwarning("Warning", "Failed to open file!")
             return
 
-        ea_img = ea_image_logic.EAImage()
+        ea_img = ea_image_main.EAImage()
         check_result = ea_img.check_file_signature(in_file)
 
         if check_result != 0:
             messagebox.showwarning("Warning", "File not supported!")
             return
 
-        logger.info("Loading file " + in_file_name + "...")
+        logger.info("Loading file %s...", in_file_name)
 
         self.ea_image_id += 1
         self.opened_ea_images_count += 1
@@ -701,7 +699,7 @@ class EAManGui:
         in_box.insert(tk.END, in_text)
         in_box.config(state="disabled")
 
-    def copy_gui_log_msg(self, txt_field, wind, event):
+    def copy_gui_log_msg(self, txt_field, wind):
         self.master.clipboard_clear()
         log_txt = txt_field.get("1.0", tk.END)
         self.master.clipboard_append(log_txt)
@@ -709,7 +707,7 @@ class EAManGui:
         wind.destroy()
 
     @staticmethod
-    def close_toplevel_window(wind, event):
+    def close_toplevel_window(wind):
         wind.destroy()
 
     @staticmethod
@@ -720,10 +718,12 @@ class EAManGui:
         about_window = tk.Toplevel()
         about_window.wm_title("About")
 
+        icon_dir = None
         try:
-            about_window.iconbitmap(self.current_dir + "\\img\\icon_bd.ico")
+            icon_dir = self.MAIN_DIRECTORY + "\\data\\img\\icon_bd.ico"
+            about_window.iconbitmap(icon_dir)
         except tk.TclError:
-            logger.error("Can't load the icon file!")
+            logger.error("Can't load the icon file from %s", icon_dir)
 
         a_text = (
             "EA Graphics Manager\n"
@@ -736,7 +736,7 @@ class EAManGui:
             "you can do it here:"
         )
         a_text2 = "https://www.paypal.me/kolatek55"
-        a_text3 = "\n" "If you want to see my other tools,\n" "go to my github page:"
+        a_text3 = "\n" "If you want to see my other tools,\n" + "go to my github page:"
         a_text4 = "https://github.com/bartlomiejduda"
 
         l = tk.Label(about_window, text=a_text)
@@ -753,7 +753,7 @@ class EAManGui:
         close_button.pack()
         close_button.bind(
             "<Button-1>",
-            lambda event, arg=about_window: self.close_toplevel_window(arg, event),
+            lambda event, arg=about_window: self.close_toplevel_window(arg),
         )
 
         center_tk_window.center_on_screen(about_window)

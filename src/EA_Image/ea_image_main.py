@@ -2,7 +2,7 @@
 
 """
 Copyright © 2021  Bartłomiej Duda
-License: GPL-3.0 License 
+License: GPL-3.0 License
 """
 
 
@@ -10,81 +10,11 @@ License: GPL-3.0 License
 
 import os
 import struct
+
+from src.EA_Image.Bmp import BmpImg
 from src.logger import get_logger
 
 logger = get_logger(__name__)
-
-
-class BmpImg:
-    class BmpHeader:
-        def __init__(self, in_size, in_offset):
-            self.bmp_magic = b"BM"
-            self.bmp_size = in_size
-            self.reserved = 0
-            self.offset_im_data = in_offset
-
-        def get_binary(self):
-            return (
-                struct.pack("2s", self.bmp_magic)
-                + struct.pack("<L", self.bmp_size)
-                + struct.pack("<L", self.reserved)
-                + struct.pack("<L", self.offset_im_data)
-            )
-
-    class BmpInfoHeader:
-        def __init__(self, in_width, in_height, in_bpp):
-            self.info_header_size = 40
-            self.num_of_planes = 1
-            self.comp_type = 0
-            self.comp_im_size = 0
-            self.pref_hor_res = 0
-            self.pref_vert_res = 0
-            self.num_of_used_colors = 0
-            self.num_of_imp_colors = 0
-
-            self.im_width = in_width
-            self.im_height = in_height
-            self.bpp = in_bpp
-
-        def get_binary(self):
-            return (
-                struct.pack("<L", self.info_header_size)
-                + struct.pack("<L", self.im_width)
-                + struct.pack("<L", self.im_height)
-                + struct.pack("<H", self.num_of_planes)
-                + struct.pack("<H", self.bpp)
-                + struct.pack("<L", self.comp_type)
-                + struct.pack("<L", self.comp_im_size)
-                + struct.pack("<L", self.pref_hor_res)
-                + struct.pack("<L", self.pref_vert_res)
-                + struct.pack("<L", self.num_of_used_colors)
-                + struct.pack("<L", self.num_of_imp_colors)
-            )
-
-    def __init__(self, in_width, in_height, in_bpp, in_image_data, in_palette_data):
-        self.bmp_width = in_width
-        self.bmp_height = in_height
-        self.bmp_bpp = in_bpp
-        self.bmp_data = in_image_data
-        self.bmp_palette = in_palette_data
-
-        self.data_size = len(self.bmp_data)
-        self.palette_size = len(self.bmp_palette)
-        self.bmp_size = 14 + 40 + self.palette_size + self.data_size
-        self.data_offset = 14 + 40 + self.palette_size
-
-        self.header = self.BmpHeader(self.data_size, self.data_offset)
-        self.header_data = self.header.get_binary()
-
-        self.info_header = self.BmpInfoHeader(
-            self.bmp_width, self.bmp_height, self.bmp_bpp
-        )
-        self.info_header_data = self.info_header.get_binary()
-
-    def get_bmp_file_data(self):
-        return (
-            self.header_data + self.info_header_data + self.bmp_palette + self.bmp_data
-        )
 
 
 class EAImage:
@@ -344,7 +274,7 @@ class EAImage:
             if sign not in self.allowed_signatures:
                 raise
             return 0
-        except:
+        except Exception:
             return -1
 
     def parse_header(self, in_file, in_file_path, in_file_name):
@@ -468,14 +398,12 @@ class EAImage:
                         )
                     else:
                         logger.error(
-                            "Unknown bin attachment entry ("
-                            + str(hex(bin_att_rec_id))
-                            + ")! Aborting!"
+                            "Unknown bin attachment entry (%s)! Aborting!",
+                            str(hex(bin_att_rec_id)),
                         )
                         break
 
                     bin_att_entry.set_tag(bin_att_rec_id)
-                    back_offset = in_file.tell()
                     bin_att_entry.set_header(in_file, self.f_endianess)
                     bin_att_entry.set_raw_data(
                         in_file, in_file.tell(), ea_dir_entry.end_offset
@@ -503,20 +431,16 @@ class EAImage:
 
             if entry_type not in conv_images_supported_types:
                 logger.warning(
-                    "Warning! Entry type "
-                    + str(entry_type)
-                    + " is not supported"
-                    + " for image conversion! Skipping!"
+                    "Warning! Entry type %s is not supported for image conversion! Skipping!",
+                    str(entry_type),
                 )
                 continue
 
             else:
                 logger.info(
-                    "Converting image type "
-                    + str(entry_type)
-                    + ", number "
-                    + str(i + 1)
-                    + "..."
+                    "Converting image type %s, number %s...",
+                    str(entry_type),
+                    str(i + 1),
                 )
                 ea_dir_entry.is_img_convert_supported = True
 
@@ -533,9 +457,9 @@ class EAImage:
                 # skew fix
                 read_count = 0
                 skew_val = img_width % 4
-                for i in range(img_height):
+                for _ in range(img_height):
                     temp_row = b""
-                    for j in range(img_width):
+                    for _ in range(img_width):
                         pixel = struct.pack(
                             self.f_endianess + "B", ea_dir_entry.raw_data[read_count]
                         )
@@ -553,14 +477,14 @@ class EAImage:
                 diff = (
                     ea_dir_entry.h_size_of_the_block - ea_dir_entry.header_size
                 ) - img_size_calc
-                for i in range(diff):
+                for _ in range(diff):
                     pixel = b"\x00"
                     img_data += pixel
 
                 # palette fix
                 read_count = 0
                 pal_range = int(img_pal_data_size / 4)
-                for i in range(pal_range):
+                for _ in range(pal_range):
                     pal_entry1 = struct.pack(
                         self.f_endianess + "B",
                         ea_dir_entry.bin_attachments_list[0].raw_data[read_count],

@@ -2,7 +2,7 @@
 
 """
 Copyright © 2021  Bartłomiej Duda
-License: GPL-3.0 License 
+License: GPL-3.0 License
 """
 
 import logging
