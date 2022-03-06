@@ -1,6 +1,11 @@
 import struct
 
 
+def get_utf8_string(in_file, str_length):
+    result = in_file.read(str_length).decode("utf8")
+    return result
+
+
 def get_uint8(in_file, endianess):
     result = struct.unpack(endianess + "B", in_file.read(1))[0]
     return result

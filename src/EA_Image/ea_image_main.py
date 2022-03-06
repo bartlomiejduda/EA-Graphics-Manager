@@ -16,6 +16,7 @@ from src.EA_Image.bin_attachment_entries import (
     CommentEntry,
     MetalBinEntry,
 )
+from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
 from src.logger import get_logger
 
@@ -54,16 +55,19 @@ class EAImage:
 
     def check_file_signature(self, in_file):
         try:
-            sign = in_file.read(4).decode("utf8")
-            in_file.seek(0)
+            back_offset = in_file.tell()
+            sign = get_utf8_string(in_file, 4)
+            in_file.seek(back_offset)
             if sign not in self.allowed_signatures:
-                raise
+                logger.info("File signature is not supported")
+                return -2
             return 0
-        except Exception:
+        except Exception as error:
+            logger.error("Can't read file signature! Error: %s", error)
             return -1
 
     def parse_header(self, in_file, in_file_path, in_file_name):
-        self.sign = in_file.read(4).decode("utf8")
+        self.sign = get_utf8_string(in_file, 4)
 
         self.f_path = in_file_path
         self.f_name = in_file_name
