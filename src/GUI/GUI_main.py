@@ -10,13 +10,12 @@ import tkinter as tk
 import io
 import webbrowser
 from tkinter import messagebox, filedialog, ttk
-import center_tk_window
 from PIL import ImageTk, Image
 from src.EA_Image import ea_image_main
+from src.GUI.about_window import AboutWindow
+from src.GUI.right_clicker import RightClicker
+from src.GUI.tree_manager import TreeManager
 from src.logger import get_logger
-
-
-# Program tested on Python 3.7.0
 
 
 # default app settings
@@ -32,81 +31,6 @@ logger = get_logger(__name__)
 
 
 class EAManGui:
-    class RightClicker:
-        def __init__(self, out_class, event):
-
-            self.out_class = out_class
-            event.widget.focus_set()  # focusing on text widget
-            event.widget.tag_add(
-                "sel", "1.0", "end"
-            )  # selecting everything from text widget
-
-            menu = tk.Menu(None, tearoff=0, takefocus=0)
-            menu.add_command(
-                label="Copy",
-                command=lambda e=event, txt="Copy": self.click_command(event, "Copy"),
-            )
-            menu.tk_popup(event.x_root + 40, event.y_root + 10, entry="0")
-
-        def click_command(self, event, cmd):
-            self.out_class.master.clipboard_clear()
-            event.widget.event_generate(f"<<{cmd}>>")
-            event.widget.tag_remove("sel", "1.0", "end")
-
-    class TreeManager:
-        def __init__(self, in_widget):
-            self.tree_widget = in_widget
-
-        def add_object(self, in_obj):
-            self.tree_widget.insert(
-                "", tk.END, text=in_obj.f_name, iid=in_obj.ea_image_id, open=True
-            )  # add file to tree, eg. "awards.ssh"
-
-            # add object children (ea images) to tree
-            sub_id = 0
-            for dir_entry in in_obj.dir_entry_list:
-                sub_id += 1
-                self.tree_widget.insert(
-                    "", tk.END, text=dir_entry.tag, iid=dir_entry.id, open=False
-                )
-                self.tree_widget.move(dir_entry.id, in_obj.ea_image_id, sub_id)
-
-                # add binary attachments to tree
-                bin_att_sub_id = 0
-                for bin_att_entry in dir_entry.bin_attachments_list:
-                    bin_att_sub_id += 1
-                    self.tree_widget.insert(
-                        "",
-                        tk.END,
-                        text=bin_att_entry.tag,
-                        iid=bin_att_entry.id,
-                        open=True,
-                    )
-                    self.tree_widget.move(
-                        bin_att_entry.id, dir_entry.id, bin_att_sub_id
-                    )
-
-        @staticmethod
-        def get_object(in_id, in_ea_images):
-            for ea_img in in_ea_images:
-                if int(in_id) == int(ea_img.ea_image_id):
-                    return ea_img
-            logger.warning("Warning! Couldn't find matching ea_img object!")
-
-        @staticmethod
-        def get_object_dir(in_ea_img, in_iid):
-            for ea_dir in in_ea_img.dir_entry_list:
-                if in_iid == ea_dir.id:
-                    return ea_dir
-            logger.warning("Warning! Couldn't find matching DIR object!")
-
-        @staticmethod
-        def get_object_bin_attach(in_dir_entry, in_iid):
-            for bin_attach in in_dir_entry.bin_attachments_list:
-                if in_iid == bin_attach.id:
-                    return bin_attach
-            logger.warning("Warning! Couldn't find matching BIN_ATTACHMENT object!")
-
     def __init__(self, master, in_version_num, in_main_directory):
         logger.info("GUI init...")
         self.GUI_log_text = ""
@@ -117,6 +41,8 @@ class EAManGui:
         master.minsize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
         master.maxsize(MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT)
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.preview_instance = None
+        self.tree_rclick_popup = None
 
         icon_dir = None
         try:
@@ -156,7 +82,7 @@ class EAManGui:
         self.treeview_widget = ttk.Treeview(
             self.tree_frame, show="tree", selectmode="browse"
         )
-        self.tree_man = self.TreeManager(self.treeview_widget)
+        self.tree_man = TreeManager(self.treeview_widget)
         self.treeview_widget.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         self.treeview_widget.bind("<Button-1>", self.treeview_widget_select)
@@ -177,7 +103,7 @@ class EAManGui:
         )
         self.fh_text_sign.place(x=70, y=5, width=60, height=20)
         self.fh_text_sign.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.fh_label_f_size = tk.Label(
@@ -191,7 +117,7 @@ class EAManGui:
         )
         self.fh_text_f_size.place(x=70, y=35, width=60, height=20)
         self.fh_text_f_size.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.fh_label_obj_count = tk.Label(
@@ -205,7 +131,7 @@ class EAManGui:
         )
         self.fh_text_obj_count.place(x=230, y=5, width=60, height=20)
         self.fh_text_obj_count.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.fh_label_dir_id = tk.Label(
@@ -219,7 +145,7 @@ class EAManGui:
         )
         self.fh_text_dir_id.place(x=230, y=35, width=60, height=20)
         self.fh_text_dir_id.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         # entry header info
@@ -239,7 +165,7 @@ class EAManGui:
         )
         self.eh_text_rec_type.place(x=90, y=5, width=200, height=20)
         self.eh_text_rec_type.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.eh_label_size_of_the_block = tk.Label(
@@ -253,7 +179,7 @@ class EAManGui:
         )
         self.eh_text_size_of_the_block.place(x=110, y=35, width=60, height=20)
         self.eh_text_size_of_the_block.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.eh_label_mipmaps_count = tk.Label(
@@ -267,7 +193,7 @@ class EAManGui:
         )
         self.eh_text_mipmaps_count.place(x=250, y=35, width=40, height=20)
         self.eh_text_mipmaps_count.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.eh_label_width = tk.Label(
@@ -281,7 +207,7 @@ class EAManGui:
         )
         self.eh_text_width.place(x=70, y=65, width=60, height=20)
         self.eh_text_width.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.eh_label_height = tk.Label(
@@ -295,7 +221,7 @@ class EAManGui:
         )
         self.eh_text_height.place(x=200, y=65, width=60, height=20)
         self.eh_text_height.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.eh_label_center_x = tk.Label(
@@ -309,7 +235,7 @@ class EAManGui:
         )
         self.eh_text_center_x.place(x=70, y=95, width=60, height=20)
         self.eh_text_center_x.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.eh_label_center_y = tk.Label(
@@ -323,7 +249,7 @@ class EAManGui:
         )
         self.eh_text_center_y.place(x=200, y=95, width=60, height=20)
         self.eh_text_center_y.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.eh_label_left_x = tk.Label(
@@ -337,7 +263,7 @@ class EAManGui:
         )
         self.eh_text_left_x.place(x=70, y=125, width=60, height=20)
         self.eh_text_left_x.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         self.eh_label_top_y = tk.Label(
@@ -351,7 +277,7 @@ class EAManGui:
         )
         self.eh_text_top_y.place(x=200, y=125, width=60, height=20)
         self.eh_text_top_y.bind(
-            "<Button-3>", lambda event, arg=self: self.RightClicker(arg, event)
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
         # entry preview
@@ -393,7 +319,7 @@ class EAManGui:
         if item_iid == "":
             return  # quit if nothing is selected
 
-        logger.info("Loading item %s...", str(item_iid))
+        # logger.info("Loading item %s...", str(item_iid))
 
         item_id = item_iid.split("_")[0]
 
@@ -632,8 +558,8 @@ class EAManGui:
                 return
             in_file_path = in_file.name
             in_file_name = in_file_path.split("/")[-1]
-        except Exception as e:
-            print(e)
+        except Exception:
+            logger.error("Failed to open file!")
             messagebox.showwarning("Warning", "Failed to open file!")
             return
 
@@ -663,7 +589,7 @@ class EAManGui:
         try:
             ea_img.convert_images()
         except Exception as e:
-            print(e)
+            logger.error("Error while converting images!")
 
         # set text for header
         self.set_text_in_box(self.fh_text_sign, ea_img.sign)
@@ -671,7 +597,7 @@ class EAManGui:
         self.set_text_in_box(self.fh_text_obj_count, ea_img.num_of_entries)
         self.set_text_in_box(self.fh_text_dir_id, ea_img.dir_id)
 
-        # set tex for the first entry
+        # set text for the first entry
         self.set_text_in_box(
             self.eh_text_rec_type, ea_img.dir_entry_list[0].get_entry_type()
         )
@@ -692,12 +618,8 @@ class EAManGui:
 
         in_file.close()
 
-    @staticmethod
-    def set_text_in_box(in_box, in_text):
-        in_box.config(state="normal")
-        in_box.delete("1.0", tk.END)
-        in_box.insert(tk.END, in_text)
-        in_box.config(state="disabled")
+    def show_about_window(self):
+        AboutWindow(self)
 
     def copy_gui_log_msg(self, txt_field, wind):
         self.master.clipboard_clear()
@@ -707,53 +629,16 @@ class EAManGui:
         wind.destroy()
 
     @staticmethod
+    def set_text_in_box(in_box, in_text):
+        in_box.config(state="normal")
+        in_box.delete("1.0", tk.END)
+        in_box.insert(tk.END, in_text)
+        in_box.config(state="disabled")
+
+    @staticmethod
     def close_toplevel_window(wind):
         wind.destroy()
 
     @staticmethod
     def web_callback(url):
         webbrowser.open_new(url)
-
-    def show_about_window(self):
-        about_window = tk.Toplevel()
-        about_window.wm_title("About")
-
-        icon_dir = None
-        try:
-            icon_dir = self.MAIN_DIRECTORY + "\\data\\img\\icon_bd.ico"
-            about_window.iconbitmap(icon_dir)
-        except tk.TclError:
-            logger.error("Can't load the icon file from %s", icon_dir)
-
-        a_text = (
-            "EA Graphics Manager\n"
-            "Version: " + self.VERSION_NUM + "\n"
-            "\n"
-            "Program has been created\n"
-            "by Bartłomiej Duda.\n"
-            "\n"
-            "If you want to support me,\n"
-            "you can do it here:"
-        )
-        a_text2 = "https://www.paypal.me/kolatek55"
-        a_text3 = "\n" "If you want to see my other tools,\n" + "go to my github page:"
-        a_text4 = "https://github.com/bartlomiejduda"
-
-        l = tk.Label(about_window, text=a_text)
-        l.pack(side="top", fill="both", padx=10)
-        l2 = tk.Label(about_window, text=a_text2, fg="blue", cursor="hand2")
-        l2.bind("<Button-1>", lambda e: self.web_callback(a_text2))
-        l2.pack(side="top", anchor="n")
-        l3 = tk.Label(about_window, text=a_text3)
-        l3.pack(side="top", fill="both", padx=10)
-        l4 = tk.Label(about_window, text=a_text4, fg="blue", cursor="hand2")
-        l4.bind("<Button-1>", lambda e: self.web_callback(a_text4))
-        l4.pack(side="top", anchor="n")
-        close_button = tk.Button(about_window, text="Close")
-        close_button.pack()
-        close_button.bind(
-            "<Button-1>",
-            lambda event, arg=about_window: self.close_toplevel_window(arg),
-        )
-
-        center_tk_window.center_on_screen(about_window)

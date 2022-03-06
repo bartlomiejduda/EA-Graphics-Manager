@@ -6,6 +6,7 @@
 # Authors #
 Program has been created by Bartlomiej Duda.
 You can contact me by raising an issue on GitHub.
+https://github.com/bartlomiejduda/EA-Graphics-Manager/issues
 
 
 # Installation #

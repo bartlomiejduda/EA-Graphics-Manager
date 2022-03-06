@@ -1,5 +1,6 @@
 __pycache__/
-.mypy_cache
+.mypy_cache/
+.pytest_cache/
 venv/
 .idea/
 dist/

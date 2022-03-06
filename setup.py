@@ -21,7 +21,7 @@ build_exe_options: dict = {
     "packages": [],
     'includes': [],
     "excludes": [],
-    'include_files': ['src/docs/readme.txt'],
+    'include_files': ['src/data/docs/readme.txt', 'LICENSE'],
 }
 
 options: dict = {
