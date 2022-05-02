@@ -14,7 +14,7 @@ from src.GUI.GUI_main import EAManGui
 from src.logger import get_logger
 
 
-VERSION_NUM = "v0.12.1"
+VERSION_NUM = "v0.12.2"
 
 logger = get_logger("main")
 

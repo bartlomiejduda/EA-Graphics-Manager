@@ -6,7 +6,7 @@ class DirEntry:
     header_size = 16
 
     entry_types = {
-        2: "2 | 0x02 | SKEWED IMAGE",
+        2: "2 | 0x02 | 8-BIT IMG, 256 PAL",
         33: "33 | 0x21 | PALETTE",
         34: "34 | 0x22 | PALETTE",
         35: "35 | 0x23 | PALETTE",
@@ -93,6 +93,6 @@ class DirEntry:
 
     def get_entry_type(self):
         result = self.entry_types.get(
-            self.h_record_id, str(self.h_record_id) + " - UNKNOWN_TYPE"
+            self.h_record_id, str(self.h_record_id) + " | " + "0x%02X" % int(self.h_record_id) + " | UNKNOWN_IMG_TYPE"
         )
         return result
