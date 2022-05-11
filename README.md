@@ -4,6 +4,7 @@ Program for editing FSH, SSH, XSH, PSH and MSH images from EA games.
 Technologies used: Python 3.7, tkinter
 
 This program is not finished yet.
+It may not support all image types.
 
 <img src="src\data\img\usage.gif">
 
@@ -22,3 +23,13 @@ This program is not finished yet.
 # Building on Linux/MacOS
 
 // TODO
+
+# EA-Graph-Man Noesis Script
+
+In the src\scripts directory there is an script
+which can be used for viewing EA graphics in Noesis.
+To use script with Noesis, please follow below steps:
+
+1. Go to \src\scripts\ directory
+2. Copy script to \noesis\plugins\python\ directory
+3. Open any EA Image in Noesis

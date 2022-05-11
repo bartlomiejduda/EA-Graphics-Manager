@@ -11,7 +11,7 @@ import struct
 # This script is still in development.
 # It may have some bugs. Some image types may be not supported.
 
-SCRIPT_VERSION = "0.0.2"
+SCRIPT_VERSION = "0.0.3"
 SCRIPT_LAST_UPDATE = "11.05.2022"
 
 
@@ -20,17 +20,26 @@ is_image_twiddled = False
 
 
 def registerNoesisTypes():
-    handle = noesis.register("EA SSH FILES", ".ssh")
+    handle = noesis.register("EA SSH (PS2) FILES", ".ssh")
     noesis.setHandlerTypeCheck(handle, ea_image_check_type)
     noesis.setHandlerLoadRGBA(handle, ea_image_load)
 
-    handle = noesis.register("EA XSH FILES", ".xsh")
+    handle = noesis.register("EA XSH (XBOX) FILES", ".xsh")
     noesis.setHandlerTypeCheck(handle, ea_image_check_type)
     noesis.setHandlerLoadRGBA(handle, ea_image_load)
 
-    handle = noesis.register("EA MSH FILES", ".msh")
+    handle = noesis.register("EA MSH (PSP) FILES", ".msh")
     noesis.setHandlerTypeCheck(handle, ea_image_check_type)
     noesis.setHandlerLoadRGBA(handle, ea_image_load)
+
+    handle = noesis.register("EA FSH (PC) FILES", ".fsh")
+    noesis.setHandlerTypeCheck(handle, ea_image_check_type)
+    noesis.setHandlerLoadRGBA(handle, ea_image_load)
+
+    handle = noesis.register("EA PSH (PS1) FILES", ".psh")
+    noesis.setHandlerTypeCheck(handle, ea_image_check_type)
+    noesis.setHandlerLoadRGBA(handle, ea_image_load)
+
     if debug_mode_enabled:
         noesis.logPopup()
     return 1
@@ -40,23 +49,15 @@ def ea_image_check_type(file_data):
     bs = NoeBitStream(file_data)
     signature = bs.readBytes(4).decode("UTF8")
     if (
-            signature != "SHPS"      # SSH / SHPS
-            and signature != "SHPX"  # XSH / SHPX
+            signature != "SHPS"      # SSH (PS2)
+            and signature != "SHPX"  # XSH (XBOX))
+            and signature != "SHPI"  # FSH (PC)
+            and signature != "SHPP"  # PSH (PS1)
+            and signature != "SHPM"  # MSH (PSP)
     ):
         return 0
     return 1
 
-
-# bs = NoeBitStream(ea_image_file_data)
-# bs = NoeBitStream(data, NOE_BIGENDIAN)
-# bs.readBits(1)
-# bs.readUByte()
-# bs.readUShort()
-# bs.readShort()
-# bs.readUInt()
-# bs.readBytes(size_to_read)
-# curr_off = bs.tell()
-# noeUnpack("b"...
 
 def get_uint24(in_bytes, endianess):
     if endianess == "<":
@@ -94,15 +95,97 @@ def ea_image_load(ea_image_file_data, tex_list):
         print("entry_type: ", entry_type)
         print("pixel_total_size: ", pixel_total_size)
 
-        byte_per_pixel = entry_type - 1  # TODO
-
         img_width = bs.readUShort()
         img_height = bs.readUShort()
         bs.seek(8, NOESEEK_REL)  # skip reading XY coordinates
 
 
-        if entry_type == 2:
-            pass  # TODO
+
+
+        # here starts reading image data
+        if entry_type == 1:
+            bits_per_pixel = 4
+            pixel_size = img_width * img_height // 2
+            pixel_data = bs.readBytes(pixel_size)
+
+            bytes_per_palette_pixel = 4
+            palette_type = bs.readUByte()
+            print("palette_type:", palette_type)
+            palette_total_size = get_uint24(bs.readBytes(3), "<")
+            palette_width = bs.readUShort()
+            palette_height = bs.readUShort()
+            bs.seek(8, NOESEEK_REL)  # skip unknown bytes
+            palette_size = palette_width * palette_height * bytes_per_palette_pixel
+            palette_data = bs.readBytes(palette_size)
+
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
+                                                "r8 g8 b8 a8", noesis.DECODEFLAG_PS2SHIFT)
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+
+
+
+
+        elif entry_type == 2:
+            bits_per_pixel = 8
+            bytes_per_pixel = 1
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+
+            bytes_per_palette_pixel = 4
+            palette_type = bs.readUByte()
+            print("palette_type:", palette_type)
+            palette_total_size = get_uint24(bs.readBytes(3), "<")
+            palette_width = bs.readUShort()
+            palette_height = bs.readUShort()
+            bs.seek(8, NOESEEK_REL)  # skip unknown bytes
+            palette_size = palette_width * palette_height * bytes_per_palette_pixel
+            palette_data = bs.readBytes(palette_size)
+
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
+                                                "r8 g8 b8 a8", noesis.DECODEFLAG_PS2SHIFT)
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 2 END
+
+
+
+
+        elif entry_type == 4:
+            bytes_per_pixel = 3
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r8 g8 b8")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 4 END
+
+
+
+
+
+        elif entry_type == 5:
+            bytes_per_pixel = 4
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 5 END
+
+
+
+
+
+
+
         else:
             message = "Entry type " + str(entry_type) + " is not supported!"
             noesis.messagePrompt(message)
