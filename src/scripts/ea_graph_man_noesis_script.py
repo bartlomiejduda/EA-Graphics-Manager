@@ -11,12 +11,11 @@ import struct
 # This script is still in development.
 # It may have some bugs. Some image types may be not supported.
 
-SCRIPT_VERSION = "0.0.3"
-SCRIPT_LAST_UPDATE = "11.05.2022"
+SCRIPT_VERSION = "0.0.4"
+SCRIPT_LAST_UPDATE = "12.05.2022"
 
 
 debug_mode_enabled = True
-is_image_twiddled = False
 
 
 def registerNoesisTypes():
@@ -67,6 +66,12 @@ def get_uint24(in_bytes, endianess):
     return result
 
 
+def calculate_padding_len(in_len):
+    div = 16
+    padding_val = (div - (in_len % div)) % div
+    return padding_val
+
+
 def ea_image_load(ea_image_file_data, tex_list):
     print("EA_GRAPH_MAN script v", SCRIPT_VERSION, " (", SCRIPT_LAST_UPDATE, ")")
     bs = NoeBitStream(ea_image_file_data)
@@ -90,6 +95,7 @@ def ea_image_load(ea_image_file_data, tex_list):
     for i in range(number_of_entries):
         bs.seek(entry_offsets_list[i], NOESEEK_ABS)  # go to entry offset
 
+        block_offset = bs.tell()
         entry_type = bs.readUByte()
         pixel_total_size = get_uint24(bs.readBytes(3), "<")
         print("entry_type: ", entry_type)
@@ -129,14 +135,26 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
         elif entry_type == 2:
+            type2_decode_mode = 1   # 0 - standard
+                                    # 1 - PS2 SHIFT
+
             bits_per_pixel = 8
             bytes_per_pixel = 1
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
+            print("img_height: ", img_height)
+            print("img_width: ", img_width)
+            print("pixel_size: ", pixel_size)
+            print("after_pixel_offset: ", bs.tell())
+            #padding_len = calculate_padding_len(bs.tell())
+            #print("padding_len: ", padding_len)
+            bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
 
             bytes_per_palette_pixel = 4
             palette_type = bs.readUByte()
             print("palette_type:", palette_type)
+
+
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
             palette_height = bs.readUShort()
@@ -144,8 +162,12 @@ def ea_image_load(ea_image_file_data, tex_list):
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
             palette_data = bs.readBytes(palette_size)
 
-            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
-                                                "r8 g8 b8 a8", noesis.DECODEFLAG_PS2SHIFT)
+            if type2_decode_mode == 0:
+                pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
+                                                    "r8 g8 b8 a8")
+            elif type2_decode_mode == 1:
+                pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
+                                                    "r8 g8 b8 a8", noesis.DECODEFLAG_PS2SHIFT)
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
