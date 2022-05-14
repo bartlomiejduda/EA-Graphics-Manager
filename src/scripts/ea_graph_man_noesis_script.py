@@ -11,8 +11,8 @@ import struct
 # This script is still in development.
 # It may have some bugs. Some image types may be not supported.
 
-SCRIPT_VERSION = "0.0.4"
-SCRIPT_LAST_UPDATE = "12.05.2022"
+SCRIPT_VERSION = "0.0.5"
+SCRIPT_LAST_UPDATE = "15.05.2022"
 
 
 debug_mode_enabled = True
@@ -201,6 +201,54 @@ def ea_image_load(ea_image_file_data, tex_list):
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
             # entry type 5 END
+
+
+        # 96 = DXT1, 4-bit
+        elif entry_type == 96:
+            pixel_size = (img_width * img_height) // 2
+            print("pixel_size: ", pixel_size, " img_wodth: ", img_width, " img_height: ", img_height)
+            print("pixel_data_offset: ", bs.tell())
+            pixel_data = bs.readBytes(pixel_size)
+            pixel_data = rapi.imageDecodeDXT(pixel_data, img_width, img_height, noesis.FOURCC_DXT1)
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry 96 END
+
+
+
+
+        # 97 = DXT3
+        elif entry_type == 97:
+            pixel_size = (img_width * img_height)
+            print("pixel_size: ", pixel_size, " img_wodth: ", img_width, " img_height: ", img_height)
+            print("pixel_data_offset: ", bs.tell())
+            pixel_data = bs.readBytes(pixel_size)
+            pixel_data = rapi.imageDecodeDXT(pixel_data, img_width, img_height, noesis.FOURCC_DXT3)
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry 97 END
+
+
+
+
+        # 125 = 32-bit A8R8G8B8
+        elif entry_type == 125:
+            bytes_per_pixel = 4
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+
+
+
+
+
 
 
 
