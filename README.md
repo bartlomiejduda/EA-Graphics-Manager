@@ -33,13 +33,3 @@ To use script with Noesis, please follow below steps:
 1. Go to \src\scripts\ directory
 2. Copy script to \noesis\plugins\python\ directory
 3. Open any EA Image in Noesis
-
-
-# Supported games
-
-// TODO - this table is not finished
-
-| Game name             | EA Graphics Manager | Noesis script      |
-|:----------------------|:--------------------|:-------------------|
-| SimCity 4 Deluxe (PC) | :x:                 | :heavy_check_mark: |
-
