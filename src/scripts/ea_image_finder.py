@@ -16,9 +16,12 @@ License: GPL-3.0 License
 # It generates JSON report with details for each found file.
 
 
+summary_dict = {}
+
 def parse_ea_image_file(file_path: str, file_name: str) -> Optional[dict]:
     ea_image_file = None
     ea_image_dict = {}
+    global summary_dict
     ea_image_dict['file_name'] = file_name
     ea_image_dict['file_path'] = file_path
     ea_image_dict['is_error'] = None
@@ -57,6 +60,10 @@ def parse_ea_image_file(file_path: str, file_name: str) -> Optional[dict]:
         entry_type = struct.unpack("B", ea_image_file.read(1))[0]
         entry_dict['entry_type'] = entry_type
         ea_image_file.seek(back_offset)
+
+        entry_count = summary_dict.get(str(entry_type), 0)
+        entry_count += 1
+        summary_dict[str(entry_type)] = entry_count
         # parse data END
 
         ea_image_dict[entry_name] = entry_dict
@@ -70,12 +77,16 @@ def parse_ea_image_file(file_path: str, file_name: str) -> Optional[dict]:
 def find_ea_files():
     print("Starting find_ea_files...")
     search_directory_path = os.environ['SEARCH_DIRECTORY']
-    json_output_file_path = os.environ['JSON_OUT_PATH']
+    json_report_file_path = os.environ['JSON_REPORT_PATH']
+    json_summary_file_path = os.environ['JSON_SUMMARY_PATH']
 
-    result_dict = {}
+    report_dict = {}
+    global summary_dict
     file_count = 0
-    result_dict['SEARCH_PATH'] = search_directory_path
-    result_dict['SEARCH_TIMESTAMP'] = str(datetime.now(pytz.timezone('Europe/Warsaw')).strftime("%d.%m.%Y, %H:%M:%S"))
+    report_dict['SEARCH_PATH'] = search_directory_path
+    summary_dict['SEARCH_PATH'] = search_directory_path
+    report_dict['SEARCH_TIMESTAMP'] = str(datetime.now(pytz.timezone('Europe/Warsaw')).strftime("%d.%m.%Y, %H:%M:%S"))
+    summary_dict['SEARCH_TIMESTAMP'] = str(datetime.now(pytz.timezone('Europe/Warsaw')).strftime("%d.%m.%Y, %H:%M:%S"))
     for root, dirs, files in os.walk(search_directory_path):
         for file in files:
             file_extension = file.split(".")[-1].upper()
@@ -84,10 +95,13 @@ def find_ea_files():
                 ea_file_dict = parse_ea_image_file(file_abs_path, file)
                 file_count += 1
                 file_ID = str(file_count) + "_EA_FILE_ENTRY"
-                result_dict[file_ID] = ea_file_dict
+                report_dict[file_ID] = ea_file_dict
 
-    with open(json_output_file_path, 'w') as outfile:
-        json.dump(result_dict, outfile, indent=4)
+    with open(json_report_file_path, 'w') as report_file:
+        json.dump(report_dict, report_file, indent=4)
+
+    with open(json_summary_file_path, 'w') as summary_file:
+        json.dump(summary_dict, summary_file, indent=4, sort_keys=True)
 
     print("Finished find_ea_files...")
 

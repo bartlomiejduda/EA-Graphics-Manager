@@ -244,6 +244,8 @@ def ea_image_load(ea_image_file_data, tex_list):
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
 
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b8 g8 r8 a8")
+
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
