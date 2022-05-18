@@ -1,0 +1,37 @@
+# Script by Bartlomiej Duda (Ikskoks)
+
+# This script should be used when multiple EA images
+# are stored inside one big archive and you want to unpack
+# all of these images.
+
+
+# Ver    Date        Author               Comment
+# v0.1   18.05.2022  Bartlomiej Duda      -
+
+
+
+
+for i = 0
+
+	FindLoc SIGN_OFFSET STRING "SHPP"
+	
+	if SIGN_OFFSET == ""
+		cleanexit
+	endif
+	
+	goto SIGN_OFFSET
+	
+	GetDString SIGN 4  
+	get TOTAL_SIZE long
+	
+	
+	XMATH F_COUNT "i+1"
+	set F_OUT_NAME string "file"
+	string F_OUT_NAME += F_COUNT
+	string F_OUT_NAME += ".psh"
+	
+	
+	log F_OUT_NAME SIGN_OFFSET TOTAL_SIZE
+
+
+next i
