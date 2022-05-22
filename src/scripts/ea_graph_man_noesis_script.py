@@ -11,8 +11,8 @@ import struct
 # This script is still in development.
 # It may have some bugs. Some image types may be not supported.
 
-SCRIPT_VERSION = "0.0.5"
-SCRIPT_LAST_UPDATE = "15.05.2022"
+SCRIPT_VERSION = "0.1"
+SCRIPT_LAST_UPDATE = "23.05.2022"
 
 
 debug_mode_enabled = True
@@ -105,10 +105,11 @@ def ea_image_load(ea_image_file_data, tex_list):
         img_height = bs.readUShort()
         bs.seek(8, NOESEEK_REL)  # skip reading XY coordinates
 
-
-
-
         # here starts reading image data
+
+
+        # 4-bit image with palette
+        # e.g. Medal of Honor Frontline (PS2)
         if entry_type == 1:
             bits_per_pixel = 4
             pixel_size = img_width * img_height // 2
@@ -133,7 +134,8 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-
+        # 8-bit image with palette
+        # e.g. MVP Baseball 2005 (PS2)
         elif entry_type == 2:
             type2_decode_mode = 1   # 0 - standard
                                     # 1 - PS2 SHIFT
@@ -176,7 +178,8 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-
+        # 8-bit image without palette
+        # e.g. Medal of Honor Frontline (PS2)
         elif entry_type == 4:
             bytes_per_pixel = 3
             pixel_size = img_width * img_height * bytes_per_pixel
@@ -191,7 +194,8 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-
+        # 32-bit image without palette
+        # e.g. Medal of Honor Frontline (PS2)
         elif entry_type == 5:
             bytes_per_pixel = 4
             pixel_size = img_width * img_height * bytes_per_pixel
@@ -201,6 +205,83 @@ def ea_image_load(ea_image_file_data, tex_list):
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
             # entry type 5 END
+
+
+        # 4-bit image with 16-bit palette (R5G5B5P1)
+        # e.g. NBA Live 97 (PS1)
+        elif entry_type == 64:
+            bits_per_pixel = 4
+            pixel_size = img_width * img_height // 2
+            pixel_data = bs.readBytes(pixel_size)
+
+            bytes_per_palette_pixel = 2
+            palette_type = bs.readUByte()
+            print("palette_type:", palette_type)
+            palette_total_size = get_uint24(bs.readBytes(3), "<")
+            palette_width = bs.readUShort()
+            palette_height = bs.readUShort()
+            bs.seek(8, NOESEEK_REL)  # skip unknown bytes
+            palette_size = palette_width * palette_height * bytes_per_palette_pixel
+            palette_data = bs.readBytes(palette_size)
+
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
+                                                "r5 g5 b5 p1")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 64 END
+
+
+
+        # 8-bit image with 15-bit palette (R5G5B5P1)
+        # e.g. NBA Live 97 (PS1)
+        elif entry_type == 65:
+            bits_per_pixel = 8
+            bytes_per_pixel = 1
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+            print("img_height: ", img_height)
+            print("img_width: ", img_width)
+            print("pixel_size: ", pixel_size)
+            print("after_pixel_offset: ", bs.tell())
+            bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
+
+            bytes_per_palette_pixel = 2
+            palette_type = bs.readUByte()
+            print("palette_type:", palette_type)
+
+            palette_total_size = get_uint24(bs.readBytes(3), "<")
+            print("palette_total_size: ", palette_total_size)
+            palette_width = bs.readUShort()
+            palette_height = bs.readUShort()
+            bs.seek(8, NOESEEK_REL)  # skip unknown bytes
+            palette_size = palette_width * palette_height * bytes_per_palette_pixel
+            print("palette_size: ", palette_size)
+            print("palette_offset: ", bs.tell())
+            palette_data = bs.readBytes(palette_size)
+
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
+                                                    "r5 g5 b5 p1")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry 65 END
+
+
+        # 16-bit image without palette (R5G5B5P1)
+        # e.g. NBA Live 97 (PS1)
+        elif entry_type == 66:
+            bytes_per_pixel = 2
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r5 g5 b5 p1")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
 
 
         # 96 = DXT1, 4-bit
