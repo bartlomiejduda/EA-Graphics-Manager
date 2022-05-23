@@ -14,7 +14,7 @@ import struct
 SCRIPT_VERSION = "0.1"
 SCRIPT_LAST_UPDATE = "23.05.2022"
 
-
+# fmt: off
 debug_mode_enabled = True
 
 

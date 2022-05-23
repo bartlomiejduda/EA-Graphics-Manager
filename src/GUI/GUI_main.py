@@ -611,10 +611,18 @@ class EAManGui:
             return
 
         ea_img = ea_image_main.EAImage()
-        check_result = ea_img.check_file_signature(in_file)
+        check_result = ea_img.check_file_signature_and_size(in_file)
 
-        if check_result != 0:
-            messagebox.showwarning("Warning", "File not supported!")
+        if check_result[0] != "OK":
+            error_msg = (
+                "ERROR: "
+                + str(check_result[0])
+                + "\n"
+                + str(check_result[1])
+                + "\n\n"
+                + "File not supported!"
+            )
+            messagebox.showwarning("Warning", error_msg)
             return
 
         logger.info("Loading file %s...", in_file_name)

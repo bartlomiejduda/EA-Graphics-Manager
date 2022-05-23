@@ -93,6 +93,10 @@ class DirEntry:
 
     def get_entry_type(self):
         result = self.entry_types.get(
-            self.h_record_id, str(self.h_record_id) + " | " + "0x%02X" % int(self.h_record_id) + " | UNKNOWN_IMG_TYPE"
+            self.h_record_id,
+            str(self.h_record_id)
+            + " | "
+            + "0x%02X" % int(self.h_record_id)
+            + " | UNKNOWN_IMG_TYPE",
         )
         return result

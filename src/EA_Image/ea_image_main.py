@@ -53,18 +53,48 @@ class EAImage:
     def set_ea_image_id(self, in_ea_image_id):
         self.ea_image_id = in_ea_image_id
 
-    def check_file_signature(self, in_file):
+    def check_file_signature_and_size(self, in_file) -> tuple:
         try:
+
+            # checking signature
             back_offset = in_file.tell()
             sign = get_utf8_string(in_file, 4)
             in_file.seek(back_offset)
             if sign not in self.allowed_signatures:
-                logger.info("File signature is not supported")
-                return -2
-            return 0
+                error_msg = "File signature is not supported"
+                logger.info(error_msg)
+                return "SIGN_NOT_SUPPORTED", error_msg
+
+            # checking file size
+            back_offset = in_file.tell()
+            in_file.seek(0, os.SEEK_END)
+            real_file_size = in_file.tell()
+            in_file.seek(4)
+            file_size_le = struct.unpack("<L", in_file.read(4))[0]
+            in_file.seek(4)
+            file_size_be = struct.unpack(">L", in_file.read(4))[0]
+            in_file.seek(back_offset)
+            if (file_size_le != real_file_size) and (file_size_be != real_file_size):
+                error_msg = (
+                    "Real file size doesn't match file total file size from header:\n"
+                    + "Real_file_size: "
+                    + str(real_file_size)
+                    + "\n"
+                    + "File_size_le: "
+                    + str(file_size_le)
+                    + "\n"
+                    + "File_size_be: "
+                    + str(file_size_be)
+                )
+                logger.info(error_msg)
+                return "WRONG_SIZE_ERROR", error_msg
+
+            return "OK", ""
+
         except Exception as error:
-            logger.error("Can't read file signature! Error: %s", error)
-            return -1
+            error_msg = f"Can't read file signature or size! Error: {error}"
+            logger.error(error_msg)
+            return "CANT_READ_ERROR", error_msg
 
     def parse_header(self, in_file, in_file_path, in_file_name):
         self.sign = get_utf8_string(in_file, 4)
