@@ -33,3 +33,10 @@ To use script with Noesis, please follow below steps:
 1. Go to \src\scripts\ directory
 2. Copy script to \noesis\plugins\python\ directory
 3. Open any EA Image in Noesis
+
+# Badges
+![GitHub](https://img.shields.io/github/license/bartlomiejduda/EA-Graphics-Manager?style=plastic)
+![GitHub repo size](https://img.shields.io/github/repo-size/bartlomiejduda/EA-Graphics-Manager?style=plastic)
+![GitHub all releases](https://img.shields.io/github/downloads/bartlomiejduda/EA-Graphics-Manager/total)
+![GitHub last commit](https://img.shields.io/github/last-commit/bartlomiejduda/EA-Graphics-Manager?style=plastic)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/y/bartlomiejduda/EA-Graphics-Manager?style=plastic)
