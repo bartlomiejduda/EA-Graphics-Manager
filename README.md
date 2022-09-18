@@ -1,5 +1,5 @@
 # EA Graphics Manager
-Program for editing FSH, SSH, XSH, PSH and MSH images from EA games.
+Program for editing FSH, SSH, XSH, PSH, GSH and MSH images from EA games.
 
 Technologies used: Python 3.7, tkinter
 

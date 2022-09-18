@@ -48,6 +48,7 @@ class EAImage:
             "ShpX",  # ???
             "SHPX",  # XBOX games
             "SHPM",  # PSP games
+            "SHPG",  # WII games
         )
 
     def set_ea_image_id(self, in_ea_image_id):
@@ -131,7 +132,8 @@ class EAImage:
         for i in range(self.num_of_entries):
             self.dir_entry_id += 1
             entry_id = str(self.ea_image_id) + "_direntry_" + str(self.dir_entry_id)
-            entry_tag = in_file.read(4).decode("utf8")
+            entry_tag_bytes = in_file.read(4)
+            entry_tag = entry_tag_bytes.decode("utf8")
             entry_offset = struct.unpack(self.f_endianess + "L", in_file.read(4))[0]
             ea_dir_entry = DirEntry(entry_id, entry_tag, entry_offset)
 

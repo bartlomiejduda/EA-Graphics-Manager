@@ -52,7 +52,7 @@ class EAManGui:
             logger.error("Can't load the icon file from %s", self.icon_dir)
 
         self.allowed_filetypes = [
-            ("EA Graphics files", ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh"]),
+            ("EA Graphics files", ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh", "*.gsh"]),
             ("All files", ["*.*"]),
         ]
 

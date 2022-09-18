@@ -11,8 +11,8 @@ import struct
 # This script is still in development.
 # It may have some bugs. Some image types may be not supported.
 
-SCRIPT_VERSION = "0.1"
-SCRIPT_LAST_UPDATE = "23.05.2022"
+SCRIPT_VERSION = "0.2"
+SCRIPT_LAST_UPDATE = "18.09.2022"
 
 # fmt: off
 debug_mode_enabled = True
@@ -39,6 +39,10 @@ def registerNoesisTypes():
     noesis.setHandlerTypeCheck(handle, ea_image_check_type)
     noesis.setHandlerLoadRGBA(handle, ea_image_load)
 
+    handle = noesis.register("EA GSH (WII) FILES", ".gsh")
+    noesis.setHandlerTypeCheck(handle, ea_image_check_type)
+    noesis.setHandlerLoadRGBA(handle, ea_image_load)
+
     if debug_mode_enabled:
         noesis.logPopup()
     return 1
@@ -53,6 +57,7 @@ def ea_image_check_type(file_data):
             and signature != "SHPI"  # FSH (PC)
             and signature != "SHPP"  # PSH (PS1)
             and signature != "SHPM"  # MSH (PSP)
+            and signature != "SHPG"  # GSH (WII)
     ):
         return 0
     return 1
