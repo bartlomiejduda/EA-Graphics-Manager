@@ -21,7 +21,7 @@ class RightClicker:
             label="Copy",
             command=lambda e=event, txt="Copy": self.copy_text_to_clipboard(text),
         )
-        menu.tk_popup(event.x_root + 40, event.y_root + 10, entry="0")
+        menu.tk_popup(event.x_root, event.y_root, entry="0")
 
     def copy_text_to_clipboard(self, in_text):
         self.out_class.master.clipboard_clear()

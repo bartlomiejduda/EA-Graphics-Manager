@@ -14,7 +14,7 @@ from src.EA_Image.bin_attachment_entries import (
     HotSpotEntry,
     ImgNameEntry,
     CommentEntry,
-    MetalBinEntry,
+    MetalBinEntry, UnknownEntry,
 )
 from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
@@ -44,7 +44,7 @@ class EAImage:
         self.allowed_signatures = (
             "SHPI",  # PC games
             "SHPP",  # PS1 games
-            "SHPS",  # PS2 games
+            "SHPS", "ShpS",  # PS2 games
             "ShpX",  # ???
             "SHPX",  # XBOX games
             "SHPM",  # PSP games
@@ -158,7 +158,7 @@ class EAImage:
             self.parse_dir_entry_header_and_data(in_file, ea_dir_entry)
 
     def parse_dir_entry_header_and_data(self, in_file, ea_dir_entry):
-        ea_dir_entry.set_header(
+        ea_dir_entry.set_entry_header(
             in_file, self.f_endianess
         )  # read entry header and set all values
 
@@ -205,17 +205,17 @@ class EAImage:
                         bin_att_entry = ImgNameEntry(bin_att_id, bin_att_start_offset)
                     elif bin_att_rec_id == 124:
                         bin_att_entry = HotSpotEntry(bin_att_id, bin_att_start_offset)
-                    elif bin_att_rec_id in (33, 34, 35, 36, 41, 42, 45):
+                    elif bin_att_rec_id in (33, 34, 35, 36, 41, 42, 45, 59):
                         bin_att_entry = PaletteEntry(bin_att_id, bin_att_start_offset)
                     else:
-                        logger.error(
-                            "Unknown bin attachment entry (%s)! Aborting!",
+                        bin_att_entry = UnknownEntry(bin_att_id, bin_att_start_offset)
+                        logger.warning(
+                            "Unknown bin attachment entry (%s)!",
                             str(hex(bin_att_rec_id)),
                         )
-                        break
 
                     bin_att_entry.set_tag(bin_att_rec_id)
-                    bin_att_entry.set_header(in_file, self.f_endianess)
+                    bin_att_entry.set_entry_header(in_file, self.f_endianess)
                     bin_att_entry.set_raw_data(
                         in_file, in_file.tell(), ea_dir_entry.end_offset
                     )

@@ -11,8 +11,8 @@ import struct
 # This script is still in development.
 # It may have some bugs. Some image types may be not supported.
 
-SCRIPT_VERSION = "0.2"
-SCRIPT_LAST_UPDATE = "18.09.2022"
+SCRIPT_VERSION = "0.3"
+SCRIPT_LAST_UPDATE = "09.07.2023"
 
 # fmt: off
 debug_mode_enabled = True
@@ -103,6 +103,8 @@ def ea_image_load(ea_image_file_data, tex_list):
         block_offset = bs.tell()
         entry_type = bs.readUByte()
         pixel_total_size = get_uint24(bs.readBytes(3), "<")
+
+        print("\n\n###### ENTRY " + str(i+1) + " ###########")
         print("entry_type: ", entry_type)
         print("pixel_total_size: ", pixel_total_size)
 
@@ -153,14 +155,11 @@ def ea_image_load(ea_image_file_data, tex_list):
             print("img_width: ", img_width)
             print("pixel_size: ", pixel_size)
             print("after_pixel_offset: ", bs.tell())
-            #padding_len = calculate_padding_len(bs.tell())
-            #print("padding_len: ", padding_len)
             bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
 
             bytes_per_palette_pixel = 4
             palette_type = bs.readUByte()
             print("palette_type:", palette_type)
-
 
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
@@ -287,6 +286,44 @@ def ea_image_load(ea_image_file_data, tex_list):
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+
+
+
+
+        # 8-bit image with palette and PSP swizzling (R8G8B8A8)
+        # e.g. Madden 08 (PSP)
+        elif entry_type == 93:
+            bits_per_pixel = 8
+            bytes_per_pixel = 1
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+            print("img_height: ", img_height)
+            print("img_width: ", img_width)
+            print("pixel_size: ", pixel_size)
+            bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
+
+            bytes_per_palette_pixel = 4
+            palette_type = bs.readUByte()
+            print("palette_type:", palette_type)
+
+            palette_total_size = get_uint24(bs.readBytes(3), "<")
+            palette_width = bs.readUShort()
+            palette_height = bs.readUShort()
+            bs.seek(8, NOESEEK_REL)  # skip unknown bytes
+            palette_size = palette_width * palette_height * bytes_per_palette_pixel
+            print("palette_size: ", palette_size)
+            print("palette_offset: ", bs.tell())
+            palette_data = bs.readBytes(palette_size)
+
+            pixel_data = rapi.imageUntwiddlePSP(pixel_data, img_width, img_height, bits_per_pixel)
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
+                                                "r8 g8 b8 a8")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry 93 END
+
 
 
         # 96 = DXT1, 4-bit

@@ -14,6 +14,7 @@ class DirEntry:
         41: "41 | 0x29 | PALETTE",
         42: "42 | 0x2A | PALETTE",
         45: "45 | 0x2D | PALETTE",
+        59: "59 | 0x3B | PALETTE",
         64: "64 | 0x40 | 4-BIT IMG",
         65: "65 | 0x41 | 8-BIT IMG",
         66: "66 | 0x42 | 16-BIT IMG",
@@ -46,6 +47,7 @@ class DirEntry:
         self.end_offset = None
         self.raw_header = None
         self.raw_data_offset = None
+        self.raw_data_size = None
         self.raw_data = None
 
         self.h_record_id = None
@@ -57,6 +59,8 @@ class DirEntry:
         self.h_left_x_pos = None
         self.h_top_y_pos = None
         self.h_mipmaps_count = None
+        self.h_entry_header_offset = None
+        self.h_entry_end_offset = None
 
         self.bin_attachments_list = []
         self.if_next_entry_exist_flag = None
@@ -64,7 +68,8 @@ class DirEntry:
         self.img_convert_type = None
         self.img_convert_data = None
 
-    def set_header(self, in_file, endianess):
+    def set_entry_header(self, in_file, endianess):
+        self.h_entry_header_offset = in_file.tell()
         self.h_record_id = get_uint8(in_file, endianess)
         self.h_size_of_the_block = get_uint24(in_file, endianess)
         self.h_width = get_uint16(in_file, endianess)
@@ -73,6 +78,7 @@ class DirEntry:
         self.h_center_y = get_uint16(in_file, endianess)
         self.h_left_x_pos, _ = get_uint12_uint4(in_file, endianess)
         self.h_top_y_pos, self.h_mipmaps_count = get_uint12_uint4(in_file, endianess)
+        self.h_entry_end_offset = self.h_entry_header_offset + self.h_size_of_the_block
 
     def set_raw_data(self, in_file, in_data_start_offset, in_data_end_offset=0):
         zero_size_flag = -1
@@ -91,12 +97,14 @@ class DirEntry:
             self.if_next_entry_exist_flag = True
             self.raw_data = in_file.read(self.h_size_of_the_block - self.header_size)
 
+        self.raw_data_size = len(self.raw_data)
+
     def get_entry_type(self):
         result = self.entry_types.get(
             self.h_record_id,
             str(self.h_record_id)
             + " | "
             + "0x%02X" % int(self.h_record_id)
-            + " | UNKNOWN_IMG_TYPE",
+            + " | UNKNOWN_TYPE",
         )
         return result

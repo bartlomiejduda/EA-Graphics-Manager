@@ -18,6 +18,7 @@ class BinAttachmentEntry(DirEntry):
         41: "palette 0x29",
         42: "palette 0x2A",
         45: "palette 0x2D",
+        59: "palette 0x3B",
         105: "metal bin",
         111: "comment",
         112: "img name",
@@ -55,7 +56,7 @@ class MetalBinEntry(BinAttachmentEntry):
         self.h_flags = None
         self.h_data_size = None
 
-    def set_header(self, in_file, endianess):
+    def set_entry_header(self, in_file, endianess):
         self.h_record_id = get_uint8(in_file, endianess)
         self.h_size_of_the_block = get_uint24(in_file, endianess)
         self.h_data_size = get_uint16(in_file, endianess)
@@ -70,7 +71,7 @@ class CommentEntry(BinAttachmentEntry):
         super().__init__(in_id, in_offset)
         self.h_comment_length = None
 
-    def set_header(self, in_file, endianess):
+    def set_entry_header(self, in_file, endianess):
         self.h_record_id = get_uint8(in_file, endianess)
         self.h_size_of_the_block = get_uint24(in_file, endianess)
         self.h_comment_length = get_uint32(in_file, endianess)
@@ -79,7 +80,15 @@ class CommentEntry(BinAttachmentEntry):
 class ImgNameEntry(BinAttachmentEntry):
     header_size = 4
 
-    def set_header(self, in_file, endianess):
+    def set_entry_header(self, in_file, endianess):
+        self.h_record_id = get_uint8(in_file, endianess)
+        self.h_size_of_the_block = get_uint24(in_file, endianess)
+
+
+class UnknownEntry(BinAttachmentEntry):
+    header_size = 4
+
+    def set_entry_header(self, in_file, endianess):
         self.h_record_id = get_uint8(in_file, endianess)
         self.h_size_of_the_block = get_uint24(in_file, endianess)
 
@@ -91,7 +100,7 @@ class HotSpotEntry(BinAttachmentEntry):
         super().__init__(in_id, in_offset)
         self.num_of_pairs = None
 
-    def set_header(self, in_file, endianess):
+    def set_entry_header(self, in_file, endianess):
         self.h_record_id = get_uint8(in_file, endianess)
         self.h_size_of_the_block = get_uint24(in_file, endianess)
         self.num_of_pairs = get_uint32(in_file, endianess)
@@ -109,7 +118,7 @@ class PaletteEntry(BinAttachmentEntry):
         self.pal_height = None
         self.pal_width = None
 
-    def set_header(self, in_file, endianess):
+    def set_entry_header(self, in_file, endianess):
         self.h_record_id = get_uint8(in_file, endianess)
         self.h_size_of_the_block = get_uint24(in_file, endianess)
         self.pal_width = get_uint16(in_file, endianess)

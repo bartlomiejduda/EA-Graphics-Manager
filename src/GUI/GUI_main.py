@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright © 2021  Bartłomiej Duda
+Copyright © 2023  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
@@ -19,8 +19,8 @@ from src.logger import get_logger
 
 
 # default app settings
-WINDOW_HEIGHT = 490
-WINDOW_WIDTH = 490
+WINDOW_HEIGHT = 360
+WINDOW_WIDTH = 840
 MIN_WINDOW_HEIGHT = WINDOW_HEIGHT
 MIN_WINDOW_WIDTH = WINDOW_WIDTH
 MAX_WINDOW_HEIGHT = WINDOW_HEIGHT
@@ -79,7 +79,7 @@ class EAManGui:
             highlightbackground="grey",
             highlightthickness=1,
         )  # add custom treeview border
-        self.tree_frame.place(x=10, y=10, width=120, height=465)
+        self.tree_frame.place(x=10, y=10, width=120, height=340)
 
         self.treeview_widget = ttk.Treeview(
             self.tree_frame, show="tree", selectmode="browse"
@@ -171,7 +171,7 @@ class EAManGui:
             self.main_frame, text="Entry Header"
         )
         self.entry_header_labelframe.place(
-            x=140, y=100, width=340, height=180
+            x=140, y=100, width=340, height=250
         )  # <-- entry header info box
 
         self.eh_label_rec_type = tk.Label(
@@ -312,15 +312,71 @@ class EAManGui:
             "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
         )
 
+        self.eh_label_entry_header_offset = tk.Label(
+            self.entry_header_labelframe, text="EH Offset:", anchor="w"
+        )
+        self.eh_label_entry_header_offset.place(x=5, y=155, width=80, height=20)
+        self.eh_text_entry_header_offset = tk.Text(
+            self.entry_header_labelframe,
+            bg=self.entry_header_labelframe["bg"],
+            state="disabled",
+        )
+        self.eh_text_entry_header_offset.place(x=70, y=155, width=60, height=20)
+        self.eh_text_entry_header_offset.bind(
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
+        )
+
+        self.eh_label_data_offset = tk.Label(
+            self.entry_header_labelframe, text="IMG Offset:", anchor="w"
+        )
+        self.eh_label_data_offset.place(x=140, y=155, width=80, height=20)
+        self.eh_text_data_offset = tk.Text(
+            self.entry_header_labelframe,
+            bg=self.entry_header_labelframe["bg"],
+            state="disabled",
+        )
+        self.eh_text_data_offset.place(x=220, y=155, width=60, height=20)
+        self.eh_text_data_offset.bind(
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
+        )
+
+        self.eh_label_entry_end_offset = tk.Label(
+            self.entry_header_labelframe, text="IMG End:", anchor="w"
+        )
+        self.eh_label_entry_end_offset.place(x=5, y=185, width=80, height=20)
+        self.eh_text_entry_end_offset = tk.Text(
+            self.entry_header_labelframe,
+            bg=self.entry_header_labelframe["bg"],
+            state="disabled",
+        )
+        self.eh_text_entry_end_offset.place(x=70, y=185, width=60, height=20)
+        self.eh_text_entry_end_offset.bind(
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
+        )
+
+        self.eh_label_data_size = tk.Label(
+            self.entry_header_labelframe, text="IMG Size:", anchor="w"
+        )
+        self.eh_label_data_size.place(x=140, y=185, width=80, height=20)
+        self.eh_text_data_size = tk.Text(
+            self.entry_header_labelframe,
+            bg=self.entry_header_labelframe["bg"],
+            state="disabled",
+        )
+        self.eh_text_data_size.place(x=220, y=185, width=60, height=20)
+        self.eh_text_data_size.bind(
+            "<Button-3>", lambda event, arg=self: RightClicker(arg, event)
+        )
+
         #################
         # entry preview #
         #################
         self.preview_labelframe_width = 340
-        self.preview_labelframe_height = 190
+        self.preview_labelframe_height = 345
         self.preview_labelframe = tk.LabelFrame(self.main_frame, text="Preview")
         self.preview_labelframe.place(
-            x=140,
-            y=285,
+            x=490,
+            y=5,
             width=self.preview_labelframe_width,
             height=self.preview_labelframe_height,
         )
@@ -391,6 +447,10 @@ class EAManGui:
             self.set_text_in_box(self.eh_text_center_y, ea_dir.h_center_y)
             self.set_text_in_box(self.eh_text_left_x, ea_dir.h_left_x_pos)
             self.set_text_in_box(self.eh_text_top_y, ea_dir.h_top_y_pos)
+            self.set_text_in_box(self.eh_text_entry_header_offset, ea_dir.h_entry_header_offset)
+            self.set_text_in_box(self.eh_text_data_offset, ea_dir.raw_data_offset)
+            self.set_text_in_box(self.eh_text_data_size, ea_dir.raw_data_size)
+            self.set_text_in_box(self.eh_text_entry_end_offset, ea_dir.h_entry_end_offset)
 
             try:
                 self.preview_instance.destroy()
@@ -461,6 +521,10 @@ class EAManGui:
             self.set_text_in_box(self.eh_text_center_y, "")
             self.set_text_in_box(self.eh_text_left_x, "")
             self.set_text_in_box(self.eh_text_top_y, "")
+            self.set_text_in_box(self.eh_text_entry_header_offset, "")
+            self.set_text_in_box(self.eh_text_data_offset, "")
+            self.set_text_in_box(self.eh_text_data_size, "")
+            self.set_text_in_box(self.eh_text_entry_end_offset, "")
 
             try:
                 self.preview_instance.destroy()
@@ -469,7 +533,7 @@ class EAManGui:
 
             if bin_attach.h_record_id in (33, 34, 35, 36, 41, 42, 45):  # palette types
                 pass  # TODO - add preview for palettes
-            elif bin_attach.h_record_id in (105, 111, 112, 124):  # binary types
+            else:
                 # set hex preview
                 preview_hex_string = bin_attach.raw_data.decode(
                     "utf8", "backslashreplace"
@@ -484,10 +548,6 @@ class EAManGui:
                     wraplength=300,
                 )
                 self.preview_instance.place(x=5, y=5, width=285, height=130)
-            else:
-                logger.warning(
-                    "Warning! Unknown binary attachment! Can't load preview!"
-                )
 
         else:
             self.set_text_in_box(self.eh_text_rec_type, "")
@@ -499,6 +559,10 @@ class EAManGui:
             self.set_text_in_box(self.eh_text_center_y, "")
             self.set_text_in_box(self.eh_text_left_x, "")
             self.set_text_in_box(self.eh_text_top_y, "")
+            self.set_text_in_box(self.eh_text_entry_header_offset, "")
+            self.set_text_in_box(self.eh_text_data_offset, "")
+            self.set_text_in_box(self.eh_text_data_size, "")
+            self.set_text_in_box(self.eh_text_entry_end_offset, "")
 
             try:
                 self.preview_instance.destroy()
@@ -517,7 +581,7 @@ class EAManGui:
                 label="Close File", command=lambda: self.treeview_rclick_close(item_iid)
             )
             self.tree_rclick_popup.tk_popup(
-                event.x_root + 45, event.y_root + 10, entry="0"
+                event.x_root, event.y_root, entry="0"
             )
         elif "direntry" in item_iid and "binattach" not in item_iid:
             self.tree_rclick_popup.add_command(
@@ -530,7 +594,7 @@ class EAManGui:
             # self.tree_rclick_popup.add_command(label="Import Image From BMP")
             # self.tree_rclick_popup.add_command(label="Import Image Details From XML")
             self.tree_rclick_popup.tk_popup(
-                event.x_root + 85, event.y_root + 10, entry="0"
+                event.x_root, event.y_root, entry="0"
             )
         elif "direntry" in item_iid and "binattach" in item_iid:
             self.tree_rclick_popup.add_command(
@@ -539,7 +603,7 @@ class EAManGui:
             )
             # self.tree_rclick_popup.add_command(label="Import Raw Binary Data")
             self.tree_rclick_popup.tk_popup(
-                event.x_root + 85, event.y_root + 10, entry="0"
+                event.x_root, event.y_root, entry="0"
             )
         else:
             logger.warning("Warning! Unsupported entry in right-click popup!")
@@ -668,6 +732,10 @@ class EAManGui:
         self.set_text_in_box(self.eh_text_center_y, ea_img.dir_entry_list[0].h_center_y)
         self.set_text_in_box(self.eh_text_left_x, ea_img.dir_entry_list[0].h_left_x_pos)
         self.set_text_in_box(self.eh_text_top_y, ea_img.dir_entry_list[0].h_top_y_pos)
+        self.set_text_in_box(self.eh_text_entry_header_offset, ea_img.dir_entry_list[0].h_entry_header_offset)
+        self.set_text_in_box(self.eh_text_data_offset, ea_img.dir_entry_list[0].raw_data_offset)
+        self.set_text_in_box(self.eh_text_data_size, ea_img.dir_entry_list[0].raw_data_size)
+        self.set_text_in_box(self.eh_text_entry_end_offset, ea_img.dir_entry_list[0].h_entry_end_offset)
 
         self.tree_man.add_object(ea_img)
 
