@@ -1,3 +1,5 @@
+import os
+
 from src.EA_Image.data_read import get_uint8, get_uint24, get_uint16, get_uint12_uint4
 
 
@@ -78,7 +80,6 @@ class DirEntry:
         self.h_center_y = get_uint16(in_file, endianess)
         self.h_left_x_pos, _ = get_uint12_uint4(in_file, endianess)
         self.h_top_y_pos, self.h_mipmaps_count = get_uint12_uint4(in_file, endianess)
-        self.h_entry_end_offset = self.h_entry_header_offset + self.h_size_of_the_block
 
     def set_raw_data(self, in_file, in_data_start_offset, in_data_end_offset=0):
         zero_size_flag = -1
@@ -98,6 +99,9 @@ class DirEntry:
             self.raw_data = in_file.read(self.h_size_of_the_block - self.header_size)
 
         self.raw_data_size = len(self.raw_data)
+
+    def set_img_end_offset(self):
+        self.h_entry_end_offset = self.raw_data_offset + self.raw_data_size
 
     def get_entry_type(self):
         result = self.entry_types.get(

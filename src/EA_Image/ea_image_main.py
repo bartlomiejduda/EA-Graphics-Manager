@@ -18,6 +18,7 @@ from src.EA_Image.bin_attachment_entries import (
 )
 from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
+from src.EA_Image.ea_image_converter import EaImageConverter
 from src.logger import get_logger
 
 
@@ -168,6 +169,8 @@ class EAImage:
             ea_dir_entry.end_offset,
         )  # read raw entry data and set values
 
+        ea_dir_entry.set_img_end_offset()  # this value is known only after reading data
+
     def parse_bin_attachments(self, in_file):
 
         for i in range(self.num_of_entries):
@@ -237,7 +240,6 @@ class EAImage:
 
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
-
             entry_type = ea_dir_entry.h_record_id
 
             if entry_type not in conv_images_supported_types:
@@ -254,73 +256,13 @@ class EAImage:
                     str(i + 1),
                 )
                 ea_dir_entry.is_img_convert_supported = True
-
-            if entry_type == 2:
                 self.img_convert_type = "BMP"
 
-                img_bpp = 8
-                img_data = b""
-                img_pal_data_size = len(ea_dir_entry.bin_attachments_list[0].raw_data)
-                img_pal_data = b""
-                img_height = ea_dir_entry.h_height
-                img_width = ea_dir_entry.h_width
+            self.convert_image_data_for_export_and_preview(ea_dir_entry, entry_type)
 
-                # skew fix
-                read_count = 0
-                skew_val = img_width % 4
-                for _ in range(img_height):
-                    temp_row = b""
-                    for _ in range(img_width):
-                        pixel = struct.pack(
-                            self.f_endianess + "B", ea_dir_entry.raw_data[read_count]
-                        )
-                        read_count += 1
-                        temp_row += pixel
-                    if skew_val == 1:
-                        temp_row += b"\x00\x00"
-                    elif skew_val == 2:
-                        temp_row += b"x\00"
-
-                    img_data += temp_row
-
-                # missing pixels fix
-                img_size_calc = img_height * img_width
-                diff = (
-                    ea_dir_entry.h_size_of_the_block - ea_dir_entry.header_size
-                ) - img_size_calc
-                for _ in range(diff):
-                    pixel = b"\x00"
-                    img_data += pixel
-
-                # palette fix
-                read_count = 0
-                pal_range = int(img_pal_data_size / 4)
-                for _ in range(pal_range):
-                    pal_entry1 = struct.pack(
-                        self.f_endianess + "B",
-                        ea_dir_entry.bin_attachments_list[0].raw_data[read_count],
-                    )
-                    read_count += 1
-                    pal_entry2 = struct.pack(
-                        self.f_endianess + "B",
-                        ea_dir_entry.bin_attachments_list[0].raw_data[read_count],
-                    )
-                    read_count += 1
-                    pal_entry3 = struct.pack(
-                        self.f_endianess + "B",
-                        ea_dir_entry.bin_attachments_list[0].raw_data[read_count],
-                    )
-                    read_count += 1
-                    pal_entry4 = struct.pack(
-                        self.f_endianess + "B",
-                        ea_dir_entry.bin_attachments_list[0].raw_data[read_count],
-                    )
-                    read_count += 1
-                    img_pal_data += (
-                        pal_entry3 + pal_entry2 + pal_entry1 + pal_entry4
-                    )  # RGBA swap
-
-                bmp_object = BmpImg(
-                    img_width, img_height, img_bpp, img_data, img_pal_data
-                )
-                ea_dir_entry.img_convert_data = bmp_object.get_bmp_file_data()
+    def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
+        if entry_type == 2:
+            EaImageConverter().convert_type_2_to_bmp(ea_dir_entry, self)
+        else:
+            logger.error(f"Unsupported type {entry_type} for convert and preview!")
+            return
