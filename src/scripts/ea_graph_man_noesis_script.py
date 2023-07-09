@@ -326,7 +326,7 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 96 = DXT1, 4-bit
+        # DXT1, 4-bit
         # SimCity 4 Deluxe (PC)
         elif entry_type == 96:
             pixel_size = (img_width * img_height) // 2
@@ -343,7 +343,7 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 97 = DXT3, 8-bit
+        # DXT3, 8-bit
         # SimCity 4 Deluxe (PC)
         elif entry_type == 97:
             pixel_size = (img_width * img_height)
@@ -360,7 +360,7 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 125 = 32-bit A8R8G8B8
+        # 32-bit A8R8G8B8
         # SimCity 4 Deluxe (PC)
         elif entry_type == 125:
             bytes_per_pixel = 4

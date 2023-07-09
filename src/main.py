@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright © 2021  Bartłomiej Duda
+Copyright © 2023  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
-# Program tested on Python 3.7.0
+# Program tested on Python 3.11.0
 
 import os
 import tkinter as tk
@@ -14,7 +14,7 @@ from src.GUI.GUI_main import EAManGui
 from src.logger import get_logger
 
 
-VERSION_NUM = "v0.13.1"
+VERSION_NUM = "v0.13.2"
 
 logger = get_logger("main")
 

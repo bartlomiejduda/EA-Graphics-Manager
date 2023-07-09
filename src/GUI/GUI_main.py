@@ -7,10 +7,8 @@ License: GPL-3.0 License
 
 import os
 import tkinter as tk
-import io
 import webbrowser
 from tkinter import messagebox, filedialog
-from PIL import ImageTk, Image
 from src.EA_Image import ea_image_main
 from src.GUI.GUI_entry_header_info_box import GuiEntryHeaderInfoBox
 from src.GUI.GUI_entry_preview import GuiEntryPreview
@@ -44,9 +42,7 @@ class EAManGui:
         master.maxsize(MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT)
         master.resizable(width=0, height=0)
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.preview_instance = None
         self.tree_rclick_popup = None
-        self.ph_img = None
         self.icon_dir = self.MAIN_DIRECTORY + "\\data\\img\\icon_bd.ico"
 
         try:
@@ -114,58 +110,18 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, ea_dir.raw_data_size)
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, ea_dir.h_entry_end_offset)
 
+            # image preview logic START
             try:
-                self.preview_instance.destroy()
+                self.entry_preview.preview_instance.destroy()
             except Exception as e:
                 pass
 
-            # image preview logic
             if ea_dir.is_img_convert_supported:
-                try:
-                    canv_height = self.entry_preview.preview_labelframe_height - 30
-                    canv_width = self.entry_preview.preview_labelframe_width - 20
-                    img_stream = io.BytesIO(ea_dir.img_convert_data)
-                    pil_img = Image.open(img_stream).transpose(Image.FLIP_TOP_BOTTOM)
-
-                    if pil_img.height > canv_height:
-                        ratio = canv_height / pil_img.height
-                        pil_img = pil_img.resize(
-                            (int(pil_img.width * ratio), canv_height)
-                        )
-
-                    self.ph_img = ImageTk.PhotoImage(pil_img)
-
-                    self.preview_instance = tk.Canvas(
-                        self.entry_preview.preview_labelframe,
-                        bg="white",
-                        width=canv_width,
-                        height=canv_height,
-                    )
-                    self.preview_instance.create_image(
-                        canv_width / 2,
-                        canv_height / 2,
-                        anchor="center",
-                        image=self.ph_img,
-                    )
-                    self.preview_instance.place(x=5, y=5)
-
-                except Exception as error:
-                    logger.error(
-                        "Error occured while generating preview for %s... Error: %s",
-                        str(item_iid),
-                        error,
-                    )
+                self.entry_preview.init_image_preview_logic(ea_dir, item_iid)
 
             else:
-                preview_text = "Preview for this image type is not supported..."
-                self.preview_instance = tk.Label(
-                    self.entry_preview.preview_labelframe,
-                    text=preview_text,
-                    anchor="nw",
-                    justify="left",
-                    wraplength=300,
-                )
-                self.preview_instance.place(x=5, y=5, width=285, height=130)
+                self.entry_preview.init_image_preview_not_supported_logic()
+            # image preview logic END
 
         # set text and preview for bin attach entry
         elif "binattach" in item_iid:
@@ -188,29 +144,17 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
 
+            # bin attachment preview logic START
             try:
-                self.preview_instance.destroy()
+                self.entry_preview.preview_instance.destroy()
             except Exception:
                 pass
 
             if bin_attach.h_record_id in (33, 34, 35, 36, 41, 42, 45, 59):  # palette types
-                logger.info("TODO - add preview for palettes")
-                pass  # TODO - add preview for palettes
+                self.entry_preview.init_palette_preview_logic(bin_attach)
             else:
-                # set hex preview
-                preview_hex_string = bin_attach.raw_data.decode(
-                    "utf8", "backslashreplace"
-                ).replace("\000", ".")[
-                    0:200
-                ]  # limit preview to 200 characters
-                self.preview_instance = tk.Label(
-                    self.entry_preview.preview_labelframe,
-                    text=preview_hex_string,
-                    anchor="nw",
-                    justify="left",
-                    wraplength=300,
-                )
-                self.preview_instance.place(x=5, y=5, width=285, height=130)
+                self.entry_preview.init_binary_preview_logic(bin_attach)
+            # bin attachment preview logic END
 
         else:
             self.set_text_in_box(self.entry_header_info_box.eh_text_rec_type, "")
@@ -228,7 +172,7 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
 
             try:
-                self.preview_instance.destroy()
+                self.entry_preview.preview_instance.destroy()
             except Exception:
                 pass
 
@@ -402,13 +346,6 @@ class EAManGui:
 
     def show_about_window(self):
         AboutWindow(self)
-
-    def copy_gui_log_msg(self, txt_field, wind):
-        self.master.clipboard_clear()
-        log_txt = txt_field.get("1.0", tk.END)
-        self.master.clipboard_append(log_txt)
-        messagebox.showinfo("Info", "Log has been copied to the clipboard!")
-        wind.destroy()
 
     @staticmethod
     def set_text_in_box(in_box, in_text):
