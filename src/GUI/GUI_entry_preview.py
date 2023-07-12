@@ -32,8 +32,7 @@ class GuiEntryPreview(tk.Frame):
 
     def init_image_preview_logic(self, ea_dir, item_iid):
         try:
-            img_file_stream = io.BytesIO(ea_dir.img_convert_data)
-            pil_img = Image.open(img_file_stream).transpose(Image.FLIP_TOP_BOTTOM)
+            pil_img = Image.frombuffer("RGBA", (ea_dir.h_height, ea_dir.h_width), ea_dir.img_convert_data, "raw", "RGBA", 0, 1)
 
             if pil_img.height > self.canvas_height:
                 ratio = self.canvas_height / pil_img.height

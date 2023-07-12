@@ -1,9 +1,11 @@
 import struct
 
+from reversebox.io_files.bytes_handler import BytesHandler
+
 from src.EA_Image.Bmp import BmpImg
 
 
-class EaImageConverter:
+class ImageDataConvertHandler:
 
     def __init__(self):
         pass
@@ -78,3 +80,19 @@ class EaImageConverter:
             img_width, img_height, img_bpp, img_data, img_pal_data
         )
         ea_dir_entry.img_convert_data = bmp_object.get_bmp_file_data()
+
+    # TODO - move it to ReverseBox
+    def convert_b8g8r8a8_to_r8b8g8a8(self, image_data: bytes) -> bytes:
+        converted_raw_data = b''
+        bytes_handler = BytesHandler(image_data)
+        read_offset = 0
+        for i in range(int(len(image_data) / 4)):
+            b_byte = bytes_handler.get_bytes(read_offset, 1)
+            g_byte = bytes_handler.get_bytes(read_offset + 1, 1)
+            r_byte = bytes_handler.get_bytes(read_offset + 2, 1)
+            a_byte = bytes_handler.get_bytes(read_offset + 3, 1)
+            single_pixel_data = r_byte + g_byte + b_byte + a_byte
+            converted_raw_data += single_pixel_data
+            read_offset += 4
+
+        return converted_raw_data

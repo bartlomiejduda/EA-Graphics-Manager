@@ -18,7 +18,7 @@ from src.EA_Image.bin_attachment_entries import (
 )
 from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
-from src.EA_Image.ea_image_converter import EaImageConverter
+from src.EA_Image.ea_image_converter import ImageDataConvertHandler
 from src.logger import get_logger
 
 
@@ -190,6 +190,10 @@ class EAImage:
                     ea_dir_entry.start_offset + ea_dir_entry.h_size_of_the_block
                 )  # seek to offset of the first bin attachment
 
+                # fix for entries with no attachments
+                if in_file.tell() + ea_dir_entry.header_size >= ea_dir_entry.end_offset:
+                    break  # no more binary attachments for this DIR entry
+
                 while 1:
                     bin_att_start_offset = in_file.tell()
                     bin_att_id_count += 1
@@ -236,7 +240,7 @@ class EAImage:
 
     def convert_images(self):
 
-        conv_images_supported_types = [2]
+        conv_images_supported_types = [125]
 
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -262,7 +266,9 @@ class EAImage:
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
         if entry_type == 2:
-            EaImageConverter().convert_type_2_to_bmp(ea_dir_entry, self)
+            ImageDataConvertHandler().convert_type_2_to_bmp(ea_dir_entry, self)
+        elif entry_type == 125:
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_b8g8r8a8_to_r8b8g8a8(ea_dir_entry.raw_data)
         else:
             logger.error(f"Unsupported type {entry_type} for convert and preview!")
             return
