@@ -111,7 +111,7 @@ def find_ea_files():
     print("Starting data filters logic...")
     temp_ea_files_list = []
     for ea_file_entry in report_dict["EA_FILES"]:
-        if ea_file_entry["file_size"] > 65000:
+        if ea_file_entry["file_size"] > 70000 and ea_file_entry["number_of_images"] == 1:
             temp_ea_files_list.append(ea_file_entry)
 
     report_dict["EA_FILES"] = temp_ea_files_list

@@ -327,7 +327,7 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
         # DXT1, 4-bit
-        # SimCity 4 Deluxe (PC)
+        # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 96:
             pixel_size = (img_width * img_height) // 2
             print("pixel_size: ", pixel_size, " img_wodth: ", img_width, " img_height: ", img_height)
@@ -344,7 +344,7 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
         # DXT3, 8-bit
-        # SimCity 4 Deluxe (PC)
+        # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 97:
             pixel_size = (img_width * img_height)
             print("pixel_size: ", pixel_size, " img_wodth: ", img_width, " img_height: ", img_height)
@@ -359,9 +359,36 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
+            # TODO - figure out format, more samples needed
+            # e.g. SimCity 4 Deluxe (PC)
+        elif entry_type == 123:
+            bits_per_pixel = 8
+            pixel_size = img_width * img_height
+            pixel_data = bs.readBytes(pixel_size)
+
+            bytes_per_palette_pixel = 1
+            palette_type = bs.readUByte()
+            print("palette_type:", palette_type)
+            palette_total_size = get_uint24(bs.readBytes(3), "<")
+            palette_width = bs.readUShort()
+            palette_height = bs.readUShort()
+            bs.seek(8, NOESEEK_REL)  # skip unknown bytes
+            palette_size = palette_width * palette_height * bytes_per_palette_pixel
+            palette_data = bs.readBytes(palette_size)
+
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
+                                                "r5 g5 b5 p1")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 123 END
+
+
+
 
         # 32-bit A8R8G8B8
-        # SimCity 4 Deluxe (PC)
+        # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 125:
             bytes_per_pixel = 4
             pixel_size = img_width * img_height * bytes_per_pixel
@@ -376,7 +403,18 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
+        # 24-bit R8G8B8
+        # e.g. SimCity 4 Deluxe (PC)
+        elif entry_type == 127:
+            bytes_per_pixel = 3
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
 
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b8 g8 r8")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
 
 
 
