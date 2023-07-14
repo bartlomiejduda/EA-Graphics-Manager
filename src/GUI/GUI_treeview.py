@@ -8,9 +8,7 @@ class GuiTreeView(tk.Frame):
     def __init__(self, parent, gui_main):
         super().__init__(parent)
         style = ttk.Style()
-        style.layout(
-            "Treeview", [("Treeview.treearea", {"sticky": "nswe"})]
-        )  # get rid of the default treeview border
+        style.layout("Treeview", [("Treeview.treearea", {"sticky": "nswe"})])  # get rid of the default treeview border
         style.configure("Treeview", indent=10)
 
         self.tree_frame = tk.Frame(
@@ -21,9 +19,7 @@ class GuiTreeView(tk.Frame):
         )  # add custom treeview border
         self.tree_frame.place(x=10, y=10, width=120, height=330)
 
-        self.treeview_widget = ttk.Treeview(
-            self.tree_frame, show="tree", selectmode="browse"
-        )
+        self.treeview_widget = ttk.Treeview(self.tree_frame, show="tree", selectmode="browse")
         self.tree_man = TreeManager(self.treeview_widget)
         self.treeview_widget.place(relx=0, rely=0, relwidth=1, relheight=1)
 

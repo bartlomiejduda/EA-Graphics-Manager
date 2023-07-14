@@ -15,9 +15,7 @@ class GuiMenu(tk.Frame):
         )
         parent.bind_all("<Control-o>", lambda x: gui_main.open_file())
         self.filemenu.add_separator()
-        self.filemenu.add_command(
-            label="Quit", command=lambda: gui_main.quit_program(), accelerator="Ctrl+Q"
-        )
+        self.filemenu.add_command(label="Quit", command=lambda: gui_main.quit_program(), accelerator="Ctrl+Q")
         parent.bind_all("<Control-q>", lambda x: gui_main.quit_program())
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
@@ -26,9 +24,7 @@ class GuiMenu(tk.Frame):
         self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
 
         self.helpmenu = tk.Menu(self.menubar, tearoff=0)
-        self.helpmenu.add_command(
-            label="About...", command=lambda: gui_main.show_about_window()
-        )
+        self.helpmenu.add_command(label="About...", command=lambda: gui_main.show_about_window())
         self.menubar.add_cascade(label="Help", menu=self.helpmenu)
 
         parent.config(menu=self.menubar)

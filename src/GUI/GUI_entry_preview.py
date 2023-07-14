@@ -44,9 +44,7 @@ class GuiEntryPreview(tk.Frame):
 
             if pil_img.height > self.canvas_height:
                 ratio = self.canvas_height / pil_img.height
-                pil_img = pil_img.resize(
-                    (int(pil_img.width * ratio), self.canvas_height)
-                )
+                pil_img = pil_img.resize((int(pil_img.width * ratio), self.canvas_height))
 
             self.ph_img = ImageTk.PhotoImage(pil_img)
 
@@ -65,11 +63,7 @@ class GuiEntryPreview(tk.Frame):
             self.preview_instance.place(x=5, y=5)
 
         except Exception as error:
-            logger.error(
-                "Error occurred while generating preview for %s... Error: %s",
-                str(item_iid),
-                error,
-            )
+            logger.error(f"Error occurred while generating preview for {str(item_iid)}... Error: {error}")
 
     def init_image_preview_not_supported_logic(self):
         preview_text = "Preview for this image type is not supported..."
@@ -83,9 +77,7 @@ class GuiEntryPreview(tk.Frame):
         self.preview_instance.place(x=5, y=5, width=285, height=130)
 
     def init_binary_preview_logic(self, bin_attachment):
-        preview_hex_string = bin_attachment.raw_data.decode(
-            "utf8", "backslashreplace"
-        ).replace("\000", ".")[
+        preview_hex_string = bin_attachment.raw_data.decode("utf8", "backslashreplace").replace("\000", ".")[
             0:200
         ]  # limit preview to 200 characters
         self.preview_instance = tk.Label(
@@ -100,9 +92,7 @@ class GuiEntryPreview(tk.Frame):
     def init_palette_preview_logic(self, palette_entry: PaletteEntry):
         # TODO - move this logic (before "try") to EAImage
         # TODO - fix palette - RGB to BGR
-        bytes_per_entry_in_palette: int = int(
-            len(palette_entry.raw_data) / palette_entry.pal_entries
-        )
+        bytes_per_entry_in_palette: int = int(len(palette_entry.raw_data) / palette_entry.pal_entries)
         palette_width: int = int(math.sqrt(palette_entry.pal_entries))
         palette_height: int = int(math.sqrt(palette_entry.pal_entries))
         bmp_object = BmpImg(
@@ -119,13 +109,9 @@ class GuiEntryPreview(tk.Frame):
 
             if pil_img.height > self.canvas_height:
                 ratio = self.canvas_height / pil_img.height
-                pil_img = pil_img.resize(
-                    (int(pil_img.width * ratio), self.canvas_height)
-                )
+                pil_img = pil_img.resize((int(pil_img.width * ratio), self.canvas_height))
             elif pil_img.height < 50:
-                pil_img = pil_img.resize(
-                    (int(pil_img.width * 6), int(pil_img.height * 6))
-                )
+                pil_img = pil_img.resize((int(pil_img.width * 6), int(pil_img.height * 6)))
 
             self.ph_img = ImageTk.PhotoImage(pil_img)
 
@@ -144,7 +130,4 @@ class GuiEntryPreview(tk.Frame):
             self.preview_instance.place(x=5, y=5)
 
         except Exception as error:
-            logger.error(
-                "Error occurred while generating preview palette... Error: %s",
-                error,
-            )
+            logger.error(f"Error occurred while generating preview palette... Error: {error}")

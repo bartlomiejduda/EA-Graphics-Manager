@@ -78,17 +78,14 @@ class EAImage:
             file_size_be = struct.unpack(">L", in_file.read(4))[0]
             in_file.seek(back_offset)
             if (file_size_le != real_file_size) and (file_size_be != real_file_size):
+                # fmt: off
                 error_msg = (
                     "Real file size doesn't match file total file size from header:\n"
-                    + "Real_file_size: "
-                    + str(real_file_size)
-                    + "\n"
-                    + "File_size_le: "
-                    + str(file_size_le)
-                    + "\n"
-                    + "File_size_be: "
-                    + str(file_size_be)
+                    + "Real_file_size: " + str(real_file_size) + "\n"
+                    + "File_size_le: " + str(file_size_le) + "\n"
+                    + "File_size_be: " + str(file_size_be)
                 )
+                # fmt: on
                 logger.info(error_msg)
                 return "WRONG_SIZE_ERROR", error_msg
 
@@ -119,9 +116,7 @@ class EAImage:
                 self.f_endianess = ">"
                 self.f_endianess_desc = "big"
             else:
-                logger.warning(
-                    "Warning! Can't get file endianess! File may be broken! Using little endian as default!"
-                )
+                logger.warning("Warning! Can't get file endianess! File may be broken! Using little endian as default!")
                 self.f_endianess = "<"
                 self.f_endianess_desc = "little"
 
@@ -138,9 +133,7 @@ class EAImage:
             entry_offset = struct.unpack(self.f_endianess + "L", in_file.read(4))[0]
             ea_dir_entry = DirEntry(entry_id, entry_tag, entry_offset)
 
-            self.dir_entry_list.append(
-                ea_dir_entry
-            )  # dir entry is now initialized and can be added to the list
+            self.dir_entry_list.append(ea_dir_entry)  # dir entry is now initialized and can be added to the list
 
         # updating end offset for each entry
         # and parsing DIR entry data
@@ -159,9 +152,7 @@ class EAImage:
             self.parse_dir_entry_header_and_data(in_file, ea_dir_entry)
 
     def parse_dir_entry_header_and_data(self, in_file, ea_dir_entry):
-        ea_dir_entry.set_entry_header(
-            in_file, self.f_endianess
-        )  # read entry header and set all values
+        ea_dir_entry.set_entry_header(in_file, self.f_endianess)  # read entry header and set all values
 
         ea_dir_entry.set_raw_data(
             in_file,
@@ -177,8 +168,7 @@ class EAImage:
 
             if (
                 ea_dir_entry.if_next_entry_exist_flag is False
-                and ea_dir_entry.start_offset + ea_dir_entry.h_size_of_the_block
-                == ea_dir_entry.end_offset
+                and ea_dir_entry.start_offset + ea_dir_entry.h_size_of_the_block == ea_dir_entry.end_offset
             ):
                 pass  # no binary attachments for this DIR entry
             else:
@@ -197,9 +187,7 @@ class EAImage:
                     bin_att_id_count += 1
                     bin_att_id = ea_dir_entry.id + "_binattach_" + str(bin_att_id_count)
 
-                    bin_att_rec_id = struct.unpack(
-                        self.f_endianess + "B", in_file.read(1)
-                    )[0]
+                    bin_att_rec_id = struct.unpack(self.f_endianess + "B", in_file.read(1))[0]
                     in_file.seek(bin_att_start_offset)
 
                     if bin_att_rec_id == 105:
@@ -214,23 +202,16 @@ class EAImage:
                         bin_att_entry = PaletteEntry(bin_att_id, bin_att_start_offset)
                     else:
                         bin_att_entry = UnknownEntry(bin_att_id, bin_att_start_offset)
-                        logger.warning(
-                            "Unknown bin attachment entry (%s)!",
-                            str(hex(bin_att_rec_id)),
-                        )
+                        logger.warning(f"Unknown bin attachment entry ({str(hex(bin_att_rec_id))})!")
 
                     bin_att_entry.set_tag(bin_att_rec_id)
                     bin_att_entry.set_entry_header(in_file, self.f_endianess)
-                    bin_att_entry.set_raw_data(
-                        in_file, in_file.tell(), ea_dir_entry.end_offset
-                    )
+                    bin_att_entry.set_raw_data(in_file, in_file.tell(), ea_dir_entry.end_offset)
 
                     bin_att_entry.start_offset = bin_att_start_offset
                     bin_att_entry.end_offset = in_file.tell()
 
-                    ea_dir_entry.bin_attachments_list.append(
-                        bin_att_entry
-                    )  # binary attachment is now parsed
+                    ea_dir_entry.bin_attachments_list.append(bin_att_entry)  # binary attachment is now parsed
                     # and can be added to the list
 
                     if bin_att_entry.end_offset >= ea_dir_entry.end_offset:
@@ -245,17 +226,12 @@ class EAImage:
 
             if entry_type not in conv_images_supported_types:
                 logger.warning(
-                    "Warning! Entry type %s is not supported for image conversion! Skipping!",
-                    str(entry_type),
+                    f'Warning! Image "{ea_dir_entry.tag}" with entry type {str(entry_type)} is not supported for image conversion! Skipping!'
                 )
                 continue
 
             else:
-                logger.info(
-                    "Converting image type %s, number %s...",
-                    str(entry_type),
-                    str(i + 1),
-                )
+                logger.info(f'Converting image {str(i+1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...')
                 ea_dir_entry.is_img_convert_supported = True
                 self.img_convert_type = "BMP"
 
@@ -263,12 +239,10 @@ class EAImage:
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
         if entry_type == 2:
-            ImageDataConvertHandler().convert_type_2_to_bmp(ea_dir_entry, self)
+            pass  # TODO - support this type
         elif entry_type == 125:
-            ea_dir_entry.img_convert_data = (
-                ImageDataConvertHandler().convert_b8g8r8a8_to_r8b8g8a8(
-                    ea_dir_entry.raw_data
-                )
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_b8g8r8a8_to_r8b8g8a8(
+                ea_dir_entry.raw_data
             )
         else:
             logger.error(f"Unsupported type {entry_type} for convert and preview!")

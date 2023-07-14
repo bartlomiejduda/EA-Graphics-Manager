@@ -16,7 +16,7 @@ class AboutWindow:
             icon_dir = gui_object.icon_dir
             about_window.iconbitmap(icon_dir)
         except tk.TclError:
-            logger.error("Can't load the icon file from %s", icon_dir)
+            logger.error(f"Can't load the icon file from {icon_dir}")
 
         a_text = (
             "EA Graphics Manager\n"

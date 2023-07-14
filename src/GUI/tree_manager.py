@@ -18,9 +18,7 @@ class TreeManager:
         sub_id = 0
         for dir_entry in in_obj.dir_entry_list:
             sub_id += 1
-            self.tree_widget.insert(
-                "", tk.END, text=dir_entry.tag, iid=dir_entry.id, open=False
-            )
+            self.tree_widget.insert("", tk.END, text=dir_entry.tag, iid=dir_entry.id, open=False)
             self.tree_widget.move(dir_entry.id, in_obj.ea_image_id, sub_id)
 
             # add binary attachments to tree

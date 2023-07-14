@@ -39,10 +39,7 @@ class BinAttachmentEntry(DirEntry):
     def set_tag(self, in_entry_id):
         self.tag = self.entry_tags.get(
             in_entry_id,
-            str(in_entry_id)
-            + " | "
-            + "0x%02X" % int(in_entry_id)
-            + " | UNKNOWN_BIN_TYPE",
+            str(in_entry_id) + " | " + "0x%02X" % int(in_entry_id) + " | UNKNOWN_BIN_TYPE",
         )
 
 

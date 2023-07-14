@@ -1,6 +1,7 @@
 import struct
 
 
+# TODO - move it to ReverseBox
 class BmpHeader:
     def __init__(self, in_size, in_offset):
         self.bmp_magic = b"BM"
@@ -17,6 +18,7 @@ class BmpHeader:
         )
 
 
+# TODO - move it to ReverseBox
 class BmpInfoHeader:
     def __init__(self, in_width, in_height, in_bpp):
         self.info_header_size = 40
@@ -48,6 +50,7 @@ class BmpInfoHeader:
         )
 
 
+# TODO - move it to ReverseBox
 class BmpImg:
     def __init__(self, in_width, in_height, in_bpp, in_image_data, in_palette_data):
         self.bmp_width = in_width
@@ -68,6 +71,4 @@ class BmpImg:
         self.info_header_data = self.info_header.get_binary()
 
     def get_bmp_file_data(self):
-        return (
-            self.header_data + self.info_header_data + self.bmp_palette + self.bmp_data
-        )
+        return self.header_data + self.info_header_data + self.bmp_palette + self.bmp_data

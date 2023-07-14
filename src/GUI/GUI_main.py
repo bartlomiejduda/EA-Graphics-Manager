@@ -49,7 +49,7 @@ class EAManGui:
         try:
             self.master.iconbitmap(self.icon_dir)
         except tk.TclError:
-            logger.error("Can't load the icon file from %s", self.icon_dir)
+            logger.error(f"Can't load the icon file from {self.icon_dir}")
 
         self.allowed_filetypes = [
             (
@@ -82,8 +82,6 @@ class EAManGui:
 
         if item_iid == "":
             return  # quit if nothing is selected
-
-        # logger.info("Loading item %s...", str(item_iid))
 
         item_id = item_iid.split("_")[0]
 
@@ -194,9 +192,7 @@ class EAManGui:
         # create right-click popup menu
         self.tree_rclick_popup = tk.Menu(self.master, tearoff=0)
         if "direntry" not in item_iid and "binattach" not in item_iid:
-            self.tree_rclick_popup.add_command(
-                label="Close File", command=lambda: self.treeview_rclick_close(item_iid)
-            )
+            self.tree_rclick_popup.add_command(label="Close File", command=lambda: self.treeview_rclick_close(item_iid))
             self.tree_rclick_popup.tk_popup(event.x_root, event.y_root, entry="0")
         elif "direntry" in item_iid and "binattach" not in item_iid:
             self.tree_rclick_popup.add_command(
@@ -230,9 +226,7 @@ class EAManGui:
         self.set_text_in_box(self.file_header_info_box.fh_text_dir_id, "")
 
     def treeview_rclick_export_raw(self, item_iid):
-        ea_img = self.tree_view.tree_man.get_object(
-            item_iid.split("_")[0], self.opened_ea_images
-        )
+        ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
         out_file = None
         try:
@@ -243,7 +237,7 @@ class EAManGui:
                 filetypes=(("BIN files", "*.bin"), ("all files", "*.*")),
             )
         except Exception as error:
-            logger.error("Error: %s", error)
+            logger.error(f"Error: {error}")
             messagebox.showwarning("Warning", "Failed to save file!")
         if out_file is None:
             return
@@ -261,9 +255,7 @@ class EAManGui:
             bin_attach = self.tree_view.tree_man.get_object_bin_attach(ea_dir, item_iid)
             out_data = bin_attach.raw_data
         else:
-            logger.warning(
-                "Warning! Unsupported entry while saving output binary data!"
-            )
+            logger.warning("Warning! Unsupported entry while saving output binary data!")
 
         out_file.write(out_data)
         out_file.close()
@@ -275,15 +267,13 @@ class EAManGui:
 
     def open_file(self):
         try:
-            in_file = filedialog.askopenfile(
-                filetypes=self.allowed_filetypes, mode="rb"
-            )
+            in_file = filedialog.askopenfile(filetypes=self.allowed_filetypes, mode="rb")
             if not in_file:
                 return
             in_file_path = in_file.name
             in_file_name = in_file_path.split("/")[-1]
         except Exception as error:
-            logger.error("Failed to open file! Error: %s", error)
+            logger.error(f"Failed to open file! Error: {error}")
             messagebox.showwarning("Warning", "Failed to open file!")
             return
 
@@ -291,18 +281,11 @@ class EAManGui:
         check_result = ea_img.check_file_signature_and_size(in_file)
 
         if check_result[0] != "OK":
-            error_msg = (
-                "ERROR: "
-                + str(check_result[0])
-                + "\n"
-                + str(check_result[1])
-                + "\n\n"
-                + "File not supported!"
-            )
+            error_msg = "ERROR: " + str(check_result[0]) + "\n" + str(check_result[1]) + "\n\n" + "File not supported!"
             messagebox.showwarning("Warning", error_msg)
             return
 
-        logger.info("Loading file %s...", in_file_name)
+        logger.info(f"Loading file {in_file_name}...")
 
         self.ea_image_id += 1
         self.opened_ea_images_count += 1
@@ -321,7 +304,7 @@ class EAManGui:
         try:
             ea_img.convert_images()
         except Exception as error:
-            logger.error("Error while converting images! Error: %s", error)
+            logger.error(f"Error while converting images! Error: {error}")
 
         # fmt: off
         # set text for header

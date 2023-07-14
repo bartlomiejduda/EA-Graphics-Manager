@@ -10,9 +10,6 @@ class ImageDataConvertHandler:
     def __init__(self):
         pass
 
-    # def convert_type_1_to_bmp(self, ea_dir_entry, ea_image):
-    #     pass # TODO - implement this
-    #
     # def convert_type_2_to_bmp(self, ea_dir_entry, ea_image):
     #     img_bpp = 8
     #     img_data = b""

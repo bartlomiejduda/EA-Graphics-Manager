@@ -88,12 +88,8 @@ def find_ea_files():
     file_count = 0
     report_dict["SEARCH_PATH"] = search_directory_path
     summary_dict["SEARCH_PATH"] = search_directory_path
-    report_dict["SEARCH_TIMESTAMP"] = str(
-        datetime.now(pytz.timezone("Europe/Warsaw")).strftime("%d.%m.%Y, %H:%M:%S")
-    )
-    summary_dict["SEARCH_TIMESTAMP"] = str(
-        datetime.now(pytz.timezone("Europe/Warsaw")).strftime("%d.%m.%Y, %H:%M:%S")
-    )
+    report_dict["SEARCH_TIMESTAMP"] = str(datetime.now(pytz.timezone("Europe/Warsaw")).strftime("%d.%m.%Y, %H:%M:%S"))
+    summary_dict["SEARCH_TIMESTAMP"] = str(datetime.now(pytz.timezone("Europe/Warsaw")).strftime("%d.%m.%Y, %H:%M:%S"))
 
     # create report dictionaries
     report_dict["EA_FILES"] = []
@@ -110,10 +106,7 @@ def find_ea_files():
     print("Starting data filters logic...")
     temp_ea_files_list = []
     for ea_file_entry in report_dict["EA_FILES"]:
-        if (
-            ea_file_entry["file_size"] > 70000
-            and ea_file_entry["number_of_images"] == 1
-        ):
+        if ea_file_entry["file_size"] > 70000 and ea_file_entry["number_of_images"] == 1:
             temp_ea_files_list.append(ea_file_entry)
 
     report_dict["EA_FILES"] = temp_ea_files_list

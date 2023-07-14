@@ -12,9 +12,7 @@ class RightClicker:
         text = event.widget.get("1.0", tk.END)[:-1]
 
         self.text_box.focus_set()  # focusing on text widget
-        self.text_box.tag_add(
-            "sel", "1.0", "end"
-        )  # selecting everything from text widget
+        self.text_box.tag_add("sel", "1.0", "end")  # selecting everything from text widget
 
         menu = tk.Menu(None, tearoff=0, takefocus=0)
         menu.add_command(
