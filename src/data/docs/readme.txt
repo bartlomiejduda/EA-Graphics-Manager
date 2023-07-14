@@ -25,4 +25,3 @@ It was built to run on Windows x64 machines.
 # Issues #
 This program is in an early stage of development,
 so some functionalities may not work properly.
-

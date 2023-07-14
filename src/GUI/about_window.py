@@ -1,6 +1,6 @@
 import tkinter as tk
-import center_tk_window
 
+import center_tk_window
 from reversebox.common.logger import get_logger
 
 logger = get_logger(__name__)
@@ -32,8 +32,8 @@ class AboutWindow:
         a_text3 = "\n" "If you want to see my other tools,\n" + "go to my github page:"
         a_text4 = "https://github.com/bartlomiejduda"
 
-        l = tk.Label(about_window, text=a_text)
-        l.pack(side="top", fill="both", padx=10)
+        l1 = tk.Label(about_window, text=a_text)
+        l1.pack(side="top", fill="both", padx=10)
         l2 = tk.Label(about_window, text=a_text2, fg="blue", cursor="hand2")
         l2.bind("<Button-1>", lambda e: gui_object.web_callback(a_text2))
         l2.pack(side="top", anchor="n")

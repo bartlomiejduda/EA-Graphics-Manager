@@ -1,5 +1,5 @@
-from tkinter import ttk
 import tkinter as tk
+from tkinter import ttk
 
 from src.GUI.tree_manager import TreeManager
 

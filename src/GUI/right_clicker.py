@@ -7,7 +7,6 @@ logger = get_logger(__name__)
 
 class RightClicker:
     def __init__(self, out_class, event):
-
         self.out_class = out_class
         self.text_box = event.widget
         text = event.widget.get("1.0", tk.END)[:-1]

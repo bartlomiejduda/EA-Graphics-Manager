@@ -1,10 +1,7 @@
-import os
-
-from src.EA_Image.data_read import get_uint8, get_uint24, get_uint16, get_uint12_uint4
+from src.EA_Image.data_read import get_uint8, get_uint12_uint4, get_uint16, get_uint24
 
 
 class DirEntry:
-
     header_size = 16
 
     entry_types = {

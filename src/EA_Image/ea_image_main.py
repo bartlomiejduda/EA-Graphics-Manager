@@ -8,19 +8,19 @@ License: GPL-3.0 License
 import os
 import struct
 
-from src.EA_Image.Bmp import BmpImg
+from reversebox.common.logger import get_logger
+
 from src.EA_Image.bin_attachment_entries import (
-    PaletteEntry,
+    CommentEntry,
     HotSpotEntry,
     ImgNameEntry,
-    CommentEntry,
-    MetalBinEntry, UnknownEntry,
+    MetalBinEntry,
+    PaletteEntry,
+    UnknownEntry,
 )
 from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
 from src.EA_Image.ea_image_converter import ImageDataConvertHandler
-from reversebox.common.logger import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -42,6 +42,7 @@ class EAImage:
         self.ea_image_id = -1
         self.dir_entry_id = 0
 
+        # fmt: off
         self.allowed_signatures = (
             "SHPI",  # PC games
             "SHPP",  # PS1 games
@@ -51,13 +52,13 @@ class EAImage:
             "SHPM",  # PSP games
             "SHPG",  # WII games
         )
+        # fmt: on
 
     def set_ea_image_id(self, in_ea_image_id):
         self.ea_image_id = in_ea_image_id
 
     def check_file_signature_and_size(self, in_file) -> tuple:
         try:
-
             # checking signature
             back_offset = in_file.tell()
             sign = get_utf8_string(in_file, 4)
@@ -128,7 +129,6 @@ class EAImage:
         self.dir_id = in_file.read(4).decode("utf8")
 
     def parse_directory(self, in_file):
-
         # creating directory entries
         for i in range(self.num_of_entries):
             self.dir_entry_id += 1
@@ -172,7 +172,6 @@ class EAImage:
         ea_dir_entry.set_img_end_offset()  # this value is known only after reading data
 
     def parse_bin_attachments(self, in_file):
-
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
 
@@ -183,7 +182,6 @@ class EAImage:
             ):
                 pass  # no binary attachments for this DIR entry
             else:
-
                 # there are some binary attachments (1 or more)
                 bin_att_id_count = 0
                 in_file.seek(
@@ -239,7 +237,6 @@ class EAImage:
                         break  # no more binary attachments for this DIR entry
 
     def convert_images(self):
-
         conv_images_supported_types = [125]
 
         for i in range(self.num_of_entries):
@@ -268,7 +265,11 @@ class EAImage:
         if entry_type == 2:
             ImageDataConvertHandler().convert_type_2_to_bmp(ea_dir_entry, self)
         elif entry_type == 125:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_b8g8r8a8_to_r8b8g8a8(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = (
+                ImageDataConvertHandler().convert_b8g8r8a8_to_r8b8g8a8(
+                    ea_dir_entry.raw_data
+                )
+            )
         else:
             logger.error(f"Unsupported type {entry_type} for convert and preview!")
             return

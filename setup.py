@@ -1,5 +1,7 @@
 import sys
-from cx_Freeze import setup, Executable
+
+from cx_Freeze import Executable, setup
+
 from src.main import VERSION_NUM
 
 base = None
@@ -13,20 +15,18 @@ executables = [
         copyright="Copyright (C) 2023 Bartlomiej Duda",
         base=base,
         icon="src/data/img/ea_icon.ico",
-        target_name="EA-Graphics-Manager-" + VERSION_NUM + ".exe"
+        target_name="EA-Graphics-Manager-" + VERSION_NUM + ".exe",
     )
 ]
 
 build_exe_options: dict = {
     "packages": [],
-    'includes': [],
+    "includes": [],
     "excludes": [],
-    'include_files': ['src/data/docs/readme.txt', 'LICENSE'],
+    "include_files": ["src/data/docs/readme.txt", "LICENSE"],
 }
 
-options: dict = {
-    'build_exe': build_exe_options
-}
+options: dict = {"build_exe": build_exe_options}
 
 setup(
     name="EA-Graphics-Manager " + VERSION_NUM,

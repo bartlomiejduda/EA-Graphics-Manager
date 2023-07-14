@@ -14,23 +14,16 @@
 for i = 0
 
 	FindLoc SIGN_OFFSET STRING "SHPP"
-	
 	if SIGN_OFFSET == ""
 		cleanexit
 	endif
-	
 	goto SIGN_OFFSET
-	
-	GetDString SIGN 4  
+	GetDString SIGN 4
 	get TOTAL_SIZE long
-	
-	
 	XMATH F_COUNT "i+1"
 	set F_OUT_NAME string "file"
 	string F_OUT_NAME += F_COUNT
 	string F_OUT_NAME += ".psh"
-	
-	
 	log F_OUT_NAME SIGN_OFFSET TOTAL_SIZE
 
 

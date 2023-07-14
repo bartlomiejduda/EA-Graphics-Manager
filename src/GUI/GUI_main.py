@@ -8,18 +8,17 @@ License: GPL-3.0 License
 import os
 import tkinter as tk
 import webbrowser
-from tkinter import messagebox, filedialog
+from tkinter import filedialog, messagebox
 
 from reversebox.common.logger import get_logger
 
 from src.EA_Image import ea_image_main
+from src.GUI.about_window import AboutWindow
 from src.GUI.GUI_entry_header_info_box import GuiEntryHeaderInfoBox
 from src.GUI.GUI_entry_preview import GuiEntryPreview
 from src.GUI.GUI_file_header_info_box import GuiFileHeaderInfoBox
 from src.GUI.GUI_menu import GuiMenu
 from src.GUI.GUI_treeview import GuiTreeView
-from src.GUI.about_window import AboutWindow
-
 
 # default app settings
 WINDOW_HEIGHT = 350
@@ -53,7 +52,10 @@ class EAManGui:
             logger.error("Can't load the icon file from %s", self.icon_dir)
 
         self.allowed_filetypes = [
-            ("EA Graphics files", ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh", "*.gsh"]),
+            (
+                "EA Graphics files",
+                ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh", "*.gsh"],
+            ),
             ("All files", ["*.*"]),
         ]
 
@@ -88,18 +90,19 @@ class EAManGui:
         ea_img = self.tree_view.tree_man.get_object(item_id, self.opened_ea_images)
 
         # set text for header
+        # fmt: off
         self.set_text_in_box(self.file_header_info_box.fh_text_sign, ea_img.sign)
         self.set_text_in_box(self.file_header_info_box.fh_text_f_size, ea_img.total_f_size)
         self.set_text_in_box(self.file_header_info_box.fh_text_obj_count, ea_img.num_of_entries)
         self.set_text_in_box(self.file_header_info_box.fh_text_dir_id, ea_img.dir_id)
+        # fmt: on
 
         # set text for dir entry
         if "direntry" in item_iid and "binattach" not in item_iid:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
+            # fmt: off
             self.set_text_in_box(self.entry_header_info_box.eh_text_rec_type, ea_dir.get_entry_type())
-            self.set_text_in_box(
-                self.entry_header_info_box.eh_text_size_of_the_block, ea_dir.h_size_of_the_block
-            )
+            self.set_text_in_box(self.entry_header_info_box.eh_text_size_of_the_block, ea_dir.h_size_of_the_block)
             self.set_text_in_box(self.entry_header_info_box.eh_text_mipmaps_count, ea_dir.h_mipmaps_count)
             self.set_text_in_box(self.entry_header_info_box.eh_text_width, ea_dir.h_width)
             self.set_text_in_box(self.entry_header_info_box.eh_text_height, ea_dir.h_height)
@@ -111,11 +114,12 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, ea_dir.raw_data_offset)
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, ea_dir.raw_data_size)
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, ea_dir.h_entry_end_offset)
+            # fmt: on
 
             # image preview logic START
             try:
                 self.entry_preview.preview_instance.destroy()
-            except Exception as e:
+            except Exception:
                 pass
 
             if ea_dir.is_img_convert_supported:
@@ -130,10 +134,9 @@ class EAManGui:
             dir_iid = item_iid.split("_binattach")[0]
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, dir_iid)
             bin_attach = self.tree_view.tree_man.get_object_bin_attach(ea_dir, item_iid)
+            # fmt: off
             self.set_text_in_box(self.entry_header_info_box.eh_text_rec_type, bin_attach.get_entry_type())
-            self.set_text_in_box(
-                self.entry_header_info_box.eh_text_size_of_the_block, bin_attach.h_size_of_the_block
-            )
+            self.set_text_in_box(self.entry_header_info_box.eh_text_size_of_the_block, bin_attach.h_size_of_the_block)
             self.set_text_in_box(self.entry_header_info_box.eh_text_mipmaps_count, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_width, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_height, "")
@@ -145,6 +148,7 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
+            # fmt: on
 
             # bin attachment preview logic START
             try:
@@ -152,13 +156,16 @@ class EAManGui:
             except Exception:
                 pass
 
+            # fmt: off
             if bin_attach.h_record_id in (33, 34, 35, 36, 41, 42, 45, 59):  # palette types
                 self.entry_preview.init_palette_preview_logic(bin_attach)
             else:
                 self.entry_preview.init_binary_preview_logic(bin_attach)
+            # fmt: on
             # bin attachment preview logic END
 
         else:
+            # fmt: off
             self.set_text_in_box(self.entry_header_info_box.eh_text_rec_type, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_size_of_the_block, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_mipmaps_count, "")
@@ -172,6 +179,7 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
+            # fmt: on
 
             try:
                 self.entry_preview.preview_instance.destroy()
@@ -189,9 +197,7 @@ class EAManGui:
             self.tree_rclick_popup.add_command(
                 label="Close File", command=lambda: self.treeview_rclick_close(item_iid)
             )
-            self.tree_rclick_popup.tk_popup(
-                event.x_root, event.y_root, entry="0"
-            )
+            self.tree_rclick_popup.tk_popup(event.x_root, event.y_root, entry="0")
         elif "direntry" in item_iid and "binattach" not in item_iid:
             self.tree_rclick_popup.add_command(
                 label="Export Raw Image Data",
@@ -202,18 +208,14 @@ class EAManGui:
             # self.tree_rclick_popup.add_command(label="Import Raw Image Data")
             # self.tree_rclick_popup.add_command(label="Import Image From BMP")
             # self.tree_rclick_popup.add_command(label="Import Image Details From XML")
-            self.tree_rclick_popup.tk_popup(
-                event.x_root, event.y_root, entry="0"
-            )
+            self.tree_rclick_popup.tk_popup(event.x_root, event.y_root, entry="0")
         elif "direntry" in item_iid and "binattach" in item_iid:
             self.tree_rclick_popup.add_command(
                 label="Export Raw Binary Data",
                 command=lambda: self.treeview_rclick_export_raw(item_iid),
             )
             # self.tree_rclick_popup.add_command(label="Import Raw Binary Data")
-            self.tree_rclick_popup.tk_popup(
-                event.x_root, event.y_root, entry="0"
-            )
+            self.tree_rclick_popup.tk_popup(event.x_root, event.y_root, entry="0")
         else:
             logger.warning("Warning! Unsupported entry in right-click popup!")
 
@@ -228,7 +230,9 @@ class EAManGui:
         self.set_text_in_box(self.file_header_info_box.fh_text_dir_id, "")
 
     def treeview_rclick_export_raw(self, item_iid):
-        ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
+        ea_img = self.tree_view.tree_man.get_object(
+            item_iid.split("_")[0], self.opened_ea_images
+        )
 
         out_file = None
         try:

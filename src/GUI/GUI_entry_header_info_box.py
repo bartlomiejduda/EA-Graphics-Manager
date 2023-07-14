@@ -1,4 +1,5 @@
 import tkinter as tk
+
 from src.GUI.right_clicker import RightClicker
 
 
@@ -6,9 +7,7 @@ class GuiEntryHeaderInfoBox(tk.Frame):
     def __init__(self, parent, gui_main):
         super().__init__(parent)
 
-        self.entry_header_labelframe = tk.LabelFrame(
-            parent, text="Entry Header"
-        )
+        self.entry_header_labelframe = tk.LabelFrame(parent, text="Entry Header")
         self.entry_header_labelframe.place(
             x=140, y=100, width=340, height=240
         )  # <-- entry header info box

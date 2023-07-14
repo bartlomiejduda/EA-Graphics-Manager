@@ -1,15 +1,14 @@
 from src.EA_Image.data_read import (
     get_uint8,
-    get_uint24,
     get_uint16,
-    get_uint64,
+    get_uint24,
     get_uint32,
+    get_uint64,
 )
 from src.EA_Image.dir_entry import DirEntry
 
 
 class BinAttachmentEntry(DirEntry):
-
     entry_tags = {
         33: "palette 0x21",
         34: "palette 0x22",

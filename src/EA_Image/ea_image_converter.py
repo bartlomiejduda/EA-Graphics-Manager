@@ -7,7 +7,6 @@ from reversebox.io_files.bytes_handler import BytesHandler
 
 
 class ImageDataConvertHandler:
-
     def __init__(self):
         pass
 
@@ -84,7 +83,7 @@ class ImageDataConvertHandler:
 
     # TODO - move it to ReverseBox
     def convert_b8g8r8a8_to_r8b8g8a8(self, image_data: bytes) -> bytes:
-        converted_raw_data = b''
+        converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
         read_offset = 0
         for i in range(int(len(image_data) / 4)):

@@ -1,5 +1,6 @@
-from inc_noesis import *
 import struct
+
+from inc_noesis import *
 
 # EA Graphics Manager Noesis script
 # Created by Bartlomiej Duda (Ikskoks)
@@ -84,10 +85,10 @@ def ea_image_load(ea_image_file_data, tex_list):
     print("base_name: ", base_name)
 
     # header parsing
-    signature = bs.readBytes(4).decode("UTF8")  # e.g. "SHPS"
-    total_file_size = bs.readUInt()
+    bs.readBytes(4).decode("UTF8")  # signature, e.g. "SHPS"
+    bs.readUInt()  # total file size
     number_of_entries = bs.readUInt()
-    directory_id = bs.readBytes(4).decode("UTF8")  # e.g. "G354", "G264" etc.
+    bs.readBytes(4).decode("UTF8")  # directory ID, e.g. "G354", "G264" etc.
 
     # directory parsing
     entry_tags_list = []

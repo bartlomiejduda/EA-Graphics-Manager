@@ -9,12 +9,13 @@ License: GPL-3.0 License
 
 import os
 import tkinter as tk
+
 import center_tk_window
-from src.GUI.GUI_main import EAManGui
 from reversebox.common.logger import get_logger
 
+from src.GUI.GUI_main import EAManGui
 
-VERSION_NUM = "v0.13.6"
+VERSION_NUM = "v0.13.7"
 
 logger = get_logger("main")
 

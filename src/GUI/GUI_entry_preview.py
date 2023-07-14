@@ -1,14 +1,12 @@
 import io
 import math
-
-from PIL import ImageTk, Image
 import tkinter as tk
 
+from PIL import Image, ImageTk
 from reversebox.common.logger import get_logger
 
-from src.EA_Image.Bmp import BmpImg
 from src.EA_Image.bin_attachment_entries import PaletteEntry
-
+from src.EA_Image.Bmp import BmpImg
 
 logger = get_logger(__name__)
 
@@ -34,7 +32,15 @@ class GuiEntryPreview(tk.Frame):
 
     def init_image_preview_logic(self, ea_dir, item_iid):
         try:
-            pil_img = Image.frombuffer("RGBA", (ea_dir.h_height, ea_dir.h_width), ea_dir.img_convert_data, "raw", "RGBA", 0, 1)
+            pil_img = Image.frombuffer(
+                "RGBA",
+                (ea_dir.h_height, ea_dir.h_width),
+                ea_dir.img_convert_data,
+                "raw",
+                "RGBA",
+                0,
+                1,
+            )
 
             if pil_img.height > self.canvas_height:
                 ratio = self.canvas_height / pil_img.height
@@ -80,8 +86,8 @@ class GuiEntryPreview(tk.Frame):
         preview_hex_string = bin_attachment.raw_data.decode(
             "utf8", "backslashreplace"
         ).replace("\000", ".")[
-                             0:200
-                             ]  # limit preview to 200 characters
+            0:200
+        ]  # limit preview to 200 characters
         self.preview_instance = tk.Label(
             self.preview_labelframe,
             text=preview_hex_string,
@@ -94,11 +100,18 @@ class GuiEntryPreview(tk.Frame):
     def init_palette_preview_logic(self, palette_entry: PaletteEntry):
         # TODO - move this logic (before "try") to EAImage
         # TODO - fix palette - RGB to BGR
-        bytes_per_entry_in_palette: int = int(len(palette_entry.raw_data) / palette_entry.pal_entries)
+        bytes_per_entry_in_palette: int = int(
+            len(palette_entry.raw_data) / palette_entry.pal_entries
+        )
         palette_width: int = int(math.sqrt(palette_entry.pal_entries))
         palette_height: int = int(math.sqrt(palette_entry.pal_entries))
         bmp_object = BmpImg(
-            palette_width, palette_height, bytes_per_entry_in_palette, palette_entry.raw_data, b"")
+            palette_width,
+            palette_height,
+            bytes_per_entry_in_palette,
+            palette_entry.raw_data,
+            b"",
+        )
 
         try:
             img_file_stream = io.BytesIO(bmp_object.get_bmp_file_data())
@@ -110,7 +123,9 @@ class GuiEntryPreview(tk.Frame):
                     (int(pil_img.width * ratio), self.canvas_height)
                 )
             elif pil_img.height < 50:
-                pil_img = pil_img.resize((int(pil_img.width * 6), int(pil_img.height * 6)))
+                pil_img = pil_img.resize(
+                    (int(pil_img.width * 6), int(pil_img.height * 6))
+                )
 
             self.ph_img = ImageTk.PhotoImage(pil_img)
 
