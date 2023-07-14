@@ -19,7 +19,7 @@ from src.EA_Image.bin_attachment_entries import (
 from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
 from src.EA_Image.ea_image_converter import ImageDataConvertHandler
-from src.logger import get_logger
+from reversebox.common.logger import get_logger
 
 
 logger = get_logger(__name__)

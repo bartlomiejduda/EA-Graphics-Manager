@@ -10,9 +10,9 @@ if sys.platform == "win32":
 executables = [
     Executable(
         "src/main.py",
-        copyright="Copyright (C) 2022 Bartlomiej Duda",
+        copyright="Copyright (C) 2023 Bartlomiej Duda",
         base=base,
-        icon="src/data/img/icon_bd.ico",
+        icon="src/data/img/ea_icon.ico",
         target_name="EA-Graphics-Manager-" + VERSION_NUM + ".exe"
     )
 ]

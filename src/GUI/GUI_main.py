@@ -9,6 +9,9 @@ import os
 import tkinter as tk
 import webbrowser
 from tkinter import messagebox, filedialog
+
+from reversebox.common.logger import get_logger
+
 from src.EA_Image import ea_image_main
 from src.GUI.GUI_entry_header_info_box import GuiEntryHeaderInfoBox
 from src.GUI.GUI_entry_preview import GuiEntryPreview
@@ -16,7 +19,6 @@ from src.GUI.GUI_file_header_info_box import GuiFileHeaderInfoBox
 from src.GUI.GUI_menu import GuiMenu
 from src.GUI.GUI_treeview import GuiTreeView
 from src.GUI.about_window import AboutWindow
-from src.logger import get_logger
 
 
 # default app settings
@@ -43,7 +45,7 @@ class EAManGui:
         master.resizable(width=0, height=0)
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.tree_rclick_popup = None
-        self.icon_dir = self.MAIN_DIRECTORY + "\\data\\img\\icon_bd.ico"
+        self.icon_dir = self.MAIN_DIRECTORY + "\\data\\img\\ea_icon.ico"
 
         try:
             self.master.iconbitmap(self.icon_dir)

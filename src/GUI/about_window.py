@@ -1,7 +1,7 @@
 import tkinter as tk
 import center_tk_window
 
-from src.logger import get_logger
+from reversebox.common.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -13,7 +13,7 @@ class AboutWindow:
 
         icon_dir = None
         try:
-            icon_dir = gui_object.MAIN_DIRECTORY + "\\data\\img\\icon_bd.ico"
+            icon_dir = gui_object.icon_dir
             about_window.iconbitmap(icon_dir)
         except tk.TclError:
             logger.error("Can't load the icon file from %s", icon_dir)

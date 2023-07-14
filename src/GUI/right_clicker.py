@@ -1,5 +1,6 @@
 import tkinter as tk
-from src.logger import get_logger
+
+from reversebox.common.logger import get_logger
 
 logger = get_logger(__name__)
 

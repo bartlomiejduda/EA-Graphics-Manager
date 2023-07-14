@@ -1,9 +1,7 @@
 Pillow==9.4.0
 pyperclip==1.8.2
 center_tk_window==1.0.0
-black==22.3.0
-mypy==0.931
-pylint==2.12.2
 pytest==7.0.1
 pytz==2022.1
 ReverseBox==0.6.2
+pre-commit==3.3.3
