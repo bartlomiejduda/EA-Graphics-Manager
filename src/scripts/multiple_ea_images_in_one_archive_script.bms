@@ -9,10 +9,7 @@
 # v0.1   18.05.2022  Bartlomiej Duda      -
 
 
-
-
 for i = 0
-
 	FindLoc SIGN_OFFSET STRING "SHPP"
 	if SIGN_OFFSET == ""
 		cleanexit
@@ -25,6 +22,4 @@ for i = 0
 	string F_OUT_NAME += F_COUNT
 	string F_OUT_NAME += ".psh"
 	log F_OUT_NAME SIGN_OFFSET TOTAL_SIZE
-
-
 next i
