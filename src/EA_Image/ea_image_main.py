@@ -77,18 +77,28 @@ class EAImage:
             in_file.seek(4)
             file_size_be = struct.unpack(">L", in_file.read(4))[0]
             in_file.seek(back_offset)
+            # fmt: off
             if (file_size_le != real_file_size) and (file_size_be != real_file_size):
-                # fmt: off
-                error_msg = (
-                    "Real file size doesn't match file total file size from header:\n"
-                    + "Real_file_size: " + str(real_file_size) + "\n"
-                    + "File_size_le: " + str(file_size_le) + "\n"
-                    + "File_size_be: " + str(file_size_be)
-                )
-                # fmt: on
-                logger.info(error_msg)
-                return "WRONG_SIZE_ERROR", error_msg
 
+                # fix for "CRCF" tail in some EA files
+                sign = b''
+                try:
+                    in_file.seek(real_file_size - 12)
+                    sign = in_file.read(4)
+                    in_file.seek(back_offset)
+                except Exception as error:
+                    logger.error(f"Can't check for CRCF signature! Error: {error}")
+
+                if sign != b'CRCF':
+                    error_msg = (
+                        "Real file size doesn't match file total file size from header:\n"
+                        + "Real_file_size: " + str(real_file_size) + "\n"
+                        + "File_size_le: " + str(file_size_le) + "\n"
+                        + "File_size_be: " + str(file_size_be)
+                    )
+                    logger.info(error_msg)
+                    return "WRONG_SIZE_ERROR", error_msg
+            # fmt: on
             return "OK", ""
 
         except Exception as error:
@@ -105,14 +115,15 @@ class EAImage:
         back_offset = in_file.tell()
 
         # check endianess & file validity
+        # fmt: off
         self.total_f_size = struct.unpack("<L", in_file.read(4))[0]
-        if self.total_f_size == self.f_size:
+        if (self.total_f_size == self.f_size) or (self.total_f_size + 12 == self.f_size):  # fix for "CRCF" tail in some EA files
             self.f_endianess = "<"
             self.f_endianess_desc = "little"
         else:
             in_file.seek(back_offset)
             self.total_f_size = struct.unpack(">L", in_file.read(4))[0]
-            if self.total_f_size == self.f_size:
+            if (self.total_f_size == self.f_size) or (self.total_f_size + 12 == self.f_size):  # fix for "CRCF" tail in some EA files
                 self.f_endianess = ">"
                 self.f_endianess_desc = "big"
             else:
@@ -122,6 +133,7 @@ class EAImage:
 
         self.num_of_entries = struct.unpack(self.f_endianess + "L", in_file.read(4))[0]
         self.dir_id = in_file.read(4).decode("utf8")
+        # fmt: on
 
     def parse_directory(self, in_file):
         # creating directory entries
@@ -218,7 +230,7 @@ class EAImage:
                         break  # no more binary attachments for this DIR entry
 
     def convert_images(self):
-        conv_images_supported_types = [125]
+        conv_images_supported_types = [66, 125]
 
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -240,6 +252,10 @@ class EAImage:
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
         if entry_type == 2:
             pass  # TODO - support this type
+        elif entry_type == 66:
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
+                ea_dir_entry.raw_data
+            )
         elif entry_type == 125:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_b8g8r8a8_to_r8b8g8a8(
                 ea_dir_entry.raw_data

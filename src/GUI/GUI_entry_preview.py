@@ -44,7 +44,9 @@ class GuiEntryPreview(tk.Frame):
 
             if pil_img.height > self.canvas_height:
                 ratio = self.canvas_height / pil_img.height
-                pil_img = pil_img.resize((int(pil_img.width * ratio), self.canvas_height))
+                resized_height = int(pil_img.height * ratio)
+                resized_width = int(pil_img.width * ratio)
+                pil_img = pil_img.resize((resized_height, resized_width))
 
             self.ph_img = ImageTk.PhotoImage(pil_img)
 
