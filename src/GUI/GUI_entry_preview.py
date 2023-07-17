@@ -34,7 +34,7 @@ class GuiEntryPreview(tk.Frame):
         try:
             pil_img = Image.frombuffer(
                 "RGBA",
-                (ea_dir.h_height, ea_dir.h_width),
+                (int(ea_dir.h_width), int(ea_dir.h_height)),
                 ea_dir.img_convert_data,
                 "raw",
                 "RGBA",
@@ -42,11 +42,19 @@ class GuiEntryPreview(tk.Frame):
                 1,
             )
 
-            if pil_img.height > self.canvas_height:
-                ratio = self.canvas_height / pil_img.height
-                resized_height = int(pil_img.height * ratio)
-                resized_width = int(pil_img.width * ratio)
-                pil_img = pil_img.resize((resized_height, resized_width))
+            # resize preview logic
+            if pil_img.height >= pil_img.width:
+                if pil_img.height > self.canvas_height:
+                    ratio = self.canvas_height / pil_img.height
+                    resized_height = int(pil_img.height * ratio)
+                    resized_width = int(pil_img.width * ratio)
+                    pil_img = pil_img.resize((resized_width, resized_height))
+            else:
+                if pil_img.width > self.canvas_width:
+                    ratio = self.canvas_width / pil_img.width
+                    resized_height = int(pil_img.height * ratio)
+                    resized_width = int(pil_img.width * ratio)
+                    pil_img = pil_img.resize((resized_width, resized_height))
 
             self.ph_img = ImageTk.PhotoImage(pil_img)
 
@@ -57,8 +65,8 @@ class GuiEntryPreview(tk.Frame):
                 height=self.canvas_height,
             )
             self.preview_instance.create_image(
-                self.canvas_width / 2,
-                self.canvas_height / 2,
+                int(self.canvas_width / 2),
+                int(self.canvas_height / 2),
                 anchor="center",
                 image=self.ph_img,
             )
