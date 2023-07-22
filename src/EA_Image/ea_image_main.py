@@ -27,7 +27,6 @@ logger = get_logger(__name__)
 
 class EAImage:
     def __init__(self):
-        self.img_convert_type = None
         self.sign = None
         self.total_f_size = -1
         self.num_of_entries = -1
@@ -230,7 +229,7 @@ class EAImage:
                         break  # no more binary attachments for this DIR entry
 
     def convert_images(self):
-        conv_images_supported_types = [66, 125]
+        conv_images_supported_types = [4, 66, 125]
 
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -242,16 +241,15 @@ class EAImage:
                 )
                 continue
 
-            else:
-                logger.info(f'Converting image {str(i+1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...')
-                ea_dir_entry.is_img_convert_supported = True
-                self.img_convert_type = "BMP"
-
+            logger.info(f'Converting image {str(i+1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...')
+            ea_dir_entry.is_img_convert_supported = True
             self.convert_image_data_for_export_and_preview(ea_dir_entry, entry_type)
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
         if entry_type == 2:
             pass  # TODO - support this type
+        elif entry_type == 4:
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r8g8b8_to_r8b8g8a8(ea_dir_entry.raw_data)
         elif entry_type == 66:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
                 ea_dir_entry.raw_data

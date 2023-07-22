@@ -45,15 +45,15 @@ class GuiEntryPreview(tk.Frame):
             # resize preview logic
             if pil_img.height >= pil_img.width:
                 if pil_img.height > self.canvas_height:
-                    ratio = self.canvas_height / pil_img.height
-                    resized_height = int(pil_img.height * ratio)
-                    resized_width = int(pil_img.width * ratio)
+                    ratio: float = self.canvas_height / pil_img.height
+                    resized_height: int = int(pil_img.height * ratio)
+                    resized_width: int = int(pil_img.width * ratio)
                     pil_img = pil_img.resize((resized_width, resized_height))
             else:
                 if pil_img.width > self.canvas_width:
-                    ratio = self.canvas_width / pil_img.width
-                    resized_height = int(pil_img.height * ratio)
-                    resized_width = int(pil_img.width * ratio)
+                    ratio: float = self.canvas_width / pil_img.width
+                    resized_height: int = int(pil_img.height * ratio)
+                    resized_width: int = int(pil_img.width * ratio)
                     pil_img = pil_img.resize((resized_width, resized_height))
 
             self.ph_img = ImageTk.PhotoImage(pil_img)

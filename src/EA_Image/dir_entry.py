@@ -5,7 +5,11 @@ class DirEntry:
     header_size = 16
 
     entry_types = {
-        2: "2 | 0x02 | 8-BIT IMG, 256 PAL",
+        1: "1 | 0x01 | 4-BIT IMG + PAL",
+        2: "2 | 0x02 | 8-BIT IMG + PAL",
+        4: "4 | 0x04 | 24-BIT IMG",
+        5: "5 | 0x05 | 32-BIT IMG",
+        14: "14 | 0x0E | 8-BIT IMG + SWIZ",
         33: "33 | 0x21 | PALETTE",
         34: "34 | 0x22 | PALETTE",
         35: "35 | 0x23 | PALETTE",
@@ -14,9 +18,11 @@ class DirEntry:
         42: "42 | 0x2A | PALETTE",
         45: "45 | 0x2D | PALETTE",
         59: "59 | 0x3B | PALETTE",
-        64: "64 | 0x40 | 4-BIT IMG",
-        65: "65 | 0x41 | 8-BIT IMG",
+        64: "64 | 0x40 | 4-BIT IMG + PAL",
+        65: "65 | 0x41 | 8-BIT IMG + PAL",
         66: "66 | 0x42 | 16-BIT IMG",
+        91: "91 | 0x5B | 32-BIT IMG",
+        93: "93 | 0x5D | 8-BIT IMG + PAL + SWIZ",
         96: "96 | 0x60 | DXT1",
         97: "97 | 0x61 | DXT3",
         98: "98 | 0x62 | DXT5",
@@ -64,7 +70,6 @@ class DirEntry:
         self.bin_attachments_list = []
         self.if_next_entry_exist_flag = None
         self.is_img_convert_supported = False
-        self.img_convert_type = None
         self.img_convert_data = None
 
     def set_entry_header(self, in_file, endianess):
