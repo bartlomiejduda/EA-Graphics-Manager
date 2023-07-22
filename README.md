@@ -3,10 +3,12 @@ Program for parsing FSH, SSH, XSH, PSH, GSH and MSH files from EA games.
 
 Technologies used: Python 3.11, tkinter
 
-This program is not finished yet.
+This program **<ins>is not finished yet</ins>**.
 It may not support all image types.
 
 <img src="src\data\img\usage_v0.14.1.gif">
+
+More info about EA Image file format can be found on [Xentax Wiki](http://wiki.xentax.com/index.php/EA_SSH_FSH_Image).
 
 
 # Dependencies
