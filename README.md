@@ -6,7 +6,7 @@ Technologies used: Python 3.11, tkinter
 This program is not finished yet.
 It may not support all image types.
 
-<img src="src\data\img\usage.gif">
+<img src="src\data\img\usage_v0.14.1.gif">
 
 
 # Dependencies
