@@ -29,7 +29,7 @@ def parse_ea_image_file(file_path: str, file_name: str) -> Optional[dict]:
 
     try:
         ea_image_file = open(file_path, "rb")
-        signature = ea_image_file.read(4).decode("utf8").upper()
+        signature = ea_image_file.read(4).decode("utf8")
         if signature not in ("SHPI", "SHPP", "SHPS", "SHPX", "SHPM"):
             print("File may be compressed! --> ", file_path)
             ea_image_dict["is_error"] = "Wrong signature error"
@@ -106,6 +106,8 @@ def find_ea_files():
     print("Starting data filters logic...")
     temp_ea_files_list = []
     for ea_file_entry in report_dict["EA_FILES"]:
+        if not ea_file_entry.get("file_size"):
+            continue
         # if ea_file_entry["file_size"] > 285000 and ea_file_entry["number_of_images"] == 1:
         if ea_file_entry["file_size"] > 1:
             temp_ea_files_list.append(ea_file_entry)

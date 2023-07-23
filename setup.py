@@ -23,7 +23,7 @@ build_exe_options: dict = {
     "packages": [],
     "includes": [],
     "excludes": [],
-    "include_files": ["src/data/docs/readme.txt", "LICENSE"],
+    "include_files": [],
 }
 
 options: dict = {"build_exe": build_exe_options}

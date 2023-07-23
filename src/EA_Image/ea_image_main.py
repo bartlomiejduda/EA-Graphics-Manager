@@ -45,8 +45,7 @@ class EAImage:
         self.allowed_signatures = (
             "SHPI",  # PC games
             "SHPP",  # PS1 games
-            "SHPS", "ShpS",  # PS2 games
-            "ShpX",  # ???
+            "SHPS",  # PS2 games
             "SHPX",  # XBOX games
             "SHPM",  # PSP games
             "SHPG",  # WII games
