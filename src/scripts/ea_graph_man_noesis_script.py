@@ -167,6 +167,7 @@ def ea_image_load(ea_image_file_data, tex_list):
             palette_height = bs.readUShort()
             bs.seek(8, NOESEEK_REL)  # skip unknown bytes
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
+            print("palette_size: ", palette_size)
             palette_data = bs.readBytes(palette_size)
 
             if type2_decode_mode == 0:

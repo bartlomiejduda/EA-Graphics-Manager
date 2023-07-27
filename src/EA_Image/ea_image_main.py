@@ -228,7 +228,7 @@ class EAImage:
                         break  # no more binary attachments for this DIR entry
 
     def convert_images(self):
-        conv_images_supported_types = [4, 66, 125]
+        conv_images_supported_types = [2, 4, 66, 125]
 
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -240,13 +240,29 @@ class EAImage:
                 )
                 continue
 
-            logger.info(f'Converting image {str(i+1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...')
+            logger.info(
+                f'Starting conversion for image {str(i+1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
+            )
             ea_dir_entry.is_img_convert_supported = True
             self.convert_image_data_for_export_and_preview(ea_dir_entry, entry_type)
+            logger.info(
+                f'Finished conversion for image {str(i + 1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
+            )
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
+        def _get_palette_data_from_dir_entry(_ea_dir_entry) -> bytes:
+            _palette_data: bytes = b""
+            for attachment in _ea_dir_entry.bin_attachments_list:
+                if isinstance(attachment, PaletteEntry):
+                    _palette_data = attachment.raw_data
+                    break
+            return _palette_data
+
         if entry_type == 2:
-            pass  # TODO - support this type
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r8g8b8a8pal_to_r8b8g8a8(
+                ea_dir_entry.raw_data, palette_data
+            )
         elif entry_type == 4:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r8g8b8_to_r8b8g8a8(ea_dir_entry.raw_data)
         elif entry_type == 66:
