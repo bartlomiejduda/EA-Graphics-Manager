@@ -80,6 +80,17 @@ class ImageDataConvertHandler:
     #     ea_dir_entry.img_convert_data = bmp_object.get_bmp_file_data()
 
     # TODO - move it to ReverseBox
+    def _unpack_2bytes_color(self, value, use_alpha=True):
+        r = value & 0x1F
+        g = value >> 5 & 0x1F
+        b = value >> 10 & 0x1F
+        a = value >> 15 & 0x1
+        r = (r << 3) | (r >> 2)
+        g = (g << 3) | (g >> 2)
+        b = (b << 3) | (b >> 2)
+        return (r << 24) | (g << 16) | (b << 8) | (0x00 if use_alpha and a == 0 else 0xFF)
+
+    # TODO - move it to ReverseBox
     def convert_b8g8r8a8_to_r8b8g8a8(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
@@ -106,17 +117,7 @@ class ImageDataConvertHandler:
             input_pixel: bytes = bytes_handler.get_bytes(read_offset, 2)
             input_pixel_int = struct.unpack("<H", input_pixel)[0]
 
-            def unpack_color(value, use_alpha=True):
-                r = value & 0x1F
-                g = value >> 5 & 0x1F
-                b = value >> 10 & 0x1F
-                a = value >> 15 & 0x1
-                r = (r << 3) | (r >> 2)
-                g = (g << 3) | (g >> 2)
-                b = (b << 3) | (b >> 2)
-                return (r << 24) | (g << 16) | (b << 8) | (0x00 if use_alpha and a == 0 else 0xFF)
-
-            out_pixel_int = unpack_color(input_pixel_int, False)
+            out_pixel_int = self._unpack_2bytes_color(input_pixel_int, False)
             single_pixel_data = struct.pack(">I", out_pixel_int)
 
             converted_raw_data += single_pixel_data
@@ -159,6 +160,27 @@ class ImageDataConvertHandler:
             b_byte = palette_handler.get_bytes(palette_read_offset + 2, 1)
             a_byte = palette_handler.get_bytes(palette_read_offset + 3, 1)
             single_pixel_data = r_byte + g_byte + b_byte + a_byte
+            converted_raw_data += single_pixel_data
+
+        return converted_raw_data
+
+    # TODO - move it to ReverseBox
+    def convert_r5g5b5a1pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
+        converted_raw_data = b""
+        image_handler = BytesHandler(image_data)
+        palette_handler = BytesHandler(palette_data)
+        bytes_per_pixel = 1
+        bytes_per_palette_pixel = 2
+        read_offset = 0
+        for i in range(int(len(image_data) / bytes_per_pixel)):
+            palette_index = image_handler.get_bytes(read_offset, 1)
+            palette_index_int = struct.unpack("B", palette_index)[0]
+            read_offset += bytes_per_pixel
+
+            input_pixel: bytes = palette_handler.get_bytes(palette_index_int * bytes_per_palette_pixel, 2)
+            input_pixel_int = struct.unpack("<H", input_pixel)[0]
+            out_pixel_int = self._unpack_2bytes_color(input_pixel_int, False)
+            single_pixel_data = struct.pack(">I", out_pixel_int)
             converted_raw_data += single_pixel_data
 
         return converted_raw_data
