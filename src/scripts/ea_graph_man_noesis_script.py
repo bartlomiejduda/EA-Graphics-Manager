@@ -132,9 +132,10 @@ def ea_image_load(ea_image_file_data, tex_list):
             bs.seek(8, NOESEEK_REL)  # skip unknown bytes
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
             palette_data = bs.readBytes(palette_size)
+            print("palette size: ", palette_size)
 
             pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
-                                                "r8 g8 b8 a8", noesis.DECODEFLAG_PS2SHIFT)
+                                                "r8 g8 b8 a8")
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)

@@ -31,6 +31,16 @@ More info about EA Image file format can be found on [Xentax Wiki](http://wiki.x
 
 // TODO
 
+# Image formats support table
+
+| Image format                | Preview support     | Export support     | Import support     |
+|-----------------------------|---------------------|--------------------|--------------------|
+| <center>2 / 0x02️</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
+| <center>4 / 0x04</center>   | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
+| <center>65 / 0x41</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
+| <center>66 / 0x42</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
+| <center>125 / 0x7D</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
+
 # EA-Graph-Man Noesis Script
 
 In the src\scripts directory there is an script
