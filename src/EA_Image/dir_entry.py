@@ -7,8 +7,9 @@ class DirEntry:
     entry_types = {
         1: "1 | 0x01 | 4-BIT IMG + PAL",
         2: "2 | 0x02 | 8-BIT IMG + PAL",
-        4: "4 | 0x04 | 24-BIT IMG",
-        5: "5 | 0x05 | 32-BIT IMG",
+        3: "3 | 0x03 | 16-BIT IMG",
+        4: "4 | 0x04 | 24-BIT IMG (R8G8B8)",
+        5: "5 | 0x05 | 32-BIT IMG (R8G8B8A8)",
         14: "14 | 0x0E | 8-BIT IMG + SWIZ",
         33: "33 | 0x21 | PALETTE",
         34: "34 | 0x22 | PALETTE",

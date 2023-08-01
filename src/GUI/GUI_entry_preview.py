@@ -58,7 +58,7 @@ class GuiEntryPreview(tk.Frame):
 
             self.preview_instance = tk.Canvas(
                 self.preview_labelframe,
-                bg="white",
+                bg="#595959",
                 width=self.canvas_width,
                 height=self.canvas_height,
             )

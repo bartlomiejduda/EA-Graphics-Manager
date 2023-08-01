@@ -35,8 +35,11 @@ More info about EA Image file format can be found on [Xentax Wiki](http://wiki.x
 
 | Image format                | Preview support     | Export support     | Import support     |
 |-----------------------------|---------------------|--------------------|--------------------|
+| <center>1 / 0x01</center>   | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
 | <center>2 / 0x02</center>   | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
+| <center>3 / 0x03</center>   | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
 | <center>4 / 0x04</center>   | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
+| <center>5 / 0x04</center>   | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
 | <center>65 / 0x41</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
 | <center>66 / 0x42</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> |
 | <center>125 / 0x7D</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> |

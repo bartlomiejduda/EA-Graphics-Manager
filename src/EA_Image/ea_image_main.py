@@ -228,7 +228,7 @@ class EAImage:
                         break  # no more binary attachments for this DIR entry
 
     def convert_images(self):
-        conv_images_supported_types = [2, 4, 65, 66, 125]
+        conv_images_supported_types = [1, 2, 3, 4, 5, 65, 66, 125]
 
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -250,6 +250,8 @@ class EAImage:
             )
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
+        logger.info(f'Initializing conversion function for img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...')
+
         def _get_palette_data_from_dir_entry(_ea_dir_entry) -> bytes:
             _palette_data: bytes = b""
             for attachment in _ea_dir_entry.bin_attachments_list:
@@ -259,13 +261,21 @@ class EAImage:
             return _palette_data
 
         if entry_type == 1:
-            pass  # TODO - support this type
-        elif entry_type == 2:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r8g8b8a8pal_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_4bit_r8g8b8a8pal_to_r8b8g8a8(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
+            )
+        elif entry_type == 2:
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_8bit_r8g8b8a8pal_to_r8b8g8a8(
+                ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
+            )
+        elif entry_type == 3:
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
+                ea_dir_entry.raw_data
             )
         elif entry_type == 4:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r8g8b8_to_r8b8g8a8(ea_dir_entry.raw_data)
+        elif entry_type == 5:
+            ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 65:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5a1pal_to_r8b8g8a8(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)

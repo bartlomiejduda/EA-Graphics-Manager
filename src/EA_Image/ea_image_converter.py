@@ -142,7 +142,7 @@ class ImageDataConvertHandler:
         return converted_raw_data
 
     # TODO - move it to ReverseBox
-    def convert_r8g8b8a8pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
+    def convert_8bit_r8g8b8a8pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
         palette_handler = BytesHandler(palette_data)
@@ -161,6 +161,41 @@ class ImageDataConvertHandler:
             a_byte = palette_handler.get_bytes(palette_read_offset + 3, 1)
             single_pixel_data = r_byte + g_byte + b_byte + a_byte
             converted_raw_data += single_pixel_data
+
+        return converted_raw_data
+
+    # TODO - move it to ReverseBox
+    def convert_4bit_r8g8b8a8pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
+        converted_raw_data = b""
+        image_handler = BytesHandler(image_data)
+        palette_handler = BytesHandler(palette_data)
+        bytes_per_palette_pixel = 4
+        read_offset = 0
+        for i in range(int((len(image_data)))):
+            read_value = image_handler.get_bytes(read_offset, 1)
+            read_value_int = struct.unpack("B", read_value)[0]
+            val_str = bin(read_value_int).lstrip("0b").zfill(8)
+            uint4_str1 = val_str[0:4]
+            palette_index1 = int(uint4_str1, 2)
+            uint4_str2 = val_str[4:8]
+            palette_index2 = int(uint4_str2, 2)
+            read_offset += 1
+
+            palette_read_offset = palette_index1 * bytes_per_palette_pixel
+            r_byte = palette_handler.get_bytes(palette_read_offset, 1)
+            g_byte = palette_handler.get_bytes(palette_read_offset + 1, 1)
+            b_byte = palette_handler.get_bytes(palette_read_offset + 2, 1)
+            a_byte = palette_handler.get_bytes(palette_read_offset + 3, 1)
+            pixel_data1 = r_byte + g_byte + b_byte + a_byte
+            converted_raw_data += pixel_data1
+
+            palette_read_offset = palette_index2 * bytes_per_palette_pixel
+            r_byte = palette_handler.get_bytes(palette_read_offset, 1)
+            g_byte = palette_handler.get_bytes(palette_read_offset + 1, 1)
+            b_byte = palette_handler.get_bytes(palette_read_offset + 2, 1)
+            a_byte = palette_handler.get_bytes(palette_read_offset + 3, 1)
+            pixel_data2 = r_byte + g_byte + b_byte + a_byte
+            converted_raw_data += pixel_data2
 
         return converted_raw_data
 

@@ -140,7 +140,7 @@ def ea_image_load(ea_image_file_data, tex_list):
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
-
+            # entry type 1 END
 
 
         # 8-bit image with palette
@@ -185,7 +185,22 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 8-bit image without palette
+        # 16-bit r5g5b5a1
+        # e.g. Cricket 2007 (PS2)
+        elif entry_type == 3:
+            bytes_per_pixel = 2
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r5 g5 b5 p1")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 3 END
+
+
+        # 24-bit r8g8b8
         # e.g. Medal of Honor Frontline (PS2)
         elif entry_type == 4:
             bytes_per_pixel = 3
@@ -201,7 +216,7 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 32-bit image without palette
+        # 32-bit r8g8b8a8
         # e.g. Medal of Honor Frontline (PS2)
         elif entry_type == 5:
             bytes_per_pixel = 4
@@ -289,7 +304,7 @@ def ea_image_load(ea_image_file_data, tex_list):
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
-
+            # entry type 66 END
 
 
 
@@ -402,7 +417,7 @@ def ea_image_load(ea_image_file_data, tex_list):
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
-
+            # entry type 125 END
 
 
 
@@ -418,7 +433,7 @@ def ea_image_load(ea_image_file_data, tex_list):
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
-
+            # entry type 127 END
 
 
 
