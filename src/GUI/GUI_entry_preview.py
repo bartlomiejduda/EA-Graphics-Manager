@@ -29,6 +29,12 @@ class GuiEntryPreview(tk.Frame):
         self.preview_instance = None
 
     def init_image_preview_logic(self, ea_dir, item_iid):
+        logger.info("Initializing init_image_preview_logic")
+
+        if len(ea_dir.img_convert_data) == 0:
+            logger.error(f"Preview failed for {str(item_iid)}, because converted image data is empty!")
+            return
+
         try:
             pil_img = Image.frombuffer(
                 "RGBA",
@@ -41,6 +47,7 @@ class GuiEntryPreview(tk.Frame):
             )
 
             # resize preview logic
+            logger.info("Starting resize preview logic")
             if pil_img.height >= pil_img.width:
                 if pil_img.height > self.canvas_height:
                     ratio: float = self.canvas_height / pil_img.height
@@ -56,6 +63,7 @@ class GuiEntryPreview(tk.Frame):
 
             self.ph_img = ImageTk.PhotoImage(pil_img)
 
+            logger.info("Creating preview instance")
             self.preview_instance = tk.Canvas(
                 self.preview_labelframe,
                 bg="#595959",
@@ -69,6 +77,7 @@ class GuiEntryPreview(tk.Frame):
                 image=self.ph_img,
             )
             self.preview_instance.place(x=5, y=5)
+            logger.info(f"Preview logic finished successfully for {str(item_iid)}.")
 
         except Exception as error:
             logger.error(f"Error occurred while generating preview for {str(item_iid)}... Error: {error}")

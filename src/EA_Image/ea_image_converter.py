@@ -132,9 +132,9 @@ class ImageDataConvertHandler:
         bytes_per_pixel = 3
         read_offset = 0
         for i in range(int(len(image_data) / bytes_per_pixel)):
-            b_byte = bytes_handler.get_bytes(read_offset, 1)
+            r_byte = bytes_handler.get_bytes(read_offset, 1)
             g_byte = bytes_handler.get_bytes(read_offset + 1, 1)
-            r_byte = bytes_handler.get_bytes(read_offset + 2, 1)
+            b_byte = bytes_handler.get_bytes(read_offset + 2, 1)
             single_pixel_data = r_byte + g_byte + b_byte + b"\xFF"
             converted_raw_data += single_pixel_data
             read_offset += bytes_per_pixel

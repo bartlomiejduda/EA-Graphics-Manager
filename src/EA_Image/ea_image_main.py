@@ -244,14 +244,15 @@ class EAImage:
                 f'Starting conversion for image {str(i+1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
             )
             ea_dir_entry.is_img_convert_supported = True
+            logger.info(
+                f'Initializing conversion function for img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
+            )
             self.convert_image_data_for_export_and_preview(ea_dir_entry, entry_type)
             logger.info(
                 f'Finished conversion for image {str(i + 1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
             )
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
-        logger.info(f'Initializing conversion function for img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...')
-
         def _get_palette_data_from_dir_entry(_ea_dir_entry) -> bytes:
             _palette_data: bytes = b""
             for attachment in _ea_dir_entry.bin_attachments_list:
@@ -266,8 +267,12 @@ class EAImage:
             )
         elif entry_type == 2:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
-            if self.dir_id != "GIMX":  # temporary workaround for NHL 2001-2003 PS2 games
+            if self.dir_id != "GIMX" and len(palette_data) > 32:  # temporary workaround for NHL 2001-2003 PS2 games
                 palette_data = ImageDataConvertHandler().palette_ps2_unswizzle(palette_data)
+
+            if len(palette_data) == 0:
+                logger.error("Error while converting palette data for type 2!")
+                return
 
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_8bit_r8g8b8a8pal_to_r8b8g8a8(
                 ea_dir_entry.raw_data, palette_data

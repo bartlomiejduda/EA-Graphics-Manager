@@ -73,6 +73,7 @@ class EAManGui:
         self.entry_header_info_box = GuiEntryHeaderInfoBox(self.main_frame, self)
         self.entry_preview = GuiEntryPreview(self.main_frame, self)
         self.menu = GuiMenu(self.master, self)
+        self.loading_label = None
 
     ######################################################################################################
     #                                             methods                                                #
@@ -302,7 +303,13 @@ class EAManGui:
         # convert all supported images
         # in the ea_img file
         try:
+            logger.info("Starting processing with convert_images function")
+            self.loading_label = tk.Label(self.main_frame, text="Loading... Please wait.", font=("Arial", 14))
+            if ea_img.total_f_size > 200000:
+                self.loading_label.place(x=0, y=0, relwidth=1, relheight=1)
+                self.loading_label.update()
             ea_img.convert_images()
+            self.loading_label.destroy()
         except Exception as error:
             logger.error(f"Error while converting images! Error: {error}")
 
