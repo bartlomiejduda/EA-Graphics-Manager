@@ -219,3 +219,31 @@ class ImageDataConvertHandler:
             converted_raw_data += single_pixel_data
 
         return converted_raw_data
+
+    # TODO - move it to ReverseBox
+    def palette_ps2_unswizzle(self, palette_data: bytes) -> bytes:
+        converted_raw_palette_data = b""
+        palette_handler = BytesHandler(palette_data)
+        bytes_per_palette_pixel = 4
+        parts: int = int(len(palette_data) / 32)
+        stripes: int = 2
+        colors: int = 8
+        blocks: int = 2
+        index: int = 0
+
+        for part in range(parts):
+            for block in range(blocks):
+                for stripe in range(stripes):
+                    for color in range(colors):
+                        pal_index: int = (
+                            index
+                            + part * colors * stripes * blocks
+                            + block * colors
+                            + stripe * stripes * colors
+                            + color
+                        )
+                        pal_offset: int = pal_index * bytes_per_palette_pixel
+                        pal_entry = palette_handler.get_bytes(pal_offset, bytes_per_palette_pixel)
+                        converted_raw_palette_data += pal_entry
+
+        return converted_raw_palette_data

@@ -265,8 +265,12 @@ class EAImage:
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
         elif entry_type == 2:
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
+            if self.dir_id != "GIMX":  # temporary workaround for NHL 2001-2003 PS2 games
+                palette_data = ImageDataConvertHandler().palette_ps2_unswizzle(palette_data)
+
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_8bit_r8g8b8a8pal_to_r8b8g8a8(
-                ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
+                ea_dir_entry.raw_data, palette_data
             )
         elif entry_type == 3:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
