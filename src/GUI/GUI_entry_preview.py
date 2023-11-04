@@ -31,7 +31,7 @@ class GuiEntryPreview(tk.Frame):
     def init_image_preview_logic(self, ea_dir, item_iid):
         logger.info("Initializing init_image_preview_logic")
 
-        if len(ea_dir.img_convert_data) == 0:
+        if not ea_dir.img_convert_data or len(ea_dir.img_convert_data) == 0:
             logger.error(f"Preview failed for {str(item_iid)}, because converted image data is empty!")
             return
 

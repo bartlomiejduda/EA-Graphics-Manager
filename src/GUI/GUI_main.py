@@ -29,6 +29,10 @@ MAX_WINDOW_HEIGHT = WINDOW_HEIGHT
 MAX_WINDOW_WIDTH = WINDOW_WIDTH
 
 
+# constants
+PALETTE_TYPES = (33, 34, 35, 36, 41, 42, 45, 59)
+
+
 logger = get_logger(__name__)
 
 
@@ -156,7 +160,7 @@ class EAManGui:
                 pass
 
             # fmt: off
-            if bin_attach.h_record_id in (33, 34, 35, 36, 41, 42, 45, 59):  # palette types
+            if bin_attach.h_record_id in PALETTE_TYPES:  # palette types
                 self.entry_preview.init_palette_preview_logic(bin_attach)
             else:
                 self.entry_preview.init_binary_preview_logic(bin_attach)

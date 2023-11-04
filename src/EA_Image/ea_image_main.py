@@ -228,7 +228,7 @@ class EAImage:
                         break  # no more binary attachments for this DIR entry
 
     def convert_images(self):
-        conv_images_supported_types = [1, 2, 3, 4, 5, 65, 66, 125]
+        conv_images_supported_types = [1, 2, 3, 4, 5, 35, 59, 64, 65, 66, 125]
 
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -285,10 +285,23 @@ class EAImage:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r8g8b8_to_r8b8g8a8(ea_dir_entry.raw_data)
         elif entry_type == 5:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
+        elif entry_type == 35:
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
+                ea_dir_entry.raw_data
+            )
+        elif entry_type == 59:
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
+                ea_dir_entry.raw_data
+            )
+        elif entry_type == 64:
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_4bit_r5g5b5a1pal_to_r8b8g8a8(
+                ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
+            )
         elif entry_type == 65:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5a1pal_to_r8b8g8a8(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
+            # ea_dir_entry.img_convert_data = ImageDataConvertHandler().image_skew_fix(ea_dir_entry.img_convert_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
         elif entry_type == 66:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
                 ea_dir_entry.raw_data

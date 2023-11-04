@@ -200,6 +200,43 @@ class ImageDataConvertHandler:
         return converted_raw_data
 
     # TODO - move it to ReverseBox
+    def convert_4bit_r5g5b5a1pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
+        converted_raw_data = b""
+        image_handler = BytesHandler(image_data)
+        palette_handler = BytesHandler(palette_data)
+        bytes_per_palette_pixel = 2
+        read_offset = 0
+        for i in range(int((len(image_data)))):
+            read_value = image_handler.get_bytes(read_offset, 1)
+            read_value_int = struct.unpack("B", read_value)[0]
+            val_str = bin(read_value_int).lstrip("0b").zfill(8)
+            uint4_str1 = val_str[0:4]
+            palette_index1 = int(uint4_str1, 2)
+            uint4_str2 = val_str[4:8]
+            palette_index2 = int(uint4_str2, 2)
+            read_offset += 1
+
+            palette_read_offset = palette_index1 * bytes_per_palette_pixel
+            r_byte = palette_handler.get_bytes(palette_read_offset, 1)
+            g_byte = palette_handler.get_bytes(palette_read_offset + 1, 1)
+            pixel_data1 = r_byte + g_byte
+            pixel_data1_int = struct.unpack("<H", pixel_data1)[0]
+            out_pixel1_int = self._unpack_2bytes_color(pixel_data1_int, False)
+            single_pixel_data1 = struct.pack(">I", out_pixel1_int)
+            converted_raw_data += single_pixel_data1
+
+            palette_read_offset = palette_index2 * bytes_per_palette_pixel
+            r_byte = palette_handler.get_bytes(palette_read_offset, 1)
+            g_byte = palette_handler.get_bytes(palette_read_offset + 1, 1)
+            pixel_data2 = r_byte + g_byte
+            pixel_data2_int = struct.unpack("<H", pixel_data2)[0]
+            out_pixel2_int = self._unpack_2bytes_color(pixel_data2_int, False)
+            single_pixel_data2 = struct.pack(">I", out_pixel2_int)
+            converted_raw_data += single_pixel_data2
+
+        return converted_raw_data
+
+    # TODO - move it to ReverseBox
     def convert_r5g5b5a1pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
@@ -247,3 +284,22 @@ class ImageDataConvertHandler:
                         converted_raw_palette_data += pal_entry
 
         return converted_raw_palette_data
+
+    # # TODO - move it to ReverseBox
+    # def image_skew_fix(self, image_data: bytes, image_width: int, image_height: int) -> bytes:
+    #     converted_raw_data = b""
+    #     skew_val = image_width % 4
+    #     image_handler = BytesHandler(image_data)
+    #     image_offset = 0
+    #     width_row_size = image_width * 4
+    #     for _ in range(image_height):
+    #         pixel_row = image_handler.get_bytes(image_offset, width_row_size)
+    #         if skew_val == 1:
+    #             pixel_row += b"\x00\x00"
+    #         elif skew_val == 2:
+    #             pixel_row += b"x\00"
+    #         image_offset += image_width
+    #
+    #         converted_raw_data += pixel_row
+    #
+    #     return converted_raw_data
