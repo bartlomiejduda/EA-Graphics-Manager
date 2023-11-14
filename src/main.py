@@ -5,7 +5,7 @@ Copyright © 2023  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
-# Program tested on Python 3.11.0
+# Program tested on Python 3.11.6
 
 import os
 import tkinter as tk
@@ -15,7 +15,7 @@ from reversebox.common.logger import get_logger
 
 from src.GUI.GUI_main import EAManGui
 
-VERSION_NUM = "v0.15.3"
+VERSION_NUM = "v0.15.4"
 
 logger = get_logger("main")
 

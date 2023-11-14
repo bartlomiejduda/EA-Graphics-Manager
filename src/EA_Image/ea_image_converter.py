@@ -91,6 +91,14 @@ class ImageDataConvertHandler:
         return (r << 24) | (g << 16) | (b << 8) | (0x00 if use_alpha and a == 0 else 0xFF)
 
     # TODO - move it to ReverseBox
+    def _unpack_2bytes_color_rgba4444(self, byte1, byte2):
+        r = (byte1 >> 4) * 16
+        a = (byte1 & 15) * 16
+        b = (byte2 >> 4) * 16
+        g = (byte2 & 15) * 16
+        return (r << 16) | (g << 8) | b | (a << 24)
+
+    # TODO - move it to ReverseBox
     def convert_b8g8r8a8_to_r8b8g8a8(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
@@ -118,6 +126,26 @@ class ImageDataConvertHandler:
             input_pixel_int = struct.unpack("<H", input_pixel)[0]
 
             out_pixel_int = self._unpack_2bytes_color(input_pixel_int, False)
+            single_pixel_data = struct.pack(">I", out_pixel_int)
+
+            converted_raw_data += single_pixel_data
+            read_offset += bytes_per_pixel
+
+        return converted_raw_data
+
+    # TODO - move it to ReverseBox
+    def convert_r4g4b4a4_to_r8b8g8a8(self, image_data: bytes) -> bytes:
+        converted_raw_data = b""
+        bytes_handler = BytesHandler(image_data)
+        bytes_per_pixel = 2
+        read_offset = 0
+        for i in range(int(len(image_data) / bytes_per_pixel)):
+            input_value_1: bytes = bytes_handler.get_bytes(read_offset, 1)
+            input_value_1_int = struct.unpack("B", input_value_1)[0]
+            input_value_2: bytes = bytes_handler.get_bytes(read_offset + 1, 1)
+            input_value_2_int = struct.unpack("B", input_value_2)[0]
+
+            out_pixel_int = self._unpack_2bytes_color_rgba4444(input_value_1_int, input_value_2_int)
             single_pixel_data = struct.pack(">I", out_pixel_int)
 
             converted_raw_data += single_pixel_data

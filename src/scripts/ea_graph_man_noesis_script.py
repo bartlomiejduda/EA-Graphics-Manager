@@ -308,6 +308,38 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
+        # RGBA4444
+        # e.g. FIFA 2006 (PSP)
+        elif entry_type == 90:
+            bytes_per_pixel = 2
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r4 g4 b4 p4")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 90 END
+
+
+
+
+        # RGBA8888
+        # e.g. FIFA 14 (PSP)
+        elif entry_type == 91:
+            bytes_per_pixel = 4
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r8 g8 b8 a8")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 90 END
+
+
         # 8-bit image with palette and PSP swizzling (R8G8B8A8)
         # e.g. Madden 08 (PSP)
         elif entry_type == 93:
