@@ -7,80 +7,12 @@ import struct
 from reversebox.io_files.bytes_handler import BytesHandler
 
 
+# TODO - move it to ReverseBox
 class ImageDataConvertHandler:
     def __init__(self):
         pass
 
-    # def convert_type_2_to_bmp(self, ea_dir_entry, ea_image):
-    #     img_bpp = 8
-    #     img_data = b""
-    #     img_pal_data_size = len(ea_dir_entry.bin_attachments_list[0].raw_data)
-    #     img_pal_data = b""
-    #     img_height = ea_dir_entry.h_height
-    #     img_width = ea_dir_entry.h_width
-    #
-    #     # skew fix
-    #     read_count = 0
-    #     skew_val = img_width % 4
-    #     for _ in range(img_height):
-    #         temp_row = b""
-    #         for _ in range(img_width):
-    #             pixel = struct.pack(
-    #                 ea_image.f_endianess + "B", ea_dir_entry.raw_data[read_count]
-    #             )
-    #             read_count += 1
-    #             temp_row += pixel
-    #         if skew_val == 1:
-    #             temp_row += b"\x00\x00"
-    #         elif skew_val == 2:
-    #             temp_row += b"x\00"
-    #
-    #         img_data += temp_row
-    #
-    #     # missing pixels fix
-    #     img_size_calc = img_height * img_width
-    #     diff = (
-    #                    ea_dir_entry.h_size_of_the_block - ea_dir_entry.header_size
-    #            ) - img_size_calc
-    #     for _ in range(diff):
-    #         pixel = b"\x00"
-    #         img_data += pixel
-    #
-    #     # palette fix
-    #     read_count = 0
-    #     pal_range = int(img_pal_data_size / 4)
-    #     for _ in range(pal_range):
-    #         pal_entry1 = struct.pack(
-    #             ea_image.f_endianess + "B",
-    #             ea_dir_entry.bin_attachments_list[0].raw_data[read_count],
-    #         )
-    #         read_count += 1
-    #         pal_entry2 = struct.pack(
-    #             ea_image.f_endianess + "B",
-    #             ea_dir_entry.bin_attachments_list[0].raw_data[read_count],
-    #         )
-    #         read_count += 1
-    #         pal_entry3 = struct.pack(
-    #             ea_image.f_endianess + "B",
-    #             ea_dir_entry.bin_attachments_list[0].raw_data[read_count],
-    #         )
-    #         read_count += 1
-    #         pal_entry4 = struct.pack(
-    #             ea_image.f_endianess + "B",
-    #             ea_dir_entry.bin_attachments_list[0].raw_data[read_count],
-    #         )
-    #         read_count += 1
-    #         img_pal_data += (
-    #                 pal_entry3 + pal_entry2 + pal_entry1 + pal_entry4
-    #         )  # RGBA swap
-    #
-    #     bmp_object = BmpImg(
-    #         img_width, img_height, img_bpp, img_data, img_pal_data
-    #     )
-    #     ea_dir_entry.img_convert_data = bmp_object.get_bmp_file_data()
-
-    # TODO - move it to ReverseBox
-    def _unpack_2bytes_color(self, value, use_alpha=True):
+    def _unpack_2bytes_color_rgbp5551(self, value, use_alpha=True):
         r = value & 0x1F
         g = value >> 5 & 0x1F
         b = value >> 10 & 0x1F
@@ -90,7 +22,6 @@ class ImageDataConvertHandler:
         b = (b << 3) | (b >> 2)
         return (r << 24) | (g << 16) | (b << 8) | (0x00 if use_alpha and a == 0 else 0xFF)
 
-    # TODO - move it to ReverseBox
     def _unpack_2bytes_color_rgba4444(self, byte1, byte2):
         r = (byte1 >> 4) * 16
         a = (byte1 & 15) * 16
@@ -98,8 +29,7 @@ class ImageDataConvertHandler:
         g = (byte2 & 15) * 16
         return (r << 16) | (g << 8) | b | (a << 24)
 
-    # TODO - move it to ReverseBox
-    def convert_b8g8r8a8_to_r8b8g8a8(self, image_data: bytes) -> bytes:
+    def convert_bgra8888_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
         bytes_per_pixel = 4
@@ -115,8 +45,7 @@ class ImageDataConvertHandler:
 
         return converted_raw_data
 
-    # TODO - move it to ReverseBox
-    def convert_r5g5b5p1_to_r8b8g8a8(self, image_data: bytes) -> bytes:
+    def convert_rgbp5551_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
         bytes_per_pixel = 2
@@ -125,7 +54,7 @@ class ImageDataConvertHandler:
             input_pixel: bytes = bytes_handler.get_bytes(read_offset, 2)
             input_pixel_int = struct.unpack("<H", input_pixel)[0]
 
-            out_pixel_int = self._unpack_2bytes_color(input_pixel_int, False)
+            out_pixel_int = self._unpack_2bytes_color_rgbp5551(input_pixel_int, False)
             single_pixel_data = struct.pack(">I", out_pixel_int)
 
             converted_raw_data += single_pixel_data
@@ -133,8 +62,7 @@ class ImageDataConvertHandler:
 
         return converted_raw_data
 
-    # TODO - move it to ReverseBox
-    def convert_r4g4b4a4_to_r8b8g8a8(self, image_data: bytes) -> bytes:
+    def convert_rgba4444_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
         bytes_per_pixel = 2
@@ -153,8 +81,7 @@ class ImageDataConvertHandler:
 
         return converted_raw_data
 
-    # TODO - move it to ReverseBox
-    def convert_r8g8b8_to_r8b8g8a8(self, image_data: bytes) -> bytes:
+    def convert_rgb888_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
         bytes_per_pixel = 3
@@ -169,8 +96,7 @@ class ImageDataConvertHandler:
 
         return converted_raw_data
 
-    # TODO - move it to ReverseBox
-    def convert_8bit_r8g8b8a8pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
+    def convert_8bit_rgba8888pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
         palette_handler = BytesHandler(palette_data)
@@ -192,8 +118,7 @@ class ImageDataConvertHandler:
 
         return converted_raw_data
 
-    # TODO - move it to ReverseBox
-    def convert_4bit_r8g8b8a8pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
+    def convert_4bit_rgba8888pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
         palette_handler = BytesHandler(palette_data)
@@ -227,8 +152,7 @@ class ImageDataConvertHandler:
 
         return converted_raw_data
 
-    # TODO - move it to ReverseBox
-    def convert_4bit_r5g5b5a1pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
+    def convert_4bit_rgba5551pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
         palette_handler = BytesHandler(palette_data)
@@ -249,7 +173,7 @@ class ImageDataConvertHandler:
             g_byte = palette_handler.get_bytes(palette_read_offset + 1, 1)
             pixel_data1 = r_byte + g_byte
             pixel_data1_int = struct.unpack("<H", pixel_data1)[0]
-            out_pixel1_int = self._unpack_2bytes_color(pixel_data1_int, False)
+            out_pixel1_int = self._unpack_2bytes_color_rgbp5551(pixel_data1_int, False)
             single_pixel_data1 = struct.pack(">I", out_pixel1_int)
             converted_raw_data += single_pixel_data1
 
@@ -258,14 +182,13 @@ class ImageDataConvertHandler:
             g_byte = palette_handler.get_bytes(palette_read_offset + 1, 1)
             pixel_data2 = r_byte + g_byte
             pixel_data2_int = struct.unpack("<H", pixel_data2)[0]
-            out_pixel2_int = self._unpack_2bytes_color(pixel_data2_int, False)
+            out_pixel2_int = self._unpack_2bytes_color_rgbp5551(pixel_data2_int, False)
             single_pixel_data2 = struct.pack(">I", out_pixel2_int)
             converted_raw_data += single_pixel_data2
 
         return converted_raw_data
 
-    # TODO - move it to ReverseBox
-    def convert_r5g5b5a1pal_to_r8b8g8a8(self, image_data: bytes, palette_data: bytes) -> bytes:
+    def convert_rgba5551pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
         palette_handler = BytesHandler(palette_data)
@@ -279,13 +202,12 @@ class ImageDataConvertHandler:
 
             input_pixel: bytes = palette_handler.get_bytes(palette_index_int * bytes_per_palette_pixel, 2)
             input_pixel_int = struct.unpack("<H", input_pixel)[0]
-            out_pixel_int = self._unpack_2bytes_color(input_pixel_int, False)
+            out_pixel_int = self._unpack_2bytes_color_rgbp5551(input_pixel_int, False)
             single_pixel_data = struct.pack(">I", out_pixel_int)
             converted_raw_data += single_pixel_data
 
         return converted_raw_data
 
-    # TODO - move it to ReverseBox
     def palette_ps2_unswizzle(self, palette_data: bytes) -> bytes:
         converted_raw_palette_data = b""
         palette_handler = BytesHandler(palette_data)
@@ -312,22 +234,3 @@ class ImageDataConvertHandler:
                         converted_raw_palette_data += pal_entry
 
         return converted_raw_palette_data
-
-    # # TODO - move it to ReverseBox
-    # def image_skew_fix(self, image_data: bytes, image_width: int, image_height: int) -> bytes:
-    #     converted_raw_data = b""
-    #     skew_val = image_width % 4
-    #     image_handler = BytesHandler(image_data)
-    #     image_offset = 0
-    #     width_row_size = image_width * 4
-    #     for _ in range(image_height):
-    #         pixel_row = image_handler.get_bytes(image_offset, width_row_size)
-    #         if skew_val == 1:
-    #             pixel_row += b"\x00\x00"
-    #         elif skew_val == 2:
-    #             pixel_row += b"x\00"
-    #         image_offset += image_width
-    #
-    #         converted_raw_data += pixel_row
-    #
-    #     return converted_raw_data

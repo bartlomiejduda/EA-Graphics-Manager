@@ -24,6 +24,7 @@ class DirEntry:
         66: "66 | 0x42 | 16-BIT IMG",
         90: "90 | 0x5A | RGBA4444",
         91: "91 | 0x5B | RGBA8888",
+        92: "92 | 0x5C | 4-BIT IMG + PAL + SWIZ",
         93: "93 | 0x5D | 8-BIT IMG + PAL + SWIZ",
         96: "96 | 0x60 | DXT1",
         97: "97 | 0x61 | DXT3",

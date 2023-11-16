@@ -21,7 +21,7 @@ class GuiMenu(tk.Frame):
 
         self.toolsmenu = tk.Menu(self.menubar, tearoff=0)
         self.toolsmenu.add_command(label="Options", command=lambda: None)
-        self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
+        # self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
 
         self.helpmenu = tk.Menu(self.menubar, tearoff=0)
         self.helpmenu.add_command(label="About...", command=lambda: gui_main.show_about_window())

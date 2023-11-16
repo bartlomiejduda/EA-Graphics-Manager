@@ -262,7 +262,7 @@ class EAImage:
             return _palette_data
 
         if entry_type == 1:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_4bit_r8g8b8a8pal_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_4bit_rgba8888pal_to_rgba8888(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
         elif entry_type == 2:
@@ -274,46 +274,45 @@ class EAImage:
                 logger.error("Error while converting palette data for type 2!")
                 return
 
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_8bit_r8g8b8a8pal_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_8bit_rgba8888pal_to_rgba8888(
                 ea_dir_entry.raw_data, palette_data
             )
         elif entry_type == 3:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgbp5551_to_rgba8888(
                 ea_dir_entry.raw_data
             )
         elif entry_type == 4:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r8g8b8_to_r8b8g8a8(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgb888_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 5:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 35:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgbp5551_to_rgba8888(
                 ea_dir_entry.raw_data
             )
         elif entry_type == 59:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgbp5551_to_rgba8888(
                 ea_dir_entry.raw_data
             )
         elif entry_type == 64:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_4bit_r5g5b5a1pal_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_4bit_rgba5551pal_to_rgba8888(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
         elif entry_type == 65:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5a1pal_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgba5551pal_to_rgba8888(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
-            # ea_dir_entry.img_convert_data = ImageDataConvertHandler().image_skew_fix(ea_dir_entry.img_convert_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
         elif entry_type == 66:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r5g5b5p1_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgbp5551_to_rgba8888(
                 ea_dir_entry.raw_data
             )
         elif entry_type == 90:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_r4g4b4a4_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgba4444_to_rgba8888(
                 ea_dir_entry.raw_data
             )
         elif entry_type == 91:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 125:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_b8g8r8a8_to_r8b8g8a8(
+            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_bgra8888_to_rgba8888(
                 ea_dir_entry.raw_data
             )
         else:
