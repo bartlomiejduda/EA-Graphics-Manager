@@ -234,3 +234,27 @@ class ImageDataConvertHandler:
                         converted_raw_palette_data += pal_entry
 
         return converted_raw_palette_data
+
+    def image_psp_unswizzle(self, image_data: bytes, width: int, height: int, bpp: int) -> bytes:
+        destination_offset = 0
+        width: int = (width * bpp) >> 3
+        destination: [int] = [0] * (width * height)
+        row_blocks = width // 16
+        magic_number = 8
+
+        for y in range(height):
+            for x in range(width):
+                block_x = x // 16
+                block_y = y // magic_number
+
+                block_index = block_x + (block_y * row_blocks)
+                block_address = block_index * 16 * magic_number
+                offset: int = block_address + (x - block_x * 16) + ((y - block_y * magic_number) * 16)
+                destination[destination_offset] = image_data[offset]
+                destination_offset += 1
+
+        result: bytes = b""
+        for entry in destination:
+            result += struct.pack("B", entry)
+
+        return result

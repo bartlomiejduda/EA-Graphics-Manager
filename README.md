@@ -18,8 +18,8 @@ More info about EA Image file format can be found on [Xentax Wiki](http://wiki.x
 
 # Building on Windows
 
-1. Install  **[Python 3.11.6](https://www.python.org/downloads/release/python-3110/)**
-2. Install **[PyCharm 2023 (Community Edition)](https://www.jetbrains.com/pycharm/download/#section=windows)**
+1. Install  **[Python 3.11.6](https://www.python.org/downloads/release/python-3116/)**
+2. Install **[PyCharm 2023 (Community Edition)](https://www.jetbrains.com/pycharm/download/other.html)**
 3. Create virtualenv and activate it
    - python3 -m venv \path\to\new\virtual\environment
    - .\venv\Scripts\activate.bat
@@ -52,6 +52,8 @@ More info about EA Image file format can be found on [Xentax Wiki](http://wiki.x
 | <center>89 / 0x59</center>  | <center>❌</center>  | <center>❌</center> | <center>❌</center> | FIFA 2006 (PSP)                                                                                                                                                                                                                                                                                              |
 | <center>90 / 0x5A</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> | FIFA 2006 (PSP)                                                                                                                                                                                                                                                                                              |
 | <center>91 / 0x5B</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> | FIFA 2006 (PSP)                                                                                                                                                                                                                                                                                              |
+| <center>92 / 0x5C</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> | FIFA 2006 (PSP) <br> Madden NFL 08 (PSP)                                                                                                                                                                                                                                                                     |
+| <center>93 / 0x5D</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> | FIFA 14 (PSP) <br> FIFA 2006 (PSP) <br> FIFA 2009 (PSP) <br> Fight Night Round 3 (PSP) <br> Madden NFL 08 (PSP)                                                                                                                                                                                              |
 | <center>125 / 0x7D</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> | SimCity 4 Deluxe (PC)                                                                                                                                                                                                                                                                                        |
 
 # EA-Graph-Man Noesis Script
