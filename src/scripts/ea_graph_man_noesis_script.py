@@ -418,7 +418,7 @@ def ea_image_load(ea_image_file_data, tex_list):
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 96:
             pixel_size = (img_width * img_height) // 2
-            print("pixel_size: ", pixel_size, " img_wodth: ", img_width, " img_height: ", img_height)
+            print("pixel_size: ", pixel_size, " img_width: ", img_width, " img_height: ", img_height)
             print("pixel_data_offset: ", bs.tell())
             pixel_data = bs.readBytes(pixel_size)
             pixel_data = rapi.imageDecodeDXT(pixel_data, img_width, img_height, noesis.FOURCC_DXT1)
@@ -435,7 +435,7 @@ def ea_image_load(ea_image_file_data, tex_list):
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 97:
             pixel_size = (img_width * img_height)
-            print("pixel_size: ", pixel_size, " img_wodth: ", img_width, " img_height: ", img_height)
+            print("pixel_size: ", pixel_size, " img_width: ", img_width, " img_height: ", img_height)
             print("pixel_data_offset: ", bs.tell())
             pixel_data = bs.readBytes(pixel_size)
             pixel_data = rapi.imageDecodeDXT(pixel_data, img_width, img_height, noesis.FOURCC_DXT3)

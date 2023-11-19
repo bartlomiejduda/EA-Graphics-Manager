@@ -8,6 +8,7 @@ License: GPL-3.0 License
 import os
 import struct
 
+from PIL import Image
 from reversebox.common.logger import get_logger
 
 from src.EA_Image.bin_attachment_entries import (
@@ -228,7 +229,7 @@ class EAImage:
                         break  # no more binary attachments for this DIR entry
 
     def convert_images(self):
-        conv_images_supported_types = [1, 2, 3, 4, 5, 35, 59, 64, 65, 66, 90, 91, 92, 93, 125]
+        conv_images_supported_types = [1, 2, 3, 4, 5, 35, 59, 64, 65, 66, 90, 91, 92, 93, 96, 97, 125]
 
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -325,6 +326,27 @@ class EAImage:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_8bit_rgba8888pal_to_rgba8888(
                 unswizzled_image_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
+        elif entry_type == 96:
+            pil_img = Image.frombuffer(
+                "RGBA",
+                (int(ea_dir_entry.h_width), int(ea_dir_entry.h_height)),
+                ea_dir_entry.raw_data,
+                "bcn",
+                1,  # 1 = DXT1 = BC1
+                "",
+            )
+            ea_dir_entry.img_convert_data = pil_img.tobytes()
+
+        elif entry_type == 97:
+            pil_img = Image.frombuffer(
+                "RGBA",
+                (int(ea_dir_entry.h_width), int(ea_dir_entry.h_height)),
+                ea_dir_entry.raw_data,
+                "bcn",
+                2,  # 2 = DXT3 = BC2
+                "",
+            )
+            ea_dir_entry.img_convert_data = pil_img.tobytes()
         elif entry_type == 125:
             ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_bgra8888_to_rgba8888(
                 ea_dir_entry.raw_data
