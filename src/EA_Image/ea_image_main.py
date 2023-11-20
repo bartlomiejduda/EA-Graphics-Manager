@@ -8,7 +8,6 @@ License: GPL-3.0 License
 import os
 import struct
 
-from PIL import Image
 from reversebox.common.logger import get_logger
 
 from src.EA_Image.bin_attachment_entries import (
@@ -21,7 +20,7 @@ from src.EA_Image.bin_attachment_entries import (
 )
 from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
-from src.EA_Image.ea_image_converter import ImageDataConvertHandler
+from src.EA_Image.ea_image_decoder import EAImageDecoder
 
 logger = get_logger(__name__)
 
@@ -262,95 +261,72 @@ class EAImage:
                     break
             return _palette_data
 
+        ea_image_decoder = EAImageDecoder()
+
         if entry_type == 1:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_4bit_rgba8888pal_to_rgba8888(
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_4bit_rgba8888pal_to_rgba8888(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
         elif entry_type == 2:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
             if self.dir_id != "GIMX" and len(palette_data) > 32:  # temporary workaround for NHL 2001-2003 PS2 games
-                palette_data = ImageDataConvertHandler().palette_ps2_unswizzle(palette_data)
+                palette_data = ea_image_decoder.palette_ps2_unswizzle(palette_data)
 
             if len(palette_data) == 0:
                 logger.error("Error while converting palette data for type 2!")
                 return
 
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_8bit_rgba8888pal_to_rgba8888(
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_8bit_rgba8888pal_to_rgba8888(
                 ea_dir_entry.raw_data, palette_data
             )
         elif entry_type == 3:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgbp5551_to_rgba8888(
-                ea_dir_entry.raw_data
-            )
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 4:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgb888_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgb888_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 5:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 35:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgbp5551_to_rgba8888(
-                ea_dir_entry.raw_data
-            )
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 59:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgbp5551_to_rgba8888(
-                ea_dir_entry.raw_data
-            )
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 64:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_4bit_rgba5551pal_to_rgba8888(
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_4bit_rgba5551pal_to_rgba8888(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
         elif entry_type == 65:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgba5551pal_to_rgba8888(
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgba5551pal_to_rgba8888(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
         elif entry_type == 66:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgbp5551_to_rgba8888(
-                ea_dir_entry.raw_data
-            )
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 90:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_rgba4444_to_rgba8888(
-                ea_dir_entry.raw_data
-            )
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgba4444_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 91:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 92:
-            unswizzled_image_data: bytes = ImageDataConvertHandler().image_psp_unswizzle(
+            unswizzled_image_data: bytes = ea_image_decoder.image_psp_unswizzle(
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, 4
             )
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_4bit_rgba8888pal_to_rgba8888(
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_4bit_rgba8888pal_to_rgba8888(
                 unswizzled_image_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
         elif entry_type == 93:
-            unswizzled_image_data: bytes = ImageDataConvertHandler().image_psp_unswizzle(
+            unswizzled_image_data: bytes = ea_image_decoder.image_psp_unswizzle(
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, 8
             )
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_8bit_rgba8888pal_to_rgba8888(
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_8bit_rgba8888pal_to_rgba8888(
                 unswizzled_image_data, _get_palette_data_from_dir_entry(ea_dir_entry)
             )
         elif entry_type == 96:
-            pil_img = Image.frombuffer(
-                "RGBA",
-                (int(ea_dir_entry.h_width), int(ea_dir_entry.h_height)),
-                ea_dir_entry.raw_data,
-                "bcn",
-                1,  # 1 = DXT1 = BC1
-                "",
+            ea_dir_entry.img_convert_data = ea_image_decoder.pillow_convert_dxt1_to_rgba8888(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
             )
-            ea_dir_entry.img_convert_data = pil_img.tobytes()
-
         elif entry_type == 97:
-            pil_img = Image.frombuffer(
-                "RGBA",
-                (int(ea_dir_entry.h_width), int(ea_dir_entry.h_height)),
-                ea_dir_entry.raw_data,
-                "bcn",
-                2,  # 2 = DXT3 = BC2
-                "",
+            ea_dir_entry.img_convert_data = ea_image_decoder.pillow_convert_dxt3_to_rgba8888(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
             )
-            ea_dir_entry.img_convert_data = pil_img.tobytes()
         elif entry_type == 125:
-            ea_dir_entry.img_convert_data = ImageDataConvertHandler().convert_bgra8888_to_rgba8888(
-                ea_dir_entry.raw_data
-            )
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_bgra8888_to_rgba8888(ea_dir_entry.raw_data)
         else:
             logger.error(f"Unsupported type {entry_type} for convert and preview!")
             return

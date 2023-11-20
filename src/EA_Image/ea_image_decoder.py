@@ -4,11 +4,12 @@ License: GPL-3.0 License
 """
 import struct
 
+from PIL import Image
 from reversebox.io_files.bytes_handler import BytesHandler
 
 
 # TODO - move it to ReverseBox
-class ImageDataConvertHandler:
+class EAImageDecoder:
     def __init__(self):
         pass
 
@@ -209,9 +210,9 @@ class ImageDataConvertHandler:
         return converted_raw_data
 
     def palette_ps2_unswizzle(self, palette_data: bytes) -> bytes:
-        converted_raw_palette_data = b""
+        converted_raw_palette_data: bytes = b""
         palette_handler = BytesHandler(palette_data)
-        bytes_per_palette_pixel = 4
+        bytes_per_palette_pixel: int = 4
         parts: int = int(len(palette_data) / 32)
         stripes: int = 2
         colors: int = 8
@@ -236,11 +237,11 @@ class ImageDataConvertHandler:
         return converted_raw_palette_data
 
     def image_psp_unswizzle(self, image_data: bytes, width: int, height: int, bpp: int) -> bytes:
-        destination_offset = 0
+        destination_offset: int = 0
         width: int = (width * bpp) >> 3
         destination: [int] = [0] * (width * height)
-        row_blocks = width // 16
-        magic_number = 8
+        row_blocks: int = width // 16
+        magic_number: int = 8
 
         for y in range(height):
             for x in range(width):
@@ -258,3 +259,25 @@ class ImageDataConvertHandler:
             result += struct.pack("B", entry)
 
         return result
+
+    def pillow_convert_dxt1_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
+        pil_img = Image.frombuffer(
+            "RGBA",
+            (img_width, img_height),
+            image_data,
+            "bcn",
+            1,  # 1 = DXT1 = BC1
+            "",
+        )
+        return pil_img.tobytes()
+
+    def pillow_convert_dxt3_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
+        pil_img = Image.frombuffer(
+            "RGBA",
+            (img_width, img_height),
+            image_data,
+            "bcn",
+            2,  # 2 = DXT3 = BC2
+            "",
+        )
+        return pil_img.tobytes()
