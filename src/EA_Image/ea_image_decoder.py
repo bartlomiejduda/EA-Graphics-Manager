@@ -115,6 +115,8 @@ class EAImageDecoder:
             b_byte = palette_handler.get_bytes(palette_read_offset + 2, 1)
             a_byte = palette_handler.get_bytes(palette_read_offset + 3, 1)
             single_pixel_data = r_byte + g_byte + b_byte + a_byte
+            if len(single_pixel_data) != 4:
+                raise Exception("Wrong single pixel data size!")
             converted_raw_data += single_pixel_data
 
         return converted_raw_data
@@ -281,3 +283,27 @@ class EAImageDecoder:
             "",
         )
         return pil_img.tobytes()
+
+    def convert_8bit_rgb888pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
+        converted_raw_data = b""
+        image_handler = BytesHandler(image_data)
+        palette_handler = BytesHandler(palette_data)
+        bytes_per_pixel = 1
+        bytes_per_palette_pixel = 3
+        read_offset = 0
+        for i in range(int(len(image_data) / bytes_per_pixel)):
+            palette_index = image_handler.get_bytes(read_offset, 1)
+            palette_index_int = struct.unpack("B", palette_index)[0]
+            read_offset += bytes_per_pixel
+
+            palette_read_offset = palette_index_int * bytes_per_palette_pixel
+            r_byte = palette_handler.get_bytes(palette_read_offset, 1)
+            g_byte = palette_handler.get_bytes(palette_read_offset + 1, 1)
+            b_byte = palette_handler.get_bytes(palette_read_offset + 2, 1)
+            a_byte = b"\xFF"
+            single_pixel_data = r_byte + g_byte + b_byte + a_byte
+            if len(single_pixel_data) != 4:
+                raise Exception("Wrong single pixel data size!")
+            converted_raw_data += single_pixel_data
+
+        return converted_raw_data

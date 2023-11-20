@@ -40,7 +40,7 @@ class DirEntry:
         112: "112 | 0x70 | IMG NAME",
         120: "120 | 0x78 | 16-BIT IMG (A0R5G6B5)",
         121: "121 | 0x79 | IMG PAL-16",
-        123: "123 | 0x7B | IMG PAL-256",
+        123: "123 | 0x7B | 8-BIT RGB888PAL",
         124: "124 | 0x7C | HOT SPOT",
         125: "125 | 0x7D | 32-BIT IMG (A8R8G8B8)",
         126: "126 | 0x7E | 16-BIT IMG (A1R5G5B5)",
