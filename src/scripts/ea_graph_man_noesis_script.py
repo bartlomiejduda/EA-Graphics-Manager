@@ -494,7 +494,7 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 24-bit R8G8B8
+        # 24-bit BGR888
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 127:
             bytes_per_pixel = 3

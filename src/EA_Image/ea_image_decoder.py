@@ -97,6 +97,21 @@ class EAImageDecoder:
 
         return converted_raw_data
 
+    def convert_bgr888_to_rgba8888(self, image_data: bytes) -> bytes:
+        converted_raw_data = b""
+        bytes_handler = BytesHandler(image_data)
+        bytes_per_pixel = 3
+        read_offset = 0
+        for i in range(int(len(image_data) / bytes_per_pixel)):
+            b_byte = bytes_handler.get_bytes(read_offset, 1)
+            g_byte = bytes_handler.get_bytes(read_offset + 1, 1)
+            r_byte = bytes_handler.get_bytes(read_offset + 2, 1)
+            single_pixel_data = r_byte + g_byte + b_byte + b"\xFF"
+            converted_raw_data += single_pixel_data
+            read_offset += bytes_per_pixel
+
+        return converted_raw_data
+
     def convert_8bit_rgba8888pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)

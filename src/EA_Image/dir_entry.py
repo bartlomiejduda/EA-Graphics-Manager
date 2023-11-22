@@ -44,7 +44,7 @@ class DirEntry:
         124: "124 | 0x7C | HOT SPOT",
         125: "125 | 0x7D | 32-BIT IMG (A8R8G8B8)",
         126: "126 | 0x7E | 16-BIT IMG (A1R5G5B5)",
-        127: "127 | 0x7F | 24-BIT IMG (A0R8G8B8)",
+        127: "127 | 0x7F | 24-BIT IMG (BGR888)",
         131: "131 | 0x83 | 16-BIT IMG REFPACK",
     }
 

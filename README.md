@@ -58,6 +58,8 @@ More info about EA Image file format can be found on [Xentax Wiki](http://wiki.x
 | <center>97 / 0x61</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> | SimCity 4 Deluxe (PC)                                                                                                                                                                                                                                                                                        |
 | <center>123 / 0x7B</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> | SimCity 4 Deluxe (PC)                                                                                                                                                                                                                                                                                        |
 | <center>125 / 0x7D</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> | SimCity 4 Deluxe (PC)                                                                                                                                                                                                                                                                                        |
+| <center>127 / 0x7F</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> | SimCity 4 Deluxe (PC)                                                                                                                                                                                                                                                                                        |
+
 
 # EA-Graph-Man Noesis Script
 
