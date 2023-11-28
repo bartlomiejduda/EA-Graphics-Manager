@@ -228,7 +228,7 @@ class EAImage:
                         break  # no more binary attachments for this DIR entry
 
     def convert_images(self):
-        conv_images_supported_types = [1, 2, 3, 4, 5, 35, 59, 64, 65, 66, 90, 91, 92, 93, 96, 97, 123, 125, 127]
+        conv_images_supported_types = [1, 2, 3, 4, 5, 35, 59, 64, 65, 66, 90, 91, 92, 93, 96, 97, 123, 125, 126, 127]
 
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -332,6 +332,8 @@ class EAImage:
             )
         elif entry_type == 125:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_bgra8888_to_rgba8888(ea_dir_entry.raw_data)
+        elif entry_type == 126:
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_argb5551_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 127:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_bgr888_to_rgba8888(ea_dir_entry.raw_data)
         else:

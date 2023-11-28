@@ -5,7 +5,10 @@ License: GPL-3.0 License
 import struct
 
 from PIL import Image
+from reversebox.common.logger import get_logger
 from reversebox.io_files.bytes_handler import BytesHandler
+
+logger = get_logger(__name__)
 
 
 # TODO - move it to ReverseBox
@@ -22,6 +25,16 @@ class EAImageDecoder:
         g = (g << 3) | (g >> 2)
         b = (b << 3) | (b >> 2)
         return (r << 24) | (g << 16) | (b << 8) | (0x00 if use_alpha and a == 0 else 0xFF)
+
+    def _unpack_2bytes_color_argb5551(self, value, use_alpha=True):
+        r = value & 0x1F
+        g = value >> 5 & 0x1F
+        b = value >> 10 & 0x1F
+        a = value >> 15 & 0x1
+        r = (r << 3) | (r >> 2)
+        g = (g << 3) | (g >> 2)
+        b = (b << 3) | (b >> 2)
+        return (b << 24) | (g << 16) | (r << 8) | (0x00 if use_alpha and a == 0 else 0xFF)
 
     def _unpack_2bytes_color_rgba4444(self, byte1, byte2):
         r = (byte1 >> 4) * 16
@@ -56,6 +69,23 @@ class EAImageDecoder:
             input_pixel_int = struct.unpack("<H", input_pixel)[0]
 
             out_pixel_int = self._unpack_2bytes_color_rgbp5551(input_pixel_int, False)
+            single_pixel_data = struct.pack(">I", out_pixel_int)
+
+            converted_raw_data += single_pixel_data
+            read_offset += bytes_per_pixel
+
+        return converted_raw_data
+
+    def convert_argb5551_to_rgba8888(self, image_data: bytes) -> bytes:
+        converted_raw_data = b""
+        bytes_handler = BytesHandler(image_data)
+        bytes_per_pixel = 2
+        read_offset = 0
+        for i in range(int(len(image_data) / bytes_per_pixel)):
+            input_pixel: bytes = bytes_handler.get_bytes(read_offset, 2)
+            input_pixel_int = struct.unpack("<H", input_pixel)[0]
+
+            out_pixel_int = self._unpack_2bytes_color_argb5551(input_pixel_int, False)
             single_pixel_data = struct.pack(">I", out_pixel_int)
 
             converted_raw_data += single_pixel_data
@@ -131,7 +161,8 @@ class EAImageDecoder:
             a_byte = palette_handler.get_bytes(palette_read_offset + 3, 1)
             single_pixel_data = r_byte + g_byte + b_byte + a_byte
             if len(single_pixel_data) != 4:
-                raise Exception("Wrong single pixel data size!")
+                logger.error("Wrong single pixel data size!")
+                return b""
             converted_raw_data += single_pixel_data
 
         return converted_raw_data
@@ -318,7 +349,8 @@ class EAImageDecoder:
             a_byte = b"\xFF"
             single_pixel_data = r_byte + g_byte + b_byte + a_byte
             if len(single_pixel_data) != 4:
-                raise Exception("Wrong single pixel data size!")
+                logger.error("Wrong single pixel data size!")
+                return b""
             converted_raw_data += single_pixel_data
 
         return converted_raw_data
