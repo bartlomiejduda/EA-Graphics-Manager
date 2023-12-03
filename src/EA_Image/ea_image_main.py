@@ -18,6 +18,7 @@ from src.EA_Image.bin_attachment_entries import (
     PaletteEntry,
     UnknownEntry,
 )
+from src.EA_Image.constants import CONVERT_IMAGES_SUPPORTED_TYPES, PALETTE_TYPES
 from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
 from src.EA_Image.ea_image_decoder import EAImageDecoder
@@ -208,7 +209,7 @@ class EAImage:
                         bin_att_entry = ImgNameEntry(bin_att_id, bin_att_start_offset)
                     elif bin_att_rec_id == 124:
                         bin_att_entry = HotSpotEntry(bin_att_id, bin_att_start_offset)
-                    elif bin_att_rec_id in (33, 34, 35, 36, 41, 42, 45, 59):
+                    elif bin_att_rec_id in PALETTE_TYPES:
                         bin_att_entry = PaletteEntry(bin_att_id, bin_att_start_offset)
                     else:
                         bin_att_entry = UnknownEntry(bin_att_id, bin_att_start_offset)
@@ -228,13 +229,11 @@ class EAImage:
                         break  # no more binary attachments for this DIR entry
 
     def convert_images(self):
-        conv_images_supported_types = [1, 2, 3, 4, 5, 35, 59, 64, 65, 66, 90, 91, 92, 93, 96, 97, 123, 125, 126, 127]
-
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
             entry_type = ea_dir_entry.h_record_id
 
-            if entry_type not in conv_images_supported_types:
+            if entry_type not in CONVERT_IMAGES_SUPPORTED_TYPES:
                 logger.warning(
                     f'Warning! Image "{ea_dir_entry.tag}" with entry type {str(entry_type)} is not supported for image conversion! Skipping!'
                 )

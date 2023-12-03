@@ -18,6 +18,7 @@ class DirEntry:
         41: "41 | 0x29 | PALETTE",
         42: "42 | 0x2A | PALETTE",
         45: "45 | 0x2D | PALETTE",
+        58: "58 | 0x3A | PALETTE",
         59: "59 | 0x3B | PALETTE",
         64: "64 | 0x40 | 4-BIT IMG + PAL",
         65: "65 | 0x41 | 8-BIT IMG + PAL",

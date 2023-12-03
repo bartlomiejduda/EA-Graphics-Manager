@@ -13,6 +13,7 @@ from tkinter import filedialog, messagebox
 from reversebox.common.logger import get_logger
 
 from src.EA_Image import ea_image_main
+from src.EA_Image.constants import PALETTE_TYPES
 from src.GUI.about_window import AboutWindow
 from src.GUI.GUI_entry_header_info_box import GuiEntryHeaderInfoBox
 from src.GUI.GUI_entry_preview import GuiEntryPreview
@@ -27,10 +28,6 @@ MIN_WINDOW_HEIGHT = WINDOW_HEIGHT
 MIN_WINDOW_WIDTH = WINDOW_WIDTH
 MAX_WINDOW_HEIGHT = WINDOW_HEIGHT
 MAX_WINDOW_WIDTH = WINDOW_WIDTH
-
-
-# constants
-PALETTE_TYPES = (33, 34, 35, 36, 41, 42, 45, 59)
 
 
 logger = get_logger(__name__)

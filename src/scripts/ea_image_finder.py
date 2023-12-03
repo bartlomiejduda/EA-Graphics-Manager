@@ -12,25 +12,30 @@ from typing import Optional
 import pytz
 
 # Script for finding valid EA image files.
-# It generates JSON report with details for each found file.
+# It generates JSON reports with details for each found file.
 
 
+# globals
 report_dict = {}
 summary_dict = {}
+endianess = "<"  # "<" - little  / ">" - big
+file_size_endianess = "<"
 
 
 def parse_ea_image_file(file_path: str, file_name: str) -> Optional[dict]:
+    print("Parsing " + str(file_name) + "...")
     ea_image_file = None
     ea_image_dict = {}
     global summary_dict
+    global endianess
     ea_image_dict["file_name"] = file_name
     ea_image_dict["file_path"] = file_path
-    ea_image_dict["is_error"] = None
+    ea_image_dict["is_error"] = "No error"
 
     try:
         ea_image_file = open(file_path, "rb")
         signature = ea_image_file.read(4).decode("utf8")
-        if signature not in ("SHPI", "SHPP", "SHPS", "SHPX", "SHPM"):
+        if signature not in ("SHPI", "SHPP", "SHPS", "SHPX", "SHPM", "SHPG"):
             print("File may be compressed! --> ", file_path)
             ea_image_dict["is_error"] = "Wrong signature error"
             return ea_image_dict
@@ -40,11 +45,11 @@ def parse_ea_image_file(file_path: str, file_name: str) -> Optional[dict]:
         ea_image_dict["is_error"] = "UnicodeDecode error"
         return ea_image_dict
 
-    ea_file_size = struct.unpack("<L", ea_image_file.read(4))[0]
+    ea_file_size = struct.unpack(file_size_endianess + "L", ea_image_file.read(4))[0]
     ea_image_dict["file_size"] = ea_file_size
 
     ea_image_file.seek(8)
-    number_of_images = struct.unpack("<L", ea_image_file.read(4))[0]
+    number_of_images = struct.unpack(endianess + "L", ea_image_file.read(4))[0]
     ea_image_dict["number_of_images"] = number_of_images
     ea_image_dict["EA_IMAGES"] = []
 
@@ -54,7 +59,7 @@ def parse_ea_image_file(file_path: str, file_name: str) -> Optional[dict]:
         entry_dict = {}
         entry_tag = ea_image_file.read(4).decode("utf8")
         entry_dict["entry_tag"] = entry_tag
-        entry_offset = struct.unpack("<L", ea_image_file.read(4))[0]
+        entry_offset = struct.unpack(endianess + "L", ea_image_file.read(4))[0]
         entry_dict["entry_offset"] = entry_offset
 
         # parse data
@@ -96,7 +101,7 @@ def find_ea_files():
     for root, dirs, files in os.walk(search_directory_path):
         for file in files:
             file_extension = file.split(".")[-1].upper()
-            if file_extension in ("FSH", "SSH", "MSH", "XSH", "PSH"):
+            if file_extension in ("FSH", "SSH", "MSH", "XSH", "PSH", "GSH"):
                 file_abs_path = os.path.join(root, file)
                 ea_file_dict = parse_ea_image_file(file_abs_path, file)
                 file_count += 1
