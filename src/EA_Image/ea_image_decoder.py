@@ -43,6 +43,7 @@ class EAImageDecoder:
         g = (byte2 & 15) * 16
         return (r << 16) | (g << 8) | b | (a << 24)
 
+    # EA Image type 125
     def convert_bgra8888_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
@@ -59,6 +60,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
+    # EA Image type 3, 35, 59, 66, 88, 89
     def convert_rgbp5551_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
@@ -76,6 +78,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
+    # EA Image type 126
     def convert_argb5551_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
@@ -93,6 +96,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
+    # EA Image type 90
     def convert_rgba4444_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
@@ -112,6 +116,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
+    # EA Image type 4, 67
     def convert_rgb888_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
@@ -127,6 +132,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
+    # EA Image type 127
     def convert_bgr888_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
@@ -142,6 +148,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
+    # EA Image type 2, 93
     def convert_8bit_rgba8888pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
@@ -161,12 +168,14 @@ class EAImageDecoder:
             a_byte = palette_handler.get_bytes(palette_read_offset + 3, 1)
             single_pixel_data = r_byte + g_byte + b_byte + a_byte
             if len(single_pixel_data) != 4:
-                logger.error("Wrong single pixel data size!")
+                logger.error("[1] Wrong single pixel data size!")
                 return b""
             converted_raw_data += single_pixel_data
 
         return converted_raw_data
 
+    # EA Image type 1 and type 92
+    # TODO - fix this, it is pixelated after decoding
     def convert_4bit_rgba8888pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
@@ -201,6 +210,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
+    # EA Image type 64
     def convert_4bit_rgba5551pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
@@ -237,6 +247,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
+    # EA Image 65
     def convert_rgba5551pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
@@ -257,57 +268,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
-    def palette_ps2_unswizzle(self, palette_data: bytes) -> bytes:
-        converted_raw_palette_data: bytes = b""
-        palette_handler = BytesHandler(palette_data)
-        bytes_per_palette_pixel: int = 4
-        parts: int = int(len(palette_data) / 32)
-        stripes: int = 2
-        colors: int = 8
-        blocks: int = 2
-        index: int = 0
-
-        for part in range(parts):
-            for block in range(blocks):
-                for stripe in range(stripes):
-                    for color in range(colors):
-                        pal_index: int = (
-                            index
-                            + part * colors * stripes * blocks
-                            + block * colors
-                            + stripe * stripes * colors
-                            + color
-                        )
-                        pal_offset: int = pal_index * bytes_per_palette_pixel
-                        pal_entry = palette_handler.get_bytes(pal_offset, bytes_per_palette_pixel)
-                        converted_raw_palette_data += pal_entry
-
-        return converted_raw_palette_data
-
-    def image_psp_unswizzle(self, image_data: bytes, width: int, height: int, bpp: int) -> bytes:
-        destination_offset: int = 0
-        width: int = (width * bpp) >> 3
-        destination: [int] = [0] * (width * height)
-        row_blocks: int = width // 16
-        magic_number: int = 8
-
-        for y in range(height):
-            for x in range(width):
-                block_x = x // 16
-                block_y = y // magic_number
-
-                block_index = block_x + (block_y * row_blocks)
-                block_address = block_index * 16 * magic_number
-                offset: int = block_address + (x - block_x * 16) + ((y - block_y * magic_number) * 16)
-                destination[destination_offset] = image_data[offset]
-                destination_offset += 1
-
-        result: bytes = b""
-        for entry in destination:
-            result += struct.pack("B", entry)
-
-        return result
-
+    # EA Image type 96
     def pillow_convert_dxt1_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
         pil_img = Image.frombuffer(
             "RGBA",
@@ -319,6 +280,7 @@ class EAImageDecoder:
         )
         return pil_img.tobytes()
 
+    # EA Image type 97
     def pillow_convert_dxt3_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
         pil_img = Image.frombuffer(
             "RGBA",
@@ -330,6 +292,7 @@ class EAImageDecoder:
         )
         return pil_img.tobytes()
 
+    # EA Image type 123
     def convert_8bit_rgb888pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
@@ -349,8 +312,52 @@ class EAImageDecoder:
             a_byte = b"\xFF"
             single_pixel_data = r_byte + g_byte + b_byte + a_byte
             if len(single_pixel_data) != 4:
-                logger.error("Wrong single pixel data size!")
+                logger.error("[2] Wrong single pixel data size!")
                 return b""
             converted_raw_data += single_pixel_data
 
         return converted_raw_data
+
+    # NEW LOGIC #
+
+    def _decode_rgb565_pixel(self, pixel_int: int):
+        t = bytearray(4)
+        t[0] = ((pixel_int >> 11) & 0x1F) * 0xFF // 0x1F
+        t[1] = ((pixel_int >> 5) & 0x3F) * 0xFF // 0x3F
+        t[2] = ((pixel_int >> 0) & 0x1F) * 0xFF // 0x1F
+        t[3] = 0xFF
+        return t
+
+    def _decode_i8_pixel(self, pixel_int: int):
+        t = bytearray(4)
+        t[0] = pixel_int
+        t[1] = pixel_int
+        t[2] = pixel_int
+        t[3] = 0xFF
+        return t
+
+    data_formats = {
+        # image_format: (decode_function, struct_format, bytes_per_pixel)
+        "rgb565": (_decode_rgb565_pixel, "<H", 2),
+        "i8": (_decode_i8_pixel, "<B", 1),
+    }
+
+    def _decode_generic(self, image_data: bytes, img_width: int, img_height: int, image_format: tuple):
+        decode_function, struct_format, bytes_per_pixel = image_format
+        image_handler = BytesHandler(image_data)
+        texture_data = bytearray(img_width * img_height * 4)
+        read_offset = 0
+        for i in range(img_width * img_height):
+            image_pixel: bytes = image_handler.get_bytes(read_offset, bytes_per_pixel)
+            pixel_int: int = struct.unpack(struct_format, image_pixel)[0]
+            read_offset += bytes_per_pixel
+            texture_data[i * 4 : (i + 1) * 4] = decode_function(self, pixel_int)  # noqa
+        return texture_data
+
+    # EA Image Type 88
+    def convert_rgb565_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
+        return self._decode_generic(image_data, img_width, img_height, self.data_formats["rgb565"])
+
+    # # EA Image Type 115
+    # def convert_i8_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
+    #     return self._decode_generic(image_data, img_width, img_height, self.data_formats["i8"])

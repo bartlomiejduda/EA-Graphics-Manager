@@ -310,6 +310,49 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 66 END
 
 
+        # RGB888 + empty palette (?)
+        # e.g. ReBoot (PS1)
+        elif entry_type == 67:
+            bytes_per_pixel = 3
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r8 g8 b8")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 4 END
+
+
+        # RGB565 (?)
+        # e.g. Need For Speed: Undercover (PSP)
+        elif entry_type == 88:
+                bytes_per_pixel = 2
+                pixel_size = img_width * img_height * bytes_per_pixel
+                pixel_data = bs.readBytes(pixel_size)
+
+                pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r5 g6 b5")
+
+                texture_format = noesis.NOESISTEX_RGBA32
+                texture_name = "%s_%d" % (base_name, i)
+                tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+                # entry type 88 END
+
+
+        # RGB565 (?)
+        # e.g. FIFA 2006 (PSP)
+        elif entry_type == 89:
+                bytes_per_pixel = 2
+                pixel_size = img_width * img_height * bytes_per_pixel
+                pixel_data = bs.readBytes(pixel_size)
+
+                pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r5 g6 b5")
+
+                texture_format = noesis.NOESISTEX_RGBA32
+                texture_name = "%s_%d" % (base_name, i)
+                tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+                # entry type 89 END
+
 
         # RGBA4444
         # e.g. FIFA 2006 (PSP)

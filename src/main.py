@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright © 2023  Bartłomiej Duda
+Copyright © 2024  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
@@ -15,7 +15,7 @@ from reversebox.common.logger import get_logger
 
 from src.GUI.GUI_main import EAManGui
 
-VERSION_NUM = "v0.16.5"
+VERSION_NUM = "v0.17.0"
 
 logger = get_logger("main")
 
