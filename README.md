@@ -8,7 +8,7 @@ It may not support all image types.
 
 <img src="src\data\img\usage_v0.14.1.gif">
 
-More info about EA Image file format can be found on [Xentax Wiki](http://wiki.xentax.com/index.php/EA_SSH_FSH_Image).
+More info about EA Image file format can be found on [Xentax Wiki](https://web.archive.org/web/20230817170521/http://wiki.xentax.com/index.php/EA_SSH_FSH_Image).
 
 
 # Dependencies
@@ -27,9 +27,6 @@ More info about EA Image file format can be found on [Xentax Wiki](http://wiki.x
    - pip3 install -r requirements.txt
 5. Run the src\main.py file
 
-# Building on Linux/MacOS
-
-// TODO
 
 # Image formats support table
 
@@ -58,6 +55,8 @@ More info about EA Image file format can be found on [Xentax Wiki](http://wiki.x
 | <center>93 / 0x5D</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> | FIFA 14 (PSP) <br> FIFA 2006 (PSP) <br> FIFA 2009 (PSP) <br> Fight Night Round 3 (PSP) <br> Madden NFL 08 (PSP)                                                                                                                                                                                              |
 | <center>96 / 0x60</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> | SimCity 4 Deluxe (PC)                                                                                                                                                                                                                                                                                        |
 | <center>97 / 0x61</center>  | <center>✔️</center> | <center>❌</center> | <center>❌</center> | SimCity 4 Deluxe (PC)                                                                                                                                                                                                                                                                                        |
+| <center>115 / 0x73</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> | Need for Speed Carbon: Own the City (PSP/Zeebo)                                                                                                                                                                                                                                                              |
+| <center>119 / 0x79</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> | Need for Speed Carbon: Own the City (PSP/Zeebo)                                                                                                                                                                                                                                                              |
 | <center>123 / 0x7B</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> | SimCity 4 Deluxe (PC)                                                                                                                                                                                                                                                                                        |
 | <center>125 / 0x7D</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> | SimCity 4 Deluxe (PC)                                                                                                                                                                                                                                                                                        |
 | <center>126 / 0x7E</center> | <center>✔️</center> | <center>❌</center> | <center>❌</center> | Need For Speed III: Hot Pursuit (PC) <br> Need For Speed: High Stakes (PC)                                                                                                                                                                                                                                   |

@@ -489,6 +489,36 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry 97 END
 
 
+        # 8-bit image with palette (in one data block)
+        # e.g. Need for Speed Carbon: Own the City (PSP/Zeebo)
+        elif entry_type == 115:
+            bits_per_pixel = 8
+            bytes_per_pixel = 1
+            pixel_size = img_width * img_height * bytes_per_pixel
+            palette_data = bs.readBytes(1024)
+            pixel_data = bs.readBytes(pixel_size)
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel, "r8 g8 b8 a8")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 115 END
+
+
+        # 4-bit image with palette (in one data block)
+        # e.g. Need for Speed Carbon: Own the City (PSP/Zeebo)
+        elif entry_type == 119:
+            bits_per_pixel = 4
+            pixel_size = img_width * img_height // 2
+            palette_data = bs.readBytes(64)
+            pixel_data = bs.readBytes(pixel_size)
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel, "r8 g8 b8 a8")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 119 END
+
 
         # 8-bit RGB888PAL
         # e.g. SimCity 4 Deluxe (PC)

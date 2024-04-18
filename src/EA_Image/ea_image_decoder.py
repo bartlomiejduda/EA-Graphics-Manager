@@ -148,7 +148,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
-    # EA Image type 2, 93
+    # EA Image type 2, 93, 115
     def convert_8bit_rgba8888pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
         image_handler = BytesHandler(image_data)
@@ -174,7 +174,7 @@ class EAImageDecoder:
 
         return converted_raw_data
 
-    # EA Image type 1 and type 92
+    # EA Image type 1, 92, 119
     # TODO - fix this, it is pixelated after decoding
     def convert_4bit_rgba8888pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
         converted_raw_data = b""
@@ -320,21 +320,21 @@ class EAImageDecoder:
 
     # NEW LOGIC #
 
-    def _decode_rgb565_pixel(self, pixel_int: int):
-        t = bytearray(4)
-        t[0] = ((pixel_int >> 11) & 0x1F) * 0xFF // 0x1F
-        t[1] = ((pixel_int >> 5) & 0x3F) * 0xFF // 0x3F
-        t[2] = ((pixel_int >> 0) & 0x1F) * 0xFF // 0x1F
-        t[3] = 0xFF
-        return t
+    def _decode_rgb565_pixel(self, pixel_int: int) -> bytes:
+        p = bytearray(4)
+        p[0] = ((pixel_int >> 11) & 0x1F) * 0xFF // 0x1F
+        p[1] = ((pixel_int >> 5) & 0x3F) * 0xFF // 0x3F
+        p[2] = ((pixel_int >> 0) & 0x1F) * 0xFF // 0x1F
+        p[3] = 0xFF
+        return p
 
-    def _decode_i8_pixel(self, pixel_int: int):
-        t = bytearray(4)
-        t[0] = pixel_int
-        t[1] = pixel_int
-        t[2] = pixel_int
-        t[3] = 0xFF
-        return t
+    def _decode_i8_pixel(self, pixel_int: int) -> bytes:
+        p = bytearray(4)
+        p[0] = pixel_int
+        p[1] = pixel_int
+        p[2] = pixel_int
+        p[3] = 0xFF
+        return p
 
     data_formats = {
         # image_format: (decode_function, struct_format, bytes_per_pixel)
@@ -342,7 +342,7 @@ class EAImageDecoder:
         "i8": (_decode_i8_pixel, "<B", 1),
     }
 
-    def _decode_generic(self, image_data: bytes, img_width: int, img_height: int, image_format: tuple):
+    def _decode_generic(self, image_data: bytes, img_width: int, img_height: int, image_format: tuple) -> bytes:
         decode_function, struct_format, bytes_per_pixel = image_format
         image_handler = BytesHandler(image_data)
         texture_data = bytearray(img_width * img_height * 4)

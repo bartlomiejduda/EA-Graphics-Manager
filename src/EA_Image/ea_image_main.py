@@ -336,10 +336,18 @@ class EAImage:
             ea_dir_entry.img_convert_data = ea_image_decoder.pillow_convert_dxt3_to_rgba8888(
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
             )
-        # elif entry_type == 115:
-        #     ea_dir_entry.img_convert_data = ea_image_decoder.convert_i8_to_rgba8888(
-        #         ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
-        #     )
+        elif entry_type == 115:
+            image_data = ea_dir_entry.raw_data[1024:]
+            palette_data = ea_dir_entry.raw_data[:1024]
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_8bit_rgba8888pal_to_rgba8888(
+                image_data, palette_data
+            )
+        elif entry_type == 119:
+            image_data = ea_dir_entry.raw_data[64:]
+            palette_data = ea_dir_entry.raw_data[:64]
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_4bit_rgba8888pal_to_rgba8888(
+                image_data, palette_data
+            )
         elif entry_type == 123:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_8bit_rgb888pal_to_rgba8888(
