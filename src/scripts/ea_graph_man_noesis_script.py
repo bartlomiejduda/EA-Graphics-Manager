@@ -489,6 +489,21 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry 97 END
 
 
+        # ARGB4444
+        # e.g. Need For Speed: Porsche Unleashed (PC)
+        elif entry_type == 109:
+            bytes_per_pixel = 2
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
+
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b4 g4 r4 a4")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 109 END
+
+
         # 8-bit image with palette (in one data block)
         # e.g. Need for Speed Carbon: Own the City (PSP/Zeebo)
         elif entry_type == 115:
@@ -518,6 +533,20 @@ def ea_image_load(ea_image_file_data, tex_list):
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
             # entry type 119 END
+
+        # RGB565
+        # e.g. Need For Speed: Porsche Unleashed (PC)
+        elif entry_type == 120:
+                bytes_per_pixel = 2
+                pixel_size = img_width * img_height * bytes_per_pixel
+                pixel_data = bs.readBytes(pixel_size)
+
+                pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b5 g6 r5")
+
+                texture_format = noesis.NOESISTEX_RGBA32
+                texture_name = "%s_%d" % (base_name, i)
+                tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+                # entry type 120 END
 
 
         # 8-bit RGB888PAL
@@ -551,7 +580,7 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 32-bit A8R8G8B8
+        # 32-bit ARGB8888
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 125:
             bytes_per_pixel = 4
@@ -566,8 +595,23 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 125 END
 
 
+        # ARGB1555
+        # e.g. Need For Speed III: Hot Pursuit (PC)
+        elif entry_type == 126:
+            bytes_per_pixel = 2
+            pixel_size = img_width * img_height * bytes_per_pixel
+            pixel_data = bs.readBytes(pixel_size)
 
-        # 24-bit BGR888
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b5 g5 r5 a1")
+
+            texture_format = noesis.NOESISTEX_RGBA32
+            texture_name = "%s_%d" % (base_name, i)
+            tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
+            # entry type 126 END
+
+
+
+        # RGB888
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 127:
             bytes_per_pixel = 3

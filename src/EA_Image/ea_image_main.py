@@ -254,13 +254,33 @@ class EAImage:
             )
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
+        def _generate_random_palette() -> bytes:
+            import random
+
+            random_palette = bytearray(1024)
+            for i in range(1024):
+                random_palette[i] = random.randint(0, 255)
+            return random_palette
+
         def _get_palette_data_from_dir_entry(_ea_dir_entry) -> bytes:
+            # try to get palette from binary attachment first
             _palette_data: bytes = b""
             for attachment in _ea_dir_entry.bin_attachments_list:
                 if isinstance(attachment, PaletteEntry):
                     _palette_data = attachment.raw_data
                     break
-            return _palette_data
+
+            if _palette_data and len(_palette_data) > 0:
+                return _palette_data  # return palette from binary attachment
+
+            # try to get palette from other dir entry
+            for i in range(self.num_of_entries):
+                ea_dir_entry = self.dir_entry_list[i]
+                if ea_dir_entry.h_record_id in PALETTE_TYPES:
+                    return ea_dir_entry.raw_data  # return palette from other dir entry
+
+            logger.warn("Warning! Couldn't find palette data!")
+            return _generate_random_palette()  # return random palette if no palette has been found
 
         ea_image_decoder = EAImageDecoder()
 
@@ -286,10 +306,16 @@ class EAImage:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgb888_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 5:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
+        elif entry_type == 33:
+            ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # palette
         elif entry_type == 35:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(
+                ea_dir_entry.raw_data
+            )  # palette
         elif entry_type == 59:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(
+                ea_dir_entry.raw_data
+            )  # palette
         elif entry_type == 64:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_4bit_rgba5551pal_to_rgba8888(
                 ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
@@ -336,6 +362,8 @@ class EAImage:
             ea_dir_entry.img_convert_data = ea_image_decoder.pillow_convert_dxt3_to_rgba8888(
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
             )
+        elif entry_type == 109:
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_argb4444_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 115:
             image_data = ea_dir_entry.raw_data[1024:]
             palette_data = ea_dir_entry.raw_data[:1024]
@@ -348,15 +376,19 @@ class EAImage:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_4bit_rgba8888pal_to_rgba8888(
                 image_data, palette_data
             )
+        elif entry_type == 120:
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgb565_to_rgba8888(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
+            )
         elif entry_type == 123:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_8bit_rgb888pal_to_rgba8888(
                 ea_dir_entry.raw_data, palette_data
             )
         elif entry_type == 125:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_bgra8888_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_argb8888_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 126:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_argb5551_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_argb1555_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 127:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_bgr888_to_rgba8888(ea_dir_entry.raw_data)
         else:

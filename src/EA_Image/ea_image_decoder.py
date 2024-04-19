@@ -26,7 +26,7 @@ class EAImageDecoder:
         b = (b << 3) | (b >> 2)
         return (r << 24) | (g << 16) | (b << 8) | (0x00 if use_alpha and a == 0 else 0xFF)
 
-    def _unpack_2bytes_color_argb5551(self, value, use_alpha=True):
+    def _unpack_2bytes_color_argb1555(self, value, use_alpha=True):
         r = value & 0x1F
         g = value >> 5 & 0x1F
         b = value >> 10 & 0x1F
@@ -43,8 +43,15 @@ class EAImageDecoder:
         g = (byte2 & 15) * 16
         return (r << 16) | (g << 8) | b | (a << 24)
 
+    def _unpack_2bytes_color_argb4444(self, byte1, byte2):
+        r = (byte1 >> 4) * 16
+        g = (byte1 & 15) * 16
+        b = (byte2 >> 4) * 16
+        a = (byte2 & 15) * 16
+        return (r << 16) | (g << 8) | b | (a << 24)
+
     # EA Image type 125
-    def convert_bgra8888_to_rgba8888(self, image_data: bytes) -> bytes:
+    def convert_argb8888_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
         bytes_per_pixel = 4
@@ -79,7 +86,7 @@ class EAImageDecoder:
         return converted_raw_data
 
     # EA Image type 126
-    def convert_argb5551_to_rgba8888(self, image_data: bytes) -> bytes:
+    def convert_argb1555_to_rgba8888(self, image_data: bytes) -> bytes:
         converted_raw_data = b""
         bytes_handler = BytesHandler(image_data)
         bytes_per_pixel = 2
@@ -88,7 +95,7 @@ class EAImageDecoder:
             input_pixel: bytes = bytes_handler.get_bytes(read_offset, 2)
             input_pixel_int = struct.unpack("<H", input_pixel)[0]
 
-            out_pixel_int = self._unpack_2bytes_color_argb5551(input_pixel_int, False)
+            out_pixel_int = self._unpack_2bytes_color_argb1555(input_pixel_int, False)
             single_pixel_data = struct.pack(">I", out_pixel_int)
 
             converted_raw_data += single_pixel_data
@@ -109,6 +116,26 @@ class EAImageDecoder:
             input_value_2_int = struct.unpack("B", input_value_2)[0]
 
             out_pixel_int = self._unpack_2bytes_color_rgba4444(input_value_1_int, input_value_2_int)
+            single_pixel_data = struct.pack(">I", out_pixel_int)
+
+            converted_raw_data += single_pixel_data
+            read_offset += bytes_per_pixel
+
+        return converted_raw_data
+
+    # EA Image type 109
+    def convert_argb4444_to_rgba8888(self, image_data: bytes) -> bytes:
+        converted_raw_data = b""
+        bytes_handler = BytesHandler(image_data)
+        bytes_per_pixel = 2
+        read_offset = 0
+        for i in range(int(len(image_data) / bytes_per_pixel)):
+            input_value_1: bytes = bytes_handler.get_bytes(read_offset, 1)
+            input_value_1_int = struct.unpack("B", input_value_1)[0]
+            input_value_2: bytes = bytes_handler.get_bytes(read_offset + 1, 1)
+            input_value_2_int = struct.unpack("B", input_value_2)[0]
+
+            out_pixel_int = self._unpack_2bytes_color_argb4444(input_value_1_int, input_value_2_int)
             single_pixel_data = struct.pack(">I", out_pixel_int)
 
             converted_raw_data += single_pixel_data
@@ -354,10 +381,6 @@ class EAImageDecoder:
             texture_data[i * 4 : (i + 1) * 4] = decode_function(self, pixel_int)  # noqa
         return texture_data
 
-    # EA Image Type 88
+    # EA Image Type 88, 120
     def convert_rgb565_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
         return self._decode_generic(image_data, img_width, img_height, self.data_formats["rgb565"])
-
-    # # EA Image Type 115
-    # def convert_i8_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
-    #     return self._decode_generic(image_data, img_width, img_height, self.data_formats["i8"])
