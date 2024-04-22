@@ -8,6 +8,7 @@ License: GPL-3.0 License
 import os
 import tkinter as tk
 import webbrowser
+from configparser import ConfigParser
 from tkinter import filedialog, messagebox
 
 from reversebox.common.logger import get_logger
@@ -75,6 +76,25 @@ class EAManGui:
         self.entry_preview = GuiEntryPreview(self.main_frame, self)
         self.menu = GuiMenu(self.master, self)
         self.loading_label = None
+
+        # user config
+        self.user_config = ConfigParser()
+        self.user_config_file_name: str = "config.ini"
+        self.user_config.add_section("config")
+        self.user_config.set("config", "save_directory_path", "")
+        self.user_config.set("config", "open_directory_path", "")
+        if not os.path.exists(self.user_config_file_name):
+            with open(self.user_config_file_name, "w") as configfile:
+                self.user_config.write(configfile)
+
+        self.user_config.read(self.user_config_file_name)
+        try:
+            self.current_save_directory_path = self.user_config.get("config", "save_directory_path")
+            self.current_open_directory_path = self.user_config.get("config", "open_directory_path")
+        except Exception as error:
+            logger.error(f"Error while loading user config: {error}")
+            self.current_save_directory_path = ""
+            self.current_open_directory_path = ""
 
     ######################################################################################################
     #                                             methods                                                #
@@ -235,9 +255,20 @@ class EAManGui:
             out_file = filedialog.asksaveasfile(
                 mode="wb+",
                 defaultextension=".bin",
+                initialdir=self.current_save_directory_path,
                 initialfile=ea_img.f_name + "_" + item_iid,
                 filetypes=(("BIN files", "*.bin"), ("all files", "*.*")),
             )
+            try:
+                selected_directory = os.path.dirname(out_file.name)
+            except Exception:
+                selected_directory = ""
+            self.current_save_directory_path = selected_directory  # set directory path from history
+            self.user_config.set(
+                "config", "save_directory_path", selected_directory
+            )  # save directory path to config file
+            with open(self.user_config_file_name, "w") as configfile:
+                self.user_config.write(configfile)
         except Exception as error:
             logger.error(f"Error: {error}")
             messagebox.showwarning("Warning", "Failed to save file!")
@@ -269,9 +300,21 @@ class EAManGui:
 
     def open_file(self):
         try:
-            in_file = filedialog.askopenfile(filetypes=self.allowed_filetypes, mode="rb")
+            in_file = filedialog.askopenfile(
+                filetypes=self.allowed_filetypes, mode="rb", initialdir=self.current_open_directory_path
+            )
             if not in_file:
                 return
+            try:
+                selected_directory = os.path.dirname(in_file.name)
+            except Exception:
+                selected_directory = ""
+            self.current_open_directory_path = selected_directory  # set directory path from history
+            self.user_config.set(
+                "config", "open_directory_path", selected_directory
+            )  # save directory path to config file
+            with open(self.user_config_file_name, "w") as configfile:
+                self.user_config.write(configfile)
             in_file_path = in_file.name
             in_file_name = in_file_path.split("/")[-1]
         except Exception as error:

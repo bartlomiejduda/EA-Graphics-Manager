@@ -7,3 +7,4 @@ dist/
 build/
 noesis*/
 log.txt
+config.ini

@@ -12,7 +12,7 @@ class TreeManager:
     def add_object(self, in_obj):
         self.tree_widget.insert(
             "", tk.END, text=in_obj.f_name, iid=in_obj.ea_image_id, open=True
-        )  # add file to tree, eg. "awards.ssh"
+        )  # add file to tree, e.g. "awards.ssh"
 
         # add object children (ea images) to tree
         sub_id = 0

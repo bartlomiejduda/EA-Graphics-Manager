@@ -12,8 +12,8 @@ from inc_noesis import *
 # This script is still in development.
 # It may have some bugs. Some image types may be not supported.
 
-SCRIPT_VERSION = "0.4"
-SCRIPT_LAST_UPDATE = "15.11.2023"
+SCRIPT_VERSION = "0.5"
+SCRIPT_LAST_UPDATE = "21.04.2024"
 
 # fmt: off
 debug_mode_enabled = True
@@ -119,26 +119,21 @@ def ea_image_load(ea_image_file_data, tex_list):
         # here starts reading image data
 
 
-        # 4-bit image with palette
+        # PAL4
         # e.g. Medal of Honor Frontline (PS2)
         if entry_type == 1:
             bits_per_pixel = 4
             pixel_size = img_width * img_height // 2
             pixel_data = bs.readBytes(pixel_size)
-
             bytes_per_palette_pixel = 4
             palette_type = bs.readUByte()
-            print("palette_type:", palette_type)
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
             palette_height = bs.readUShort()
             bs.seek(8, NOESEEK_REL)  # skip unknown bytes
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
             palette_data = bs.readBytes(palette_size)
-            print("palette size: ", palette_size)
-
-            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
-                                                "r8 g8 b8 a8")
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel, "r8 g8 b8 a8")
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
@@ -146,32 +141,24 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 1 END
 
 
-        # 8-bit image with palette
+
+        # PAL8
         # e.g. MVP Baseball 2005 (PS2)
         elif entry_type == 2:
-            type2_decode_mode = 1   # 0 - standard
-                                    # 1 - PS2 SHIFT
-
+            type2_decode_mode = 1   # 0 - standard (very rare, e.g. NHL 2002 PS2)
+                                    # 1 - PS2 palette swizzling (most games do this)
             bits_per_pixel = 8
             bytes_per_pixel = 1
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-            print("img_height: ", img_height)
-            print("img_width: ", img_width)
-            print("pixel_size: ", pixel_size)
-            print("after_pixel_offset: ", bs.tell())
             bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
-
             bytes_per_palette_pixel = 4
             palette_type = bs.readUByte()
-            print("palette_type:", palette_type)
-
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
             palette_height = bs.readUShort()
             bs.seek(8, NOESEEK_REL)  # skip unknown bytes
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
-            print("palette_size: ", palette_size)
             palette_data = bs.readBytes(palette_size)
 
             if type2_decode_mode == 0:
@@ -188,14 +175,13 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 16-bit r5g5b5a1
+        # ABGR1555
         # e.g. Cricket 2007 (PS2)
         elif entry_type == 3:
             bytes_per_pixel = 2
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-
-            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r5 g5 b5 p1")
+            pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r5 g5 b5 a1")
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
@@ -203,7 +189,8 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 3 END
 
 
-        # 24-bit r8g8b8
+
+        # RGB888
         # e.g. Medal of Honor Frontline (PS2)
         elif entry_type == 4:
             bytes_per_pixel = 3
@@ -218,8 +205,7 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-
-        # 32-bit r8g8b8a8
+        # RGBA8888
         # e.g. Medal of Honor Frontline (PS2)
         elif entry_type == 5:
             bytes_per_pixel = 4
@@ -232,25 +218,22 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 5 END
 
 
-        # 4-bit image with 16-bit palette (R5G5B5P1)
+
+        # PAL4_RGBP5551
         # e.g. NBA Live 97 (PS1)
         elif entry_type == 64:
             bits_per_pixel = 4
             pixel_size = img_width * img_height // 2
             pixel_data = bs.readBytes(pixel_size)
-
             bytes_per_palette_pixel = 2
             palette_type = bs.readUByte()
-            print("palette_type:", palette_type)
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
             palette_height = bs.readUShort()
             bs.seek(8, NOESEEK_REL)  # skip unknown bytes
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
             palette_data = bs.readBytes(palette_size)
-
-            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
-                                                "r5 g5 b5 p1")
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel, "r5 g5 b5 p1")
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
@@ -259,35 +242,23 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 8-bit image with 15-bit palette (R5G5B5P1)
+        # PAL8_RGBP5551
         # e.g. NBA Live 97 (PS1)
         elif entry_type == 65:
             bits_per_pixel = 8
             bytes_per_pixel = 1
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-            print("img_height: ", img_height)
-            print("img_width: ", img_width)
-            print("pixel_size: ", pixel_size)
-            print("after_pixel_offset: ", bs.tell())
             bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
-
             bytes_per_palette_pixel = 2
             palette_type = bs.readUByte()
-            print("palette_type:", palette_type)
-
             palette_total_size = get_uint24(bs.readBytes(3), "<")
-            print("palette_total_size: ", palette_total_size)
             palette_width = bs.readUShort()
             palette_height = bs.readUShort()
             bs.seek(8, NOESEEK_REL)  # skip unknown bytes
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
-            print("palette_size: ", palette_size)
-            print("palette_offset: ", bs.tell())
             palette_data = bs.readBytes(palette_size)
-
-            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
-                                                    "r5 g5 b5 p1")
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel, "r5 g5 b5 p1")
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
@@ -295,19 +266,20 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry 65 END
 
 
-        # 16-bit image without palette (R5G5B5P1)
+
+        # RGBP5551
         # e.g. NBA Live 97 (PS1)
         elif entry_type == 66:
             bytes_per_pixel = 2
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-
             pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r5 g5 b5 p1")
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
             # entry type 66 END
+
 
 
         # RGB888 + empty palette (?)
@@ -324,13 +296,13 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 4 END
 
 
+
         # RGB565 (?)
         # e.g. Need For Speed: Undercover (PSP)
         elif entry_type == 88:
                 bytes_per_pixel = 2
                 pixel_size = img_width * img_height * bytes_per_pixel
                 pixel_data = bs.readBytes(pixel_size)
-
                 pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r5 g6 b5")
 
                 texture_format = noesis.NOESISTEX_RGBA32
@@ -339,13 +311,13 @@ def ea_image_load(ea_image_file_data, tex_list):
                 # entry type 88 END
 
 
+
         # RGB565 (?)
         # e.g. FIFA 2006 (PSP)
         elif entry_type == 89:
                 bytes_per_pixel = 2
                 pixel_size = img_width * img_height * bytes_per_pixel
                 pixel_data = bs.readBytes(pixel_size)
-
                 pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r5 g6 b5")
 
                 texture_format = noesis.NOESISTEX_RGBA32
@@ -354,13 +326,13 @@ def ea_image_load(ea_image_file_data, tex_list):
                 # entry type 89 END
 
 
+
         # RGBA4444
         # e.g. FIFA 2006 (PSP)
         elif entry_type == 90:
             bytes_per_pixel = 2
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-
             pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r4 g4 b4 p4")
 
             texture_format = noesis.NOESISTEX_RGBA32
@@ -370,14 +342,12 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-
         # RGBA8888
         # e.g. FIFA 14 (PSP)
         elif entry_type == 91:
             bytes_per_pixel = 4
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-
             pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r8 g8 b8 a8")
 
             texture_format = noesis.NOESISTEX_RGBA32
@@ -386,33 +356,24 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 90 END
 
 
-        # 4-bit image with palette and PSP swizzling
+
+        # PAL4 PSP
         # e.g. Madden 08 (PSP)
         elif entry_type == 92:
             bits_per_pixel = 4
             pixel_size = (img_width * img_height) // 2
             pixel_data = bs.readBytes(pixel_size)
-            print("img_height: ", img_height)
-            print("img_width: ", img_width)
-            print("pixel_size: ", pixel_size)
             bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
-
             bytes_per_palette_pixel = 4
             palette_type = bs.readUByte()
-            print("palette_type:", palette_type)
-
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
             palette_height = bs.readUShort()
             bs.seek(8, NOESEEK_REL)  # skip unknown bytes
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
-            print("palette_size: ", palette_size)
-            print("palette_offset: ", bs.tell())
             palette_data = bs.readBytes(palette_size)
-
             pixel_data = rapi.imageUntwiddlePSP(pixel_data, img_width, img_height, bits_per_pixel)
-            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
-                                                "r8 g8 b8 a8")
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel, "r8 g8 b8 a8")
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
@@ -421,34 +382,24 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # 8-bit image with palette and PSP swizzling
+        # PAL8 PSP
         # e.g. Madden 08 (PSP)
         elif entry_type == 93:
             bits_per_pixel = 8
             bytes_per_pixel = 1
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-            print("img_height: ", img_height)
-            print("img_width: ", img_width)
-            print("pixel_size: ", pixel_size)
             bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
-
             bytes_per_palette_pixel = 4
             palette_type = bs.readUByte()
-            print("palette_type:", palette_type)
-
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
             palette_height = bs.readUShort()
             bs.seek(8, NOESEEK_REL)  # skip unknown bytes
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
-            print("palette_size: ", palette_size)
-            print("palette_offset: ", bs.tell())
             palette_data = bs.readBytes(palette_size)
-
             pixel_data = rapi.imageUntwiddlePSP(pixel_data, img_width, img_height, bits_per_pixel)
-            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
-                                                "r8 g8 b8 a8")
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel, "r8 g8 b8 a8")
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
@@ -457,12 +408,10 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # DXT1, 4-bit
+        # DXT1
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 96:
             pixel_size = (img_width * img_height) // 2
-            print("pixel_size: ", pixel_size, " img_width: ", img_width, " img_height: ", img_height)
-            print("pixel_data_offset: ", bs.tell())
             pixel_data = bs.readBytes(pixel_size)
             pixel_data = rapi.imageDecodeDXT(pixel_data, img_width, img_height, noesis.FOURCC_DXT1)
 
@@ -473,13 +422,10 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-
-        # DXT3, 8-bit
+        # DXT3
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 97:
             pixel_size = (img_width * img_height)
-            print("pixel_size: ", pixel_size, " img_width: ", img_width, " img_height: ", img_height)
-            print("pixel_data_offset: ", bs.tell())
             pixel_data = bs.readBytes(pixel_size)
             pixel_data = rapi.imageDecodeDXT(pixel_data, img_width, img_height, noesis.FOURCC_DXT3)
 
@@ -489,13 +435,13 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry 97 END
 
 
+
         # ARGB4444
         # e.g. Need For Speed: Porsche Unleashed (PC)
         elif entry_type == 109:
             bytes_per_pixel = 2
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-
             pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b4 g4 r4 a4")
 
             texture_format = noesis.NOESISTEX_RGBA32
@@ -504,7 +450,8 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 109 END
 
 
-        # 8-bit image with palette (in one data block)
+
+        # PAL8 (image and palette in one data block)
         # e.g. Need for Speed Carbon: Own the City (PSP/Zeebo)
         elif entry_type == 115:
             bits_per_pixel = 8
@@ -520,7 +467,8 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 115 END
 
 
-        # 4-bit image with palette (in one data block)
+
+        # PAL4 (image and palette in one data block)
         # e.g. Need for Speed Carbon: Own the City (PSP/Zeebo)
         elif entry_type == 119:
             bits_per_pixel = 4
@@ -534,13 +482,14 @@ def ea_image_load(ea_image_file_data, tex_list):
             tex_list.append(NoeTexture(texture_name, img_width, img_height, pixel_data, texture_format))
             # entry type 119 END
 
+
+
         # RGB565
         # e.g. Need For Speed: Porsche Unleashed (PC)
         elif entry_type == 120:
                 bytes_per_pixel = 2
                 pixel_size = img_width * img_height * bytes_per_pixel
                 pixel_data = bs.readBytes(pixel_size)
-
                 pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b5 g6 r5")
 
                 texture_format = noesis.NOESISTEX_RGBA32
@@ -549,7 +498,8 @@ def ea_image_load(ea_image_file_data, tex_list):
                 # entry type 120 END
 
 
-        # 8-bit RGB888PAL
+
+        # PAL8_RGB888
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 123:
             bits_per_pixel = 8
@@ -557,20 +507,15 @@ def ea_image_load(ea_image_file_data, tex_list):
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
             bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
-
             bytes_per_palette_pixel = 3
             palette_type = bs.readUByte()
-            print("palette_type:", palette_type)
-
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
             palette_height = bs.readUShort()
             bs.seek(8, NOESEEK_REL)  # skip unknown bytes
             palette_size = palette_width * palette_height * bytes_per_palette_pixel
             palette_data = bs.readBytes(palette_size)
-
-            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel,
-                                                "r8 g8 b8")
+            pixel_data = rapi.imageDecodeRawPal(pixel_data, palette_data, img_width, img_height, bits_per_pixel, "r8 g8 b8")
 
             texture_format = noesis.NOESISTEX_RGBA32
             texture_name = "%s_%d" % (base_name, i)
@@ -579,14 +524,12 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-
-        # 32-bit ARGB8888
+        # ARGB8888
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 125:
             bytes_per_pixel = 4
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-
             pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b8 g8 r8 a8")
 
             texture_format = noesis.NOESISTEX_RGBA32
@@ -595,13 +538,13 @@ def ea_image_load(ea_image_file_data, tex_list):
             # entry type 125 END
 
 
+
         # ARGB1555
         # e.g. Need For Speed III: Hot Pursuit (PC)
         elif entry_type == 126:
             bytes_per_pixel = 2
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-
             pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b5 g5 r5 a1")
 
             texture_format = noesis.NOESISTEX_RGBA32
@@ -617,7 +560,6 @@ def ea_image_load(ea_image_file_data, tex_list):
             bytes_per_pixel = 3
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-
             pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "b8 g8 r8")
 
             texture_format = noesis.NOESISTEX_RGBA32
@@ -641,3 +583,4 @@ def ea_image_load(ea_image_file_data, tex_list):
 
     print("\n")
     return 1
+# fmt: on

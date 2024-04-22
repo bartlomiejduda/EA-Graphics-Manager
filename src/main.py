@@ -15,7 +15,7 @@ from reversebox.common.logger import get_logger
 
 from src.GUI.GUI_main import EAManGui
 
-VERSION_NUM = "v0.17.2"
+VERSION_NUM = "v0.17.3"
 
 logger = get_logger("main")
 
@@ -34,7 +34,10 @@ def main():
     EAManGui(root, VERSION_NUM, MAIN_DIRECTORY)  # start GUI
     root.lift()
     center_tk_window.center_on_screen(root)
-    root.mainloop()
+    try:
+        root.mainloop()
+    except KeyboardInterrupt:
+        pass
 
     logger.info("End of main...")
 

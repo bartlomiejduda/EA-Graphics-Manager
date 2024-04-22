@@ -245,9 +245,6 @@ class EAImage:
                 f'Starting conversion for image {str(i+1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
             )
             ea_dir_entry.is_img_convert_supported = True
-            logger.info(
-                f'Initializing conversion function for img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
-            )
             self.convert_image_data_for_export_and_preview(ea_dir_entry, entry_type)
             logger.info(
                 f'Finished conversion for image {str(i + 1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
@@ -395,6 +392,4 @@ class EAImage:
             logger.error(f"Unsupported type {entry_type} for convert and preview!")
             return
 
-        logger.info("Raw data size: " + str(len(ea_dir_entry.raw_data)))
-        logger.info("Converted data size: " + str(len(ea_dir_entry.img_convert_data)))
         return
