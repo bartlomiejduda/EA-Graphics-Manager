@@ -102,23 +102,11 @@ class GuiEntryPreview(tk.Frame):
         self.preview_instance.place(x=5, y=5, width=285, height=130)
 
     def init_palette_preview_logic(self, palette_entry: PaletteEntry):
-        # TODO - move this logic to EAImage
         # TODO - fix palette logic
-        # bytes_per_entry_in_palette: int = int(len(palette_entry.raw_data) / palette_entry.pal_entries)
         palette_width: int = int(math.sqrt(palette_entry.pal_entries))
         palette_height: int = int(math.sqrt(palette_entry.pal_entries))
-        # bmp_object = BmpImg(
-        #     palette_width,
-        #     palette_height,
-        #     bytes_per_entry_in_palette,
-        #     palette_entry.raw_data,
-        #     b"",
-        # )
 
         try:
-            # img_file_stream = io.BytesIO(bmp_object.get_bmp_file_data())
-            # pil_img = Image.open(img_file_stream).transpose(Image.FLIP_TOP_BOTTOM)
-
             pil_img = Image.frombuffer(
                 "RGBA",
                 (int(palette_width / 2), int(palette_height / 2)),

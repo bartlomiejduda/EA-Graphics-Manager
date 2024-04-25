@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright © 2023  Bartłomiej Duda
+Copyright © 2024  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
@@ -14,7 +14,8 @@ from tkinter import filedialog, messagebox
 from reversebox.common.logger import get_logger
 
 from src.EA_Image import ea_image_main
-from src.EA_Image.constants import PALETTE_TYPES
+from src.EA_Image.constants import CONVERT_IMAGES_SUPPORTED_TYPES, PALETTE_TYPES
+from src.EA_Image.dds_image import DDS_Image
 from src.GUI.about_window import AboutWindow
 from src.GUI.GUI_entry_header_info_box import GuiEntryHeaderInfoBox
 from src.GUI.GUI_entry_preview import GuiEntryPreview
@@ -221,11 +222,9 @@ class EAManGui:
                 label="Export Raw Image Data",
                 command=lambda: self.treeview_rclick_export_raw(item_iid),
             )
-            # self.tree_rclick_popup.add_command(label="Export Image As BMP")
-            # self.tree_rclick_popup.add_command(label="Export Image Details As XML")
-            # self.tree_rclick_popup.add_command(label="Import Raw Image Data")
-            # self.tree_rclick_popup.add_command(label="Import Image From BMP")
-            # self.tree_rclick_popup.add_command(label="Import Image Details From XML")
+            self.tree_rclick_popup.add_command(
+                label="Export Image as DDS", command=lambda: self.treeview_rclick_export_dds(item_iid)
+            )
             self.tree_rclick_popup.tk_popup(event.x_root, event.y_root, entry="0")
         elif "direntry" in item_iid and "binattach" in item_iid:
             self.tree_rclick_popup.add_command(
@@ -247,13 +246,58 @@ class EAManGui:
         self.set_text_in_box(self.file_header_info_box.fh_text_obj_count, "")
         self.set_text_in_box(self.file_header_info_box.fh_text_dir_id, "")
 
+    def treeview_rclick_export_dds(self, item_iid):
+        ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
+
+        out_data = None
+        if "direntry" in item_iid and "binattach" not in item_iid:
+            ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
+            if ea_dir.h_record_id in CONVERT_IMAGES_SUPPORTED_TYPES:
+                # pack converted RGBA data in DDS file
+                out_data = DDS_Image(ea_dir.h_width, ea_dir.h_height, ea_dir.img_convert_data).get_file_data()
+            else:
+                messagebox.showwarning("Warning", f"Image type {ea_dir.h_record_id} is not supported for DDS export!")
+                return
+
+        else:
+            logger.warning("Warning! Unsupported entry while saving output binary data!")
+
+        out_file = None
+        try:
+            out_file = filedialog.asksaveasfile(
+                mode="wb",
+                defaultextension=".dds",
+                initialdir=self.current_save_directory_path,
+                initialfile=ea_img.f_name + "_" + item_iid,
+                filetypes=(("DDS files", "*.dds"), ("all files", "*.*")),
+            )
+            try:
+                selected_directory = os.path.dirname(out_file.name)
+            except Exception:
+                selected_directory = ""
+            self.current_save_directory_path = selected_directory  # set directory path from history
+            self.user_config.set(
+                "config", "save_directory_path", selected_directory
+            )  # save directory path to config file
+            with open(self.user_config_file_name, "w") as configfile:
+                self.user_config.write(configfile)
+        except Exception as error:
+            logger.error(f"Error: {error}")
+            messagebox.showwarning("Warning", "Failed to save file!")
+        if out_file is None:
+            return
+
+        out_file.write(out_data)
+        out_file.close()
+        messagebox.showinfo("Info", "File saved successfully!")
+
     def treeview_rclick_export_raw(self, item_iid):
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
         out_file = None
         try:
             out_file = filedialog.asksaveasfile(
-                mode="wb+",
+                mode="wb",
                 defaultextension=".bin",
                 initialdir=self.current_save_directory_path,
                 initialfile=ea_img.f_name + "_" + item_iid,
