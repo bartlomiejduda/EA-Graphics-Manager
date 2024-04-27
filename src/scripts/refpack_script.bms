@@ -10,5 +10,6 @@ if SIZE <= 0
 endif
 
 get NAME basename
-string NAME + ".decompressed.ssh"
+get EXTENSION extension
+string NAME + ".decompressed." + EXTENSION
 clog NAME 0 ZSIZE SIZE

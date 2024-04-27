@@ -300,7 +300,9 @@ class EAImage:
         elif entry_type == 3:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 4:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgb888_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgb888_to_rgba8888(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
+            )
         elif entry_type == 5:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 33:
@@ -324,7 +326,9 @@ class EAImage:
         elif entry_type == 66:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 67:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgb888_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgb888_to_rgba8888(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
+            )
         elif entry_type == 88:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgb565_to_rgba8888(
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
@@ -376,6 +380,11 @@ class EAImage:
         elif entry_type == 120:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgb565_to_rgba8888(
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height
+            )
+        elif entry_type == 121:
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
+            ea_dir_entry.img_convert_data = ea_image_decoder.convert_pal4_rgb888_to_rgba8888(
+                ea_dir_entry.raw_data, palette_data, ea_dir_entry.h_width, ea_dir_entry.h_height
             )
         elif entry_type == 123:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)

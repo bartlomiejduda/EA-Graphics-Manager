@@ -1,5 +1,5 @@
 """
-Copyright © 2023  Bartłomiej Duda
+Copyright © 2024  Bartłomiej Duda
 License: GPL-3.0 License
 """
 import struct
@@ -9,6 +9,8 @@ from reversebox.common.logger import get_logger
 from reversebox.io_files.bytes_handler import BytesHandler
 
 logger = get_logger(__name__)
+
+# fmt: off
 
 
 # TODO - move it to ReverseBox
@@ -138,22 +140,6 @@ class EAImageDecoder:
             out_pixel_int = self._unpack_2bytes_color_argb4444(input_value_1_int, input_value_2_int)
             single_pixel_data = struct.pack(">I", out_pixel_int)
 
-            converted_raw_data += single_pixel_data
-            read_offset += bytes_per_pixel
-
-        return converted_raw_data
-
-    # EA Image type 4, 67
-    def convert_rgb888_to_rgba8888(self, image_data: bytes) -> bytes:
-        converted_raw_data = b""
-        bytes_handler = BytesHandler(image_data)
-        bytes_per_pixel = 3
-        read_offset = 0
-        for i in range(int(len(image_data) / bytes_per_pixel)):
-            r_byte = bytes_handler.get_bytes(read_offset, 1)
-            g_byte = bytes_handler.get_bytes(read_offset + 1, 1)
-            b_byte = bytes_handler.get_bytes(read_offset + 2, 1)
-            single_pixel_data = r_byte + g_byte + b_byte + b"\xFF"
             converted_raw_data += single_pixel_data
             read_offset += bytes_per_pixel
 
@@ -349,38 +335,141 @@ class EAImageDecoder:
 
     def _decode_rgb565_pixel(self, pixel_int: int) -> bytes:
         p = bytearray(4)
-        p[0] = ((pixel_int >> 11) & 0x1F) * 0xFF // 0x1F
-        p[1] = ((pixel_int >> 5) & 0x3F) * 0xFF // 0x3F
-        p[2] = ((pixel_int >> 0) & 0x1F) * 0xFF // 0x1F
+        # p[0] = ((pixel_int >> 11) & 0x1F) * 0xFF // 0x1F
+        # p[1] = ((pixel_int >> 5) & 0x3F) * 0xFF // 0x3F
+        # p[2] = ((pixel_int >> 0) & 0x1F) * 0xFF // 0x1F
+
+        r = (pixel_int >> 11) & 0x1f
+        g = (pixel_int >> 5) & 0x3f
+        b = (pixel_int >> 0) & 0x1f
+        r = (r << 3) | (r >> 2)
+        g = (g << 2) | (g >> 4)
+        b = (b << 3) | (b >> 2)
+
+        p[0] = r
+        p[1] = g
+        p[2] = b
         p[3] = 0xFF
         return p
 
-    def _decode_i8_pixel(self, pixel_int: int) -> bytes:
+    def _decode_rgb888_pixel(self, pixel_int: int) -> bytes:
         p = bytearray(4)
-        p[0] = pixel_int
-        p[1] = pixel_int
-        p[2] = pixel_int
+        p[0] = (pixel_int >> 0) & 0xff
+        p[1] = (pixel_int >> 8) & 0xff
+        p[2] = (pixel_int >> 16) & 0xff
         p[3] = 0xFF
         return p
 
-    data_formats = {
-        # image_format: (decode_function, struct_format, bytes_per_pixel)
-        "rgb565": (_decode_rgb565_pixel, "<H", 2),
-        "i8": (_decode_i8_pixel, "<B", 1),
+    def _get_uint24(self, in_bytes: bytes, endianess: str) -> int:
+        if endianess == "<":
+            result = struct.unpack(endianess + "I", in_bytes + b"\x00")[0]
+        elif endianess == ">":
+            result = struct.unpack(endianess + "I", b"\x00" + in_bytes)[0]
+        else:
+            raise Exception("Wrong endianess!")
+        return result
+
+    def _get_uint16(self, in_bytes: bytes, endianess: str) -> int:
+        result = struct.unpack(endianess + "H", in_bytes)[0]
+        return result
+
+
+    generic_data_formats = {
+        # image_format: (decode_function, bits_per_pixel, image_entry_read_function)
+        "rgb565": (_decode_rgb565_pixel, 16, _get_uint16),
+        "rgb888": (_decode_rgb888_pixel, 24, _get_uint24),
     }
 
-    def _decode_generic(self, image_data: bytes, img_width: int, img_height: int, image_format: tuple) -> bytes:
-        decode_function, struct_format, bytes_per_pixel = image_format
+    indexed_data_formats = {
+        # image_format: (decode_function, bits_per_pixel, palette_entry_size, palette_entry_read_function)
+        # "pal8": (None, 8),
+        "pal4_rgb888": (_decode_rgb888_pixel, 4, 3, _get_uint24),
+    }
+
+    def _get_endianess_format(self, endianess: str) -> str:
+        if endianess == "little":
+            endianess_format = "<"
+        elif endianess == "big":
+            endianess_format = ">"
+        else:
+            raise Exception("Wrong endianess!")
+        return endianess_format
+
+    def _decode_generic(self, image_data: bytes, img_width: int, img_height: int, image_format: tuple, image_endianess: str) -> bytes:
+        decode_function, bits_per_pixel, image_entry_read_function = image_format
         image_handler = BytesHandler(image_data)
         texture_data = bytearray(img_width * img_height * 4)
         read_offset = 0
-        for i in range(img_width * img_height):
-            image_pixel: bytes = image_handler.get_bytes(read_offset, bytes_per_pixel)
-            pixel_int: int = struct.unpack(struct_format, image_pixel)[0]
-            read_offset += bytes_per_pixel
-            texture_data[i * 4 : (i + 1) * 4] = decode_function(self, pixel_int)  # noqa
+        image_endianess_format: str = self._get_endianess_format(image_endianess)
+
+        if bits_per_pixel == 16:
+            bytes_per_pixel = 2
+            for i in range(len(image_data) // bytes_per_pixel):
+                image_pixel: bytes = image_handler.get_bytes(read_offset, bytes_per_pixel)
+                pixel_int: int = image_entry_read_function(self, image_pixel, image_endianess_format)
+                read_offset += bytes_per_pixel
+                texture_data[i * 4 : (i + 1) * 4] = decode_function(self, pixel_int)  # noqa
+        elif bits_per_pixel == 24:
+            bytes_per_pixel = 3
+            for i in range(len(image_data) // bytes_per_pixel):
+                image_pixel: bytes = image_handler.get_bytes(read_offset, bytes_per_pixel)
+                pixel_int: int = image_entry_read_function(self, image_pixel, image_endianess_format)
+                read_offset += bytes_per_pixel
+                texture_data[i * 4: (i + 1) * 4] = decode_function(self, pixel_int)  # noqa
+        else:
+            raise Exception(f"Bpp {bits_per_pixel} not supported!")
+
+        return texture_data
+
+    def _decode_indexed(self, image_data: bytes, palette_data: bytes, img_width: int,
+                        img_height: int, image_format: tuple, image_endianess: str, palette_endianess: str) -> bytes:
+        decode_function, bits_per_pixel, palette_entry_size, palette_entry_read_function = image_format
+        image_handler = BytesHandler(image_data)
+        palette_handler = BytesHandler(palette_data)
+        texture_data = bytearray(img_width * img_height * 4)
+        image_offset = 0
+        palette_offset = 0
+        image_endianess_format: str = self._get_endianess_format(image_endianess)
+        palette_endianess_format: str = self._get_endianess_format(palette_endianess)
+
+        palette_data_ints = []
+        for i in range(len(palette_data) // palette_entry_size):
+            palette_entry = palette_handler.get_bytes(palette_offset, palette_entry_size)
+            palette_entry_int = palette_entry_read_function(self, palette_entry, palette_endianess_format)
+            palette_offset += palette_entry_size
+            palette_data_ints.append(palette_entry_int)
+
+        if bits_per_pixel == 16:
+            for i in range(img_width * img_height):
+                palette_index = image_handler.get_bytes(image_offset, 2)
+                palette_index_int = struct.unpack(image_endianess_format + "H", palette_index)[0]
+                texture_data[i * 4:(i + 1) * 4] = decode_function(self, palette_data_ints[palette_index_int])  # noqa
+                image_offset += 2
+        elif bits_per_pixel == 8:
+            for i in range(img_width * img_height):
+                palette_index = image_handler.get_bytes(image_offset, 1)
+                palette_index_int = struct.unpack(image_endianess_format + "B", palette_index)[0]
+                texture_data[i * 4:(i + 1) * 4] = decode_function(self, palette_data_ints[palette_index_int])  # noqa
+                image_offset += 1
+        elif bits_per_pixel == 4:
+            for i in range(0, img_width * img_height, 2):
+                palette_index = image_handler.get_bytes(image_offset, 1)
+                palette_index_int = struct.unpack(image_endianess_format + "B", palette_index)[0]
+
+                texture_data[i * 4:(i + 1) * 4] = decode_function(self, palette_data_ints[(palette_index_int >> 4) & 0xf])  # noqa
+                texture_data[(i + 1) * 4:(i + 2) * 4] = decode_function(self, palette_data_ints[palette_index_int & 0xf])  # noqa
+                image_offset += 1
+
         return texture_data
 
     # EA Image Type 88, 120
     def convert_rgb565_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
-        return self._decode_generic(image_data, img_width, img_height, self.data_formats["rgb565"])
+        return self._decode_generic(image_data, img_width, img_height, self.generic_data_formats["rgb565"], "little")
+
+    # EA Image Type 121
+    def convert_pal4_rgb888_to_rgba8888(self, image_data: bytes, palette_data: bytes, img_width: int, img_height: int) -> bytes:
+        return self._decode_indexed(image_data, palette_data, img_width, img_height, self.indexed_data_formats["pal4_rgb888"], "little", "little")
+
+    # EA Image type 4, 67
+    def convert_rgb888_to_rgba8888(self, image_data: bytes, img_width: int, img_height: int) -> bytes:
+        return self._decode_generic(image_data, img_width, img_height, self.generic_data_formats["rgb888"], "little")
