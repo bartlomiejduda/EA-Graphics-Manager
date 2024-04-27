@@ -12,8 +12,8 @@ from inc_noesis import *
 # This script is still in development.
 # It may have some bugs. Some image types may be not supported.
 
-SCRIPT_VERSION = "0.5"
-SCRIPT_LAST_UPDATE = "21.04.2024"
+SCRIPT_VERSION = "0.6"
+SCRIPT_LAST_UPDATE = "27.04.2024"
 
 # fmt: off
 debug_mode_enabled = True
@@ -104,13 +104,14 @@ def ea_image_load(ea_image_file_data, tex_list):
     for i in range(number_of_entries):
         bs.seek(entry_offsets_list[i], NOESEEK_ABS)  # go to entry offset
 
-        block_offset = bs.tell()
+        data_block_offset = bs.tell()
         entry_type = bs.readUByte()
-        pixel_total_size = get_uint24(bs.readBytes(3), "<")
+        data_block_total_size = get_uint24(bs.readBytes(3), "<")  # usually pixel data + 16-bytes header
 
         print("\n\n###### ENTRY " + str(i+1) + " ###########")
         print("entry_type: ", entry_type)
-        print("pixel_total_size: ", pixel_total_size)
+        print("data_block_offset: " + str(data_block_offset))
+        print("data_block_total_size: ", data_block_total_size)
 
         img_width = bs.readUShort()
         img_height = bs.readUShort()
@@ -126,6 +127,7 @@ def ea_image_load(ea_image_file_data, tex_list):
             pixel_size = img_width * img_height // 2
             pixel_data = bs.readBytes(pixel_size)
             bytes_per_palette_pixel = 4
+            bs.seek(data_block_offset + data_block_total_size, NOESEEK_ABS)  # skip padding
             palette_type = bs.readUByte()
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
@@ -151,8 +153,8 @@ def ea_image_load(ea_image_file_data, tex_list):
             bytes_per_pixel = 1
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-            bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
             bytes_per_palette_pixel = 4
+            bs.seek(data_block_offset + data_block_total_size, NOESEEK_ABS)  # skip padding
             palette_type = bs.readUByte()
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
@@ -226,6 +228,7 @@ def ea_image_load(ea_image_file_data, tex_list):
             pixel_size = img_width * img_height // 2
             pixel_data = bs.readBytes(pixel_size)
             bytes_per_palette_pixel = 2
+            bs.seek(data_block_offset + data_block_total_size, NOESEEK_ABS)  # skip padding
             palette_type = bs.readUByte()
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
@@ -249,8 +252,8 @@ def ea_image_load(ea_image_file_data, tex_list):
             bytes_per_pixel = 1
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-            bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
             bytes_per_palette_pixel = 2
+            bs.seek(data_block_offset + data_block_total_size, NOESEEK_ABS)  # skip padding
             palette_type = bs.readUByte()
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
@@ -363,8 +366,8 @@ def ea_image_load(ea_image_file_data, tex_list):
             bits_per_pixel = 4
             pixel_size = (img_width * img_height) // 2
             pixel_data = bs.readBytes(pixel_size)
-            bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
             bytes_per_palette_pixel = 4
+            bs.seek(data_block_offset + data_block_total_size, NOESEEK_ABS)  # skip padding
             palette_type = bs.readUByte()
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
@@ -389,8 +392,8 @@ def ea_image_load(ea_image_file_data, tex_list):
             bytes_per_pixel = 1
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-            bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
             bytes_per_palette_pixel = 4
+            bs.seek(data_block_offset + data_block_total_size, NOESEEK_ABS)  # skip padding
             palette_type = bs.readUByte()
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()
@@ -506,8 +509,8 @@ def ea_image_load(ea_image_file_data, tex_list):
             bytes_per_pixel = 1
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
-            bs.seek(block_offset + pixel_total_size, NOESEEK_ABS)  # skip padding
             bytes_per_palette_pixel = 3
+            bs.seek(data_block_offset + data_block_total_size, NOESEEK_ABS)  # skip padding
             palette_type = bs.readUByte()
             palette_total_size = get_uint24(bs.readBytes(3), "<")
             palette_width = bs.readUShort()

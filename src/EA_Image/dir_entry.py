@@ -5,8 +5,8 @@ class DirEntry:
     header_size = 16
 
     entry_types = {
-        1: "1 | 0x01 | PAL4",
-        2: "2 | 0x02 | PAL8",
+        1: "1 | 0x01 | PAL4_RGBA8888",
+        2: "2 | 0x02 | PAL8_RGBA8888",
         3: "3 | 0x03 | RGBP5551",
         4: "4 | 0x04 | RGB888",
         5: "5 | 0x05 | RGBA8888",
@@ -28,8 +28,8 @@ class DirEntry:
         89: "89 | 0x59 | RGB565",
         90: "90 | 0x5A | RGBA4444",
         91: "91 | 0x5B | RGBA8888",
-        92: "92 | 0x5C | PAL4 PSP_SWIZZLE",
-        93: "93 | 0x5D | PAL8 PSP_SWIZZLE",
+        92: "92 | 0x5C | PAL4_RGBA8888",
+        93: "93 | 0x5D | PAL8_RGBA8888",
         96: "96 | 0x60 | DXT1",
         97: "97 | 0x61 | DXT3",
         98: "98 | 0x62 | DXT5",
@@ -42,8 +42,8 @@ class DirEntry:
         109: "109 | 0x6D | ARGB4444",
         111: "111 | 0x6F | COMMENT",
         112: "112 | 0x70 | IMG NAME",
-        115: "115 | 0x73 | PAL8",
-        119: "119 | 0x77 | PAL4",
+        115: "115 | 0x73 | PAL8_RGBA8888",
+        119: "119 | 0x77 | PAL4_RGBA8888",
         120: "120 | 0x78 | RGB565",
         121: "121 | 0x79 | PAL4_RGB888",
         123: "123 | 0x7B | PAL8_RGB888",
