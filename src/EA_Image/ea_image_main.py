@@ -318,6 +318,10 @@ class EAImage:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 33:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # palette
+        elif entry_type == 34:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.XRGB1555
+            )  # palette
         elif entry_type == 35:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.XRGB1555

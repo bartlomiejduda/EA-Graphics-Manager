@@ -7,7 +7,7 @@ class DirEntry:
     entry_types = {
         1: "1 | 0x01 | PAL4_RGBA8888",
         2: "2 | 0x02 | PAL8_RGBA8888",
-        3: "3 | 0x03 | RGBP5551",
+        3: "3 | 0x03 | RGBA5551",
         4: "4 | 0x04 | RGB888",
         5: "5 | 0x05 | RGBA8888",
         14: "14 | 0x0E | 8-BIT IMG + SWIZ",
