@@ -328,8 +328,12 @@ class EAImage:
                 "pal4_rgba5551",
             )
         elif entry_type == 65:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgba5551pal_to_rgba8888(
-                ea_dir_entry.raw_data, _get_palette_data_from_dir_entry(ea_dir_entry)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
+                ea_dir_entry.raw_data,
+                _get_palette_data_from_dir_entry(ea_dir_entry),
+                ea_dir_entry.h_width,
+                ea_dir_entry.h_height,
+                "pal8_rgba5551",
             )
         elif entry_type == 66:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgbp5551_to_rgba8888(ea_dir_entry.raw_data)
@@ -346,7 +350,9 @@ class EAImage:
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, "rgb565"
             )
         elif entry_type == 90:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_rgba4444_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, "rgba4444"
+            )
         elif entry_type == 91:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 92:
@@ -380,7 +386,9 @@ class EAImage:
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, "dxt3"
             )
         elif entry_type == 109:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_argb4444_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, "argb4444"
+            )
         elif entry_type == 115:
             image_data = ea_dir_entry.raw_data[1024:]
             palette_data = ea_dir_entry.raw_data[:1024]
@@ -410,9 +418,13 @@ class EAImage:
         elif entry_type == 125:
             ea_dir_entry.img_convert_data = ea_image_decoder.convert_argb8888_to_rgba8888(ea_dir_entry.raw_data)
         elif entry_type == 126:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_argb1555_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, "argb1555"
+            )
         elif entry_type == 127:
-            ea_dir_entry.img_convert_data = ea_image_decoder.convert_bgr888_to_rgba8888(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, "bgr888"
+            )
         else:
             logger.error(f"Unsupported type {entry_type} for convert and preview!")
             return

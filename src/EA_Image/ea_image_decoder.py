@@ -87,101 +87,6 @@ class EAImageDecoder:
 
         return converted_raw_data
 
-    # EA Image type 126
-    def convert_argb1555_to_rgba8888(self, image_data: bytes) -> bytes:
-        converted_raw_data = b""
-        bytes_handler = BytesHandler(image_data)
-        bytes_per_pixel = 2
-        read_offset = 0
-        for i in range(int(len(image_data) / bytes_per_pixel)):
-            input_pixel: bytes = bytes_handler.get_bytes(read_offset, 2)
-            input_pixel_int = struct.unpack("<H", input_pixel)[0]
-
-            out_pixel_int = self._unpack_2bytes_color_argb1555(input_pixel_int, False)
-            single_pixel_data = struct.pack(">I", out_pixel_int)
-
-            converted_raw_data += single_pixel_data
-            read_offset += bytes_per_pixel
-
-        return converted_raw_data
-
-    # EA Image type 90
-    def convert_rgba4444_to_rgba8888(self, image_data: bytes) -> bytes:
-        converted_raw_data = b""
-        bytes_handler = BytesHandler(image_data)
-        bytes_per_pixel = 2
-        read_offset = 0
-        for i in range(int(len(image_data) / bytes_per_pixel)):
-            input_value_1: bytes = bytes_handler.get_bytes(read_offset, 1)
-            input_value_1_int = struct.unpack("B", input_value_1)[0]
-            input_value_2: bytes = bytes_handler.get_bytes(read_offset + 1, 1)
-            input_value_2_int = struct.unpack("B", input_value_2)[0]
-
-            out_pixel_int = self._unpack_2bytes_color_rgba4444(input_value_1_int, input_value_2_int)
-            single_pixel_data = struct.pack(">I", out_pixel_int)
-
-            converted_raw_data += single_pixel_data
-            read_offset += bytes_per_pixel
-
-        return converted_raw_data
-
-    # EA Image type 109
-    def convert_argb4444_to_rgba8888(self, image_data: bytes) -> bytes:
-        converted_raw_data = b""
-        bytes_handler = BytesHandler(image_data)
-        bytes_per_pixel = 2
-        read_offset = 0
-        for i in range(int(len(image_data) / bytes_per_pixel)):
-            input_value_1: bytes = bytes_handler.get_bytes(read_offset, 1)
-            input_value_1_int = struct.unpack("B", input_value_1)[0]
-            input_value_2: bytes = bytes_handler.get_bytes(read_offset + 1, 1)
-            input_value_2_int = struct.unpack("B", input_value_2)[0]
-
-            out_pixel_int = self._unpack_2bytes_color_argb4444(input_value_1_int, input_value_2_int)
-            single_pixel_data = struct.pack(">I", out_pixel_int)
-
-            converted_raw_data += single_pixel_data
-            read_offset += bytes_per_pixel
-
-        return converted_raw_data
-
-    # EA Image type 127
-    def convert_bgr888_to_rgba8888(self, image_data: bytes) -> bytes:
-        converted_raw_data = b""
-        bytes_handler = BytesHandler(image_data)
-        bytes_per_pixel = 3
-        read_offset = 0
-        for i in range(int(len(image_data) / bytes_per_pixel)):
-            b_byte = bytes_handler.get_bytes(read_offset, 1)
-            g_byte = bytes_handler.get_bytes(read_offset + 1, 1)
-            r_byte = bytes_handler.get_bytes(read_offset + 2, 1)
-            single_pixel_data = r_byte + g_byte + b_byte + b"\xFF"
-            converted_raw_data += single_pixel_data
-            read_offset += bytes_per_pixel
-
-        return converted_raw_data
-
-    # EA Image 65
-    def convert_rgba5551pal_to_rgba8888(self, image_data: bytes, palette_data: bytes) -> bytes:
-        converted_raw_data = b""
-        image_handler = BytesHandler(image_data)
-        palette_handler = BytesHandler(palette_data)
-        bytes_per_pixel = 1
-        bytes_per_palette_pixel = 2
-        read_offset = 0
-        for i in range(int(len(image_data) / bytes_per_pixel)):
-            palette_index = image_handler.get_bytes(read_offset, 1)
-            palette_index_int = struct.unpack("B", palette_index)[0]
-            read_offset += bytes_per_pixel
-
-            input_pixel: bytes = palette_handler.get_bytes(palette_index_int * bytes_per_palette_pixel, 2)
-            input_pixel_int = struct.unpack("<H", input_pixel)[0]
-            out_pixel_int = self._unpack_2bytes_color_rgbp5551(input_pixel_int, False)
-            single_pixel_data = struct.pack(">I", out_pixel_int)
-            converted_raw_data += single_pixel_data
-
-        return converted_raw_data
-
     # NEW LOGIC #
 
     def _decode_rgba5551_pixel(self, pixel_int: int) -> bytes:
@@ -193,6 +98,18 @@ class EAImageDecoder:
         p[0] = (r << 3) | (r >> 2)
         p[1] = (g << 3) | (g >> 2)
         p[2] = (b << 3) | (b >> 2)
+        p[3] = 0xFF
+        return p
+
+    def _decode_argb1555_pixel(self, pixel_int: int) -> bytes:
+        p = bytearray(4)
+        r = pixel_int & 0x1F
+        g = (pixel_int >> 5) & 0x1F
+        b = (pixel_int >> 10) & 0x1F
+        # a = (pixel_int >> 15) & 0x1
+        p[2] = (r << 3) | (r >> 2)
+        p[1] = (g << 3) | (g >> 2)
+        p[0] = (b << 3) | (b >> 2)
         p[3] = 0xFF
         return p
 
@@ -212,12 +129,46 @@ class EAImageDecoder:
         p[3] = 0xFF
         return p
 
+    def _decode_bgr888_pixel(self, pixel_int: int) -> bytes:
+        p = bytearray(4)
+        p[0] = (pixel_int >> 16) & 0xff
+        p[1] = (pixel_int >> 8) & 0xff
+        p[2] = (pixel_int >> 0) & 0xff
+        p[3] = 0xFF
+        return p
+
     def _decode_rgba8888_pixel(self, pixel_int: int) -> bytes:
         p = bytearray(4)
         p[0] = (pixel_int >> 0) & 0xff
         p[1] = (pixel_int >> 8) & 0xff
         p[2] = (pixel_int >> 16) & 0xff
         p[3] = (pixel_int >> 24) & 0xff
+        return p
+
+    def _decode_argb4444_pixel(self, pixel_int: int) -> bytes:
+        p = bytearray(4)
+        a = (pixel_int >> 12) & 0xff
+        r = (pixel_int >> 8) & 0x0f
+        g = (pixel_int >> 4) & 0x0f
+        b = (pixel_int >> 0) & 0x0f
+
+        p[0] = (r << 4) | (r >> 0)
+        p[1] = (g << 4) | (g >> 0)
+        p[2] = (b << 4) | (b >> 0)
+        p[3] = (a << 4) | (a >> 0)
+        return p
+
+    def _decode_rgba4444_pixel(self, pixel_int: int) -> bytes:
+        p = bytearray(4)
+        a = (pixel_int >> 12) & 0xff
+        r = (pixel_int >> 8) & 0x0f
+        g = (pixel_int >> 4) & 0x0f
+        b = (pixel_int >> 0) & 0x0f
+
+        p[0] = (b << 4) | (b >> 0)
+        p[1] = (g << 4) | (g >> 0)
+        p[2] = (r << 4) | (r >> 0)
+        p[3] = (a << 4) | (a >> 0)
         return p
 
     def _get_uint16(self, in_bytes: bytes, endianess: str) -> int:
@@ -241,6 +192,10 @@ class EAImageDecoder:
         # image_format: (decode_function, bits_per_pixel, image_entry_read_function)
         "rgb565": (_decode_rgb565_pixel, 16, _get_uint16),
         "rgb888": (_decode_rgb888_pixel, 24, _get_uint24),
+        "bgr888": (_decode_bgr888_pixel, 24, _get_uint24),
+        "argb4444": (_decode_argb4444_pixel, 16, _get_uint16),
+        "rgba4444": (_decode_rgba4444_pixel, 16, _get_uint16),
+        "argb1555": (_decode_argb1555_pixel, 16, _get_uint16),
     }
 
     indexed_data_formats = {
@@ -248,6 +203,7 @@ class EAImageDecoder:
         "pal4_rgba5551": (_decode_rgba5551_pixel, 4, 2, _get_uint16),
         "pal4_rgb888": (_decode_rgb888_pixel, 4, 3, _get_uint24),
         "pal4_rgba8888": (_decode_rgba8888_pixel, 4, 4, _get_uint32),
+        "pal8_rgba5551": (_decode_rgba5551_pixel, 8, 2, _get_uint16),
         "pal8_rgb888": (_decode_rgb888_pixel, 8, 3, _get_uint24),
         "pal8_rgba8888": (_decode_rgba8888_pixel, 8, 4, _get_uint32),
     }
