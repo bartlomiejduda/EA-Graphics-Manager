@@ -12,10 +12,10 @@ from configparser import ConfigParser
 from tkinter import filedialog, messagebox
 
 from reversebox.common.logger import get_logger
+from reversebox.image.image_dds import DDS_Image
 
 from src.EA_Image import ea_image_main
 from src.EA_Image.constants import CONVERT_IMAGES_SUPPORTED_TYPES, PALETTE_TYPES
-from src.EA_Image.dds_image import DDS_Image
 from src.GUI.about_window import AboutWindow
 from src.GUI.GUI_entry_header_info_box import GuiEntryHeaderInfoBox
 from src.GUI.GUI_entry_preview import GuiEntryPreview

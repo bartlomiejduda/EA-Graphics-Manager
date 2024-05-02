@@ -9,6 +9,8 @@ import os
 import struct
 
 from reversebox.common.logger import get_logger
+from reversebox.image.image_decoder import ImageDecoder
+from reversebox.image.image_formats import ImageFormats
 from reversebox.image.swizzling.swizzle_ps2 import unswizzle_ps2_palette
 from reversebox.image.swizzling.swizzle_psp import unswizzle_psp
 
@@ -23,8 +25,6 @@ from src.EA_Image.bin_attachment_entries import (
 from src.EA_Image.constants import CONVERT_IMAGES_SUPPORTED_TYPES, PALETTE_TYPES
 from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
-from src.EA_Image.ea_image_decoder import EAImageDecoder
-from src.EA_Image.ea_image_formats import ImageFormats
 
 logger = get_logger(__name__)
 
@@ -280,7 +280,7 @@ class EAImage:
             logger.warn("Warning! Couldn't find palette data!")
             return _generate_random_palette()  # return random palette if no palette has been found
 
-        ea_image_decoder = EAImageDecoder()
+        ea_image_decoder = ImageDecoder()
 
         if entry_type == 1:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
