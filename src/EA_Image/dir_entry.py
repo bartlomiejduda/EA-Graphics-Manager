@@ -51,6 +51,7 @@ class DirEntry:
         125: "125 | 0x7D | ARGB8888",
         126: "126 | 0x7E | XRGB1555",
         127: "127 | 0x7F | BGR888",
+        130: "130 | 0x82 | PAL8_RGBA8888",
         131: "131 | 0x83 | 16-BIT IMG REFPACK",
     }
 

@@ -9,6 +9,7 @@ import os
 import struct
 
 from reversebox.common.logger import get_logger
+from reversebox.compression.compression_refpack import RefpackHandler
 from reversebox.image.image_decoder import ImageDecoder
 from reversebox.image.image_formats import ImageFormats
 from reversebox.image.swizzling.swizzle_ps2 import unswizzle_ps2_palette
@@ -447,6 +448,12 @@ class EAImage:
         elif entry_type == 127:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.BGR888
+            )
+        elif entry_type == 130:
+            decompressed_data: bytes = RefpackHandler().decompress_data(ea_dir_entry.raw_data)
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
+                decompressed_data, palette_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.PAL8_RGBA8888
             )
         else:
             logger.error(f"Unsupported type {entry_type} for convert and preview!")
