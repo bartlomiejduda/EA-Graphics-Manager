@@ -52,7 +52,8 @@ class DirEntry:
         126: "126 | 0x7E | XRGB1555",
         127: "127 | 0x7F | BGR888",
         130: "130 | 0x82 | PAL8_RGBA8888",
-        131: "131 | 0x83 | 16-BIT IMG REFPACK",
+        131: "131 | 0x83 | XBGR1555",
+        192: "192 | 0xC0 | PAL4_RGBX5551",
     }
 
     def __init__(self, in_id, in_tag, in_offset):
