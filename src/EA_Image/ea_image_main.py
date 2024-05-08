@@ -466,6 +466,37 @@ class EAImage:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                 decompressed_data, palette_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.PAL4_RGBX5551
             )
+        elif entry_type == 193:
+            decompressed_data: bytes = RefpackHandler().decompress_data(ea_dir_entry.raw_data)
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
+                decompressed_data, palette_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.PAL8_RGBX5551
+            )
+        elif entry_type == 194:
+            decompressed_data: bytes = RefpackHandler().decompress_data(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                decompressed_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.XBGR1555
+            )
+        elif entry_type == 237:
+            decompressed_data: bytes = RefpackHandler().decompress_data(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                decompressed_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.ARGB4444
+            )
+        elif entry_type == 248:
+            decompressed_data: bytes = RefpackHandler().decompress_data(ea_dir_entry.raw_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                decompressed_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.RGB565
+            )
+        elif entry_type == 251:
+            decompressed_data: bytes = RefpackHandler().decompress_data(ea_dir_entry.raw_data)
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
+            if len(palette_data) < 1024:
+                img_format = ImageFormats.PAL8_RGB888
+            else:
+                img_format = ImageFormats.PAL8_RGBA8888
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
+                decompressed_data, palette_data, ea_dir_entry.h_width, ea_dir_entry.h_height, img_format
+            )
         else:
             logger.error(f"Unsupported type {entry_type} for convert and preview!")
             return

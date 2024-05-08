@@ -54,6 +54,11 @@ class DirEntry:
         130: "130 | 0x82 | PAL8_RGBA8888",
         131: "131 | 0x83 | XBGR1555",
         192: "192 | 0xC0 | PAL4_RGBX5551",
+        193: "193 | 0xC1 | PAL8_RGBX5551",
+        194: "194 | 0xC2 | XBGR1555",
+        237: "237 | 0xED | ARGB4444",
+        248: "248 | 0xF8 | RGB565",
+        251: "251 | 0xFB | PAL8",
     }
 
     def __init__(self, in_id, in_tag, in_offset):
