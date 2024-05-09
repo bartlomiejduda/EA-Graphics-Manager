@@ -4,7 +4,7 @@
 Copyright © 2024  Bartłomiej Duda
 License: GPL-3.0 License
 """
-
+import io
 import os
 import tkinter as tk
 import webbrowser
@@ -12,6 +12,7 @@ from configparser import ConfigParser
 from tkinter import filedialog, messagebox
 
 from reversebox.common.logger import get_logger
+from reversebox.compression.compression_refpack import RefpackHandler
 from reversebox.image.image_dds import DDS_Image
 
 from src.EA_Image import ea_image_main
@@ -57,7 +58,7 @@ class EAManGui:
         self.allowed_filetypes = [
             (
                 "EA Graphics files",
-                ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh", "*.gsh"],
+                ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh", "*.gsh", "*.qfs"],
             ),
             ("All files", ["*.*"]),
         ]
@@ -367,6 +368,14 @@ class EAManGui:
             return
 
         ea_img = ea_image_main.EAImage()
+        sign: bytes = in_file.read(2)
+        if sign == b"\x10\xFB":
+            in_file.seek(0)
+            in_file_data: bytes = in_file.read()
+            in_file = io.BytesIO(
+                RefpackHandler().decompress_data(in_file_data)
+            )  # convert on-disk file to memory file with decompressed data
+        in_file.seek(0)
         check_result = ea_img.check_file_signature_and_size(in_file)
 
         if check_result[0] != "OK":

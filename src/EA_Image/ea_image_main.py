@@ -66,6 +66,10 @@ class EAImage:
             back_offset = in_file.tell()
             sign = get_utf8_string(in_file, 4)
             in_file.seek(back_offset)
+            if len(sign) == 0:
+                error_msg = "File is empty. No data to read!"
+                logger.info(error_msg)
+                return "FILE_IS_EMPTY", error_msg
             if sign not in self.allowed_signatures:
                 error_msg = "File signature is not supported"
                 logger.info(error_msg)
