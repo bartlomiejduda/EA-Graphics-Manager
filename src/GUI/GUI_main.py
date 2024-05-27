@@ -25,7 +25,7 @@ from src.GUI.GUI_menu import GuiMenu
 from src.GUI.GUI_treeview import GuiTreeView
 
 # default app settings
-WINDOW_HEIGHT = 350
+WINDOW_HEIGHT = 420
 WINDOW_WIDTH = 840
 MIN_WINDOW_HEIGHT = WINDOW_HEIGHT
 MIN_WINDOW_WIDTH = WINDOW_WIDTH
@@ -58,7 +58,7 @@ class EAManGui:
         self.allowed_filetypes = [
             (
                 "EA Graphics files",
-                ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh", "*.gsh", "*.qfs"],
+                ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh", "*.gsh", "*.qfs", "*.ash"],
             ),
             ("All files", ["*.*"]),
         ]
@@ -130,12 +130,14 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_height, ea_dir.h_height)
             self.set_text_in_box(self.entry_header_info_box.eh_text_center_x, ea_dir.h_center_x)
             self.set_text_in_box(self.entry_header_info_box.eh_text_center_y, ea_dir.h_center_y)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_left_x, ea_dir.h_left_x_pos)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_top_y, ea_dir.h_top_y_pos)
+            self.set_text_in_box(self.entry_header_info_box.eh_text_left_x, ea_dir.h_default_x_position)
+            self.set_text_in_box(self.entry_header_info_box.eh_text_top_y, ea_dir.h_default_y_position)
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_header_offset, ea_dir.h_entry_header_offset)
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, ea_dir.raw_data_offset)
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, ea_dir.raw_data_size)
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, ea_dir.h_entry_end_offset)
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, ea_dir.h_record_id_masked)
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, ea_dir.h_is_image_compressed_masked)
             # fmt: on
 
             # image preview logic START
@@ -170,6 +172,8 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, "")
             # fmt: on
 
             # bin attachment preview logic START
@@ -201,6 +205,8 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, "")
             # fmt: on
 
             try:
@@ -425,12 +431,15 @@ class EAManGui:
         self.set_text_in_box(self.entry_header_info_box.eh_text_height, ea_img.dir_entry_list[0].h_height)
         self.set_text_in_box(self.entry_header_info_box.eh_text_center_x, ea_img.dir_entry_list[0].h_center_x)
         self.set_text_in_box(self.entry_header_info_box.eh_text_center_y, ea_img.dir_entry_list[0].h_center_y)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_left_x, ea_img.dir_entry_list[0].h_left_x_pos)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_top_y, ea_img.dir_entry_list[0].h_top_y_pos)
+        self.set_text_in_box(self.entry_header_info_box.eh_text_left_x, ea_img.dir_entry_list[0].h_default_x_position)
+        self.set_text_in_box(self.entry_header_info_box.eh_text_top_y, ea_img.dir_entry_list[0].h_default_y_position)
         self.set_text_in_box(self.entry_header_info_box.eh_text_entry_header_offset, ea_img.dir_entry_list[0].h_entry_header_offset)
         self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, ea_img.dir_entry_list[0].raw_data_offset)
         self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, ea_img.dir_entry_list[0].raw_data_size)
         self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, ea_img.dir_entry_list[0].h_entry_end_offset)
+        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, ea_img.dir_entry_list[0].h_record_id_masked)
+        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, ea_img.dir_entry_list[0].h_is_image_compressed_masked)
+
         # fmt: on
 
         self.tree_view.tree_man.add_object(ea_img)

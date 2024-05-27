@@ -16,7 +16,31 @@ def get_uint16(in_file, endianess):
     return result
 
 
-def get_uint12_uint4(in_file, endianess):
+def get_uint12_and_flags(in_file, endianess) -> list:
+    bytes2 = in_file.read(2)
+    val_int = struct.unpack(endianess + "H", bytes2)[0]
+    val_str = bin(val_int).lstrip("0b").zfill(16)
+
+    flag4_str = val_str[0:1]
+    flag4_int = int(flag4_str, 2)
+
+    flag3_str = val_str[1:2]
+    flag3_int = int(flag3_str, 2)
+
+    flag2_str = val_str[2:3]
+    flag2_int = int(flag2_str, 2)
+
+    flag1_str = val_str[3:4]
+    flag1_int = int(flag1_str, 2)
+
+    uint12_str = val_str[4:16]
+    uint12_int = int(uint12_str, 2)
+
+    out_list = [uint12_int, flag1_int, flag2_int, flag3_int, flag4_int]
+    return out_list
+
+
+def get_uint12_uint4(in_file, endianess) -> list:
     bytes2 = in_file.read(2)
     val_int = struct.unpack(endianess + "H", bytes2)[0]
     val_str = bin(val_int).lstrip("0b").zfill(16)

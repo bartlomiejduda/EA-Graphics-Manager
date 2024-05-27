@@ -58,7 +58,8 @@ def ea_image_check_type(file_data):
             and signature != "SHPI"  # FSH (PC)
             and signature != "SHPP"  # PSH (PS1)
             and signature != "SHPM"  # MSH (PSP)
-            and signature != "SHPG"  # GSH (WII)
+            and signature != "SHPG"  # GSH (WII/Gamecube)
+            and signature != "SHPA"  # ASH (Game Boy Advance)
     ):
         return 0
     return 1

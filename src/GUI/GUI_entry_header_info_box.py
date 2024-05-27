@@ -8,16 +8,16 @@ class GuiEntryHeaderInfoBox(tk.Frame):
         super().__init__(parent)
 
         self.entry_header_labelframe = tk.LabelFrame(parent, text="Entry Header")
-        self.entry_header_labelframe.place(x=140, y=100, width=340, height=240)  # <-- entry header info box
+        self.entry_header_labelframe.place(x=140, y=100, width=340, height=310)  # <-- entry header info box
 
-        self.eh_label_rec_type = tk.Label(self.entry_header_labelframe, text="Record Type:", anchor="w")
+        self.eh_label_rec_type = tk.Label(self.entry_header_labelframe, text="Record ID:", anchor="w")
         self.eh_label_rec_type.place(x=5, y=5, width=80, height=20)  # <-- record type label
         self.eh_text_rec_type = tk.Text(
             self.entry_header_labelframe,
             bg=self.entry_header_labelframe["bg"],
             state="disabled",
         )
-        self.eh_text_rec_type.place(x=90, y=5, width=240, height=20)  # <-- record type box
+        self.eh_text_rec_type.place(x=70, y=5, width=260, height=20)  # <-- record type box
         self.eh_text_rec_type.bind("<Button-3>", lambda event, arg=self: RightClicker(arg, event))
 
         self.eh_label_size_of_the_block = tk.Label(self.entry_header_labelframe, text="Size Of The Block:", anchor="w")
@@ -139,3 +139,25 @@ class GuiEntryHeaderInfoBox(tk.Frame):
         )
         self.eh_text_data_size.place(x=240, y=185, width=90, height=20)
         self.eh_text_data_size.bind("<Button-3>", lambda event, arg=self: RightClicker(arg, event))
+
+        self.eh_label_record_id_masked = tk.Label(self.entry_header_labelframe, text="Record ID (Masked):", anchor="w")
+        self.eh_label_record_id_masked.place(x=5, y=215, width=120, height=20)
+        self.eh_text_entry_record_id_masked = tk.Text(
+            self.entry_header_labelframe,
+            bg=self.entry_header_labelframe["bg"],
+            state="disabled",
+        )
+        self.eh_text_entry_record_id_masked.place(x=120, y=215, width=50, height=20)
+        self.eh_text_entry_record_id_masked.bind("<Button-3>", lambda event, arg=self: RightClicker(arg, event))
+
+        ########
+
+        self.eh_label_img_compression_masked = tk.Label(self.entry_header_labelframe, text="IMG compr.:", anchor="w")
+        self.eh_label_img_compression_masked.place(x=180, y=215, width=120, height=20)
+        self.eh_text_entry_img_compression_masked = tk.Text(
+            self.entry_header_labelframe,
+            bg=self.entry_header_labelframe["bg"],
+            state="disabled",
+        )
+        self.eh_text_entry_img_compression_masked.place(x=260, y=215, width=70, height=20)
+        self.eh_text_entry_img_compression_masked.bind("<Button-3>", lambda event, arg=self: RightClicker(arg, event))

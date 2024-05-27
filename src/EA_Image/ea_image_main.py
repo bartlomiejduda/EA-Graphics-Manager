@@ -53,7 +53,8 @@ class EAImage:
             "SHPS",  # PS2 games
             "SHPX",  # XBOX games
             "SHPM",  # PSP games
-            "SHPG",  # WII games
+            "SHPG",  # WII/Gamecube games
+            "SHPA",  # Game Boy Advance games
         )
         # fmt: on
 

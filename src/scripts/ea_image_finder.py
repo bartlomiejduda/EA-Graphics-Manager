@@ -35,7 +35,7 @@ def parse_ea_image_file(file_path: str, file_name: str) -> Optional[dict]:
     try:
         ea_image_file = open(file_path, "rb")
         signature = ea_image_file.read(4).decode("utf8")
-        if signature not in ("SHPI", "SHPP", "SHPS", "SHPX", "SHPM", "SHPG"):
+        if signature not in ("SHPI", "SHPP", "SHPS", "SHPX", "SHPM", "SHPG", "SHPA"):
             print("File may be compressed! --> ", file_path)
             ea_image_dict["is_error"] = "Wrong signature error"
             return ea_image_dict

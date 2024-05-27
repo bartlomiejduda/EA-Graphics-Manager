@@ -1,4 +1,10 @@
-from src.EA_Image.data_read import get_uint8, get_uint12_uint4, get_uint16, get_uint24
+from src.EA_Image.data_read import (
+    get_uint8,
+    get_uint12_and_flags,
+    get_uint12_uint4,
+    get_uint16,
+    get_uint24,
+)
 
 
 class DirEntry:
@@ -72,13 +78,19 @@ class DirEntry:
         self.raw_data = None
 
         self.h_record_id = None
+        self.h_record_id_masked = None
+        self.h_is_image_compressed_masked = None
         self.h_size_of_the_block = None
         self.h_width = None
         self.h_height = None
         self.h_center_x = None
         self.h_center_y = None
-        self.h_left_x_pos = None
-        self.h_top_y_pos = None
+        self.h_default_x_position = None
+        self.h_flag1_referenced = None
+        self.h_flag2_swizzled = None
+        self.h_flag3_transposed = None
+        self.h_flag4_reserved = None
+        self.h_default_y_position = None
         self.h_mipmaps_count = None
         self.h_entry_header_offset = None
         self.h_entry_end_offset = None
@@ -91,13 +103,31 @@ class DirEntry:
     def set_entry_header(self, in_file, endianess):
         self.h_entry_header_offset = in_file.tell()
         self.h_record_id = get_uint8(in_file, endianess)
+        self.h_record_id_masked = self.h_record_id & 0x7F
+        is_image_compressed_masked: int = self.h_record_id & 0x80  # 0 - not compressed / 128 - refpack compressed
+
+        def _get_img_compressed_string(img_compressed_flag: int) -> str:
+            if img_compressed_flag == 128:
+                return "REFPACK"
+            elif img_compressed_flag == 0:
+                return "NONE"
+            else:
+                return "UNKNOWN"
+
+        self.h_is_image_compressed_masked = _get_img_compressed_string(is_image_compressed_masked)
         self.h_size_of_the_block = get_uint24(in_file, endianess)
         self.h_width = get_uint16(in_file, endianess)
         self.h_height = get_uint16(in_file, endianess)
         self.h_center_x = get_uint16(in_file, endianess)
         self.h_center_y = get_uint16(in_file, endianess)
-        self.h_left_x_pos, _ = get_uint12_uint4(in_file, endianess)
-        self.h_top_y_pos, self.h_mipmaps_count = get_uint12_uint4(in_file, endianess)
+        (
+            self.h_default_x_position,
+            self.h_flag1_referenced,
+            self.h_flag2_swizzled,
+            self.h_flag3_transposed,
+            self.h_flag4_reserved,
+        ) = get_uint12_and_flags(in_file, endianess)
+        self.h_default_y_position, self.h_mipmaps_count = get_uint12_uint4(in_file, endianess)
 
     def set_raw_data(self, in_file, in_data_start_offset, in_data_end_offset=0):
         zero_size_flag = -1
