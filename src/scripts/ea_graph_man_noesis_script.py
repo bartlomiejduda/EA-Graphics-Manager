@@ -88,7 +88,7 @@ def ea_image_load(ea_image_file_data, tex_list):
     print("base_name: ", base_name)
 
     # header parsing
-    bs.readBytes(4).decode("UTF8")  # signature, e.g. "SHPS"
+    signature = bs.readBytes(4).decode("UTF8")  # signature, e.g. "SHPS"
     bs.readUInt()  # total file size
     number_of_entries = bs.readUInt()
     bs.readBytes(4).decode("UTF8")  # directory ID, e.g. "G354", "G264" etc.
@@ -345,12 +345,16 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGBA8888
+        # RGBA8888 (can be PSP swizzled)
         # e.g. FIFA 14 (PSP)
         elif entry_type == 91:
             bytes_per_pixel = 4
+            bits_per_pixel = 32
+            img_mode = 0  # 0 - standard  / 1 - PSP swizzled (rare)
             pixel_size = img_width * img_height * bytes_per_pixel
             pixel_data = bs.readBytes(pixel_size)
+            if img_mode == 1:
+                pixel_data = rapi.imageUntwiddlePSP(pixel_data, img_width, img_height, bits_per_pixel)
             pixel_data = rapi.imageDecodeRaw(pixel_data, img_width, img_height, "r8 g8 b8 a8")
 
             texture_format = noesis.NOESISTEX_RGBA32

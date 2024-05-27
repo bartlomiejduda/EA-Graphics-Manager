@@ -236,7 +236,7 @@ class EAImage:
                     if bin_att_entry.end_offset >= ea_dir_entry.end_offset:
                         break  # no more binary attachments for this DIR entry
 
-    def convert_images(self):
+    def convert_images(self, gui_main):
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
             entry_type = ea_dir_entry.h_record_id
@@ -251,12 +251,12 @@ class EAImage:
                 f'Starting conversion for image {str(i+1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
             )
             ea_dir_entry.is_img_convert_supported = True
-            self.convert_image_data_for_export_and_preview(ea_dir_entry, entry_type)
+            self.convert_image_data_for_export_and_preview(ea_dir_entry, entry_type, gui_main)
             logger.info(
                 f'Finished conversion for image {str(i + 1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
             )
 
-    def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type):
+    def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type, gui_main):
         def _generate_random_palette() -> bytes:
             import random
 
@@ -297,7 +297,7 @@ class EAImage:
             )
         elif entry_type == 2:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
-            if self.dir_id != "GIMX" and len(palette_data) > 32:  # temporary workaround for NHL 2001-2003 PS2 games
+            if gui_main.enable_swizzling_type2_menu_option.get():
                 palette_data = unswizzle_ps2_palette(palette_data)
 
             if len(palette_data) == 0:
@@ -372,7 +372,13 @@ class EAImage:
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.RGBA4444
             )
         elif entry_type == 91:
-            ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
+            if gui_main.enable_swizzling_type91_menu_option.get():
+                unswizzled_image_data: bytes = unswizzle_psp(
+                    ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, 32
+                )
+                ea_dir_entry.img_convert_data = unswizzled_image_data
+            else:
+                ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 92:
             unswizzled_image_data: bytes = unswizzle_psp(
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, 4

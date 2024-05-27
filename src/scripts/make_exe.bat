@@ -19,7 +19,7 @@ python setup.py build build_exe
 if exist __pycache__ (rd /s /q __pycache__)
 
 echo Copying files...
-set BUILD_PATH=.\build_final\EA-Graphics-Manager
+set BUILD_PATH=.\build_final\EA_Graphics_Manager
 copy .\src\data\docs\readme.txt %BUILD_PATH%\readme.txt
 copy .\LICENSE %BUILD_PATH%\LICENSE
 mkdir %BUILD_PATH%\src\data\img

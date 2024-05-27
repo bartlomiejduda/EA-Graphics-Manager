@@ -20,7 +20,7 @@ executables = [
 ]
 
 build_exe_options: dict = {
-    "build_exe": "build_final/EA-Graphics-Manager",
+    "build_exe": "build_final/EA_Graphics_Manager",
     "packages": [],
     "includes": [],
     "excludes": [],
