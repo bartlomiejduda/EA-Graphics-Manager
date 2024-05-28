@@ -22,19 +22,11 @@ class GuiMenu(tk.Frame):
         self.toolsmenu = tk.Menu(self.menubar, tearoff=0)
         gui_main.enable_swizzling_type2_menu_option = tk.BooleanVar()
         gui_main.enable_swizzling_type2_menu_option.set(True)
-        gui_main.enable_swizzling_type91_menu_option = tk.BooleanVar()
-        gui_main.enable_swizzling_type91_menu_option.set(False)
         self.toolsmenu.add_checkbutton(
             label="Enable Palette Swizzling (Type 2)",
             onvalue=1,
             offvalue=0,
             variable=gui_main.enable_swizzling_type2_menu_option,
-        )
-        self.toolsmenu.add_checkbutton(
-            label="Enable Image Swizzling (Type 91)",
-            onvalue=1,
-            offvalue=0,
-            variable=gui_main.enable_swizzling_type91_menu_option,
         )
         self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
 

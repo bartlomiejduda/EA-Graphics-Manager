@@ -14,7 +14,7 @@ class GuiEntryPreview(tk.Frame):
         super().__init__(parent)
 
         self.preview_labelframe_width = 340
-        self.preview_labelframe_height = 335
+        self.preview_labelframe_height = 385
         self.canvas_height = self.preview_labelframe_height - 30
         self.canvas_width = self.preview_labelframe_width - 20
         self.preview_labelframe = tk.LabelFrame(parent, text="Preview")

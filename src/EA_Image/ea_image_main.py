@@ -373,7 +373,7 @@ class EAImage:
                 ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.RGBA4444
             )
         elif entry_type == 91:
-            if gui_main.enable_swizzling_type91_menu_option.get():
+            if ea_dir_entry.h_flag2_swizzled:
                 unswizzled_image_data: bytes = unswizzle_psp(
                     ea_dir_entry.raw_data, ea_dir_entry.h_width, ea_dir_entry.h_height, 32
                 )

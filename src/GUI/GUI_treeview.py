@@ -17,7 +17,7 @@ class GuiTreeView(tk.Frame):
             highlightbackground="grey",
             highlightthickness=1,
         )  # add custom treeview border
-        self.tree_frame.place(x=10, y=10, width=120, height=330)
+        self.tree_frame.place(x=10, y=10, width=120, height=380)
 
         self.treeview_widget = ttk.Treeview(self.tree_frame, show="tree", selectmode="browse")
         self.tree_man = TreeManager(self.treeview_widget)

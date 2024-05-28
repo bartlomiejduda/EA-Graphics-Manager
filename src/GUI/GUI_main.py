@@ -25,7 +25,7 @@ from src.GUI.GUI_menu import GuiMenu
 from src.GUI.GUI_treeview import GuiTreeView
 
 # default app settings
-WINDOW_HEIGHT = 420
+WINDOW_HEIGHT = 400
 WINDOW_WIDTH = 840
 MIN_WINDOW_HEIGHT = WINDOW_HEIGHT
 MIN_WINDOW_WIDTH = WINDOW_WIDTH
@@ -138,6 +138,9 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, ea_dir.h_entry_end_offset)
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, ea_dir.h_record_id_masked)
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, ea_dir.h_is_image_compressed_masked)
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag1_referenced, ea_dir.h_flag1_referenced)
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag2_swizzled, ea_dir.h_flag2_swizzled)
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag3_transposed, ea_dir.h_flag3_transposed)
             # fmt: on
 
             # image preview logic START
@@ -174,6 +177,9 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag1_referenced, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag2_swizzled, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag3_transposed, "")
             # fmt: on
 
             # bin attachment preview logic START
@@ -207,6 +213,9 @@ class EAManGui:
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, "")
             self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag1_referenced, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag2_swizzled, "")
+            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag3_transposed, "")
             # fmt: on
 
             try:
@@ -439,6 +448,9 @@ class EAManGui:
         self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, ea_img.dir_entry_list[0].h_entry_end_offset)
         self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, ea_img.dir_entry_list[0].h_record_id_masked)
         self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, ea_img.dir_entry_list[0].h_is_image_compressed_masked)
+        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag1_referenced, ea_img.dir_entry_list[0].h_flag1_referenced)
+        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag2_swizzled, ea_img.dir_entry_list[0].h_flag2_swizzled)
+        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag3_transposed, ea_img.dir_entry_list[0].h_flag3_transposed)
 
         # fmt: on
 
