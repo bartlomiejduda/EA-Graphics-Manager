@@ -180,6 +180,7 @@ class EAImage:
             ea_dir_entry.end_offset,
         )  # read raw entry data and set values
 
+        ea_dir_entry.set_is_image_compressed_masked(in_file)
         ea_dir_entry.set_img_end_offset()  # this value is known only after reading data
 
     def parse_bin_attachments(self, in_file):

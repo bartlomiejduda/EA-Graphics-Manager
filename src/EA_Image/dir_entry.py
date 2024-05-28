@@ -94,6 +94,7 @@ class DirEntry:
         self.h_mipmaps_count = None
         self.h_entry_header_offset = None
         self.h_entry_end_offset = None
+        self.h_file_data_first_2_bytes = None
 
         self.bin_attachments_list = []
         self.if_next_entry_exist_flag = None
@@ -104,17 +105,6 @@ class DirEntry:
         self.h_entry_header_offset = in_file.tell()
         self.h_record_id = get_uint8(in_file, endianess)
         self.h_record_id_masked = self.h_record_id & 0x7F
-        is_image_compressed_masked: int = self.h_record_id & 0x80  # 0 - not compressed / 128 - refpack compressed
-
-        def _get_img_compressed_string(img_compressed_flag: int) -> str:
-            if img_compressed_flag == 128:
-                return "REFPACK"
-            elif img_compressed_flag == 0:
-                return "NONE"
-            else:
-                return "UNKNOWN"
-
-        self.h_is_image_compressed_masked = _get_img_compressed_string(is_image_compressed_masked)
         self.h_size_of_the_block = get_uint24(in_file, endianess)
         self.h_width = get_uint16(in_file, endianess)
         self.h_height = get_uint16(in_file, endianess)
@@ -150,6 +140,30 @@ class DirEntry:
 
     def set_img_end_offset(self):
         self.h_entry_end_offset = self.raw_data_offset + self.raw_data_size
+
+    def set_is_image_compressed_masked(self, in_file):
+        current_offset = in_file.tell()
+        in_file.seek(self.raw_data_offset)
+        self.h_file_data_first_2_bytes = in_file.read(2)
+        in_file.seek(current_offset)
+
+        is_image_compressed_masked: int = self.h_record_id & 0x80  # 0 - not compressed / 128 - compressed
+
+        def _get_img_compressed_string(img_compressed_flag: int, first_2_bytes: bytes) -> str:
+            if img_compressed_flag == 128 and first_2_bytes == b"\x10\xFB":
+                return "REFPACK"
+            elif img_compressed_flag == 128 and first_2_bytes in (b"\x18\xFB", b"\x1A\xFB", b"\x20\xFB"):
+                return "DXT"
+            elif img_compressed_flag == 128 and first_2_bytes == b"MG":
+                return "MPEG"
+            elif img_compressed_flag == 0:
+                return "NONE"
+            else:
+                return "UNKNOWN"
+
+        self.h_is_image_compressed_masked = _get_img_compressed_string(
+            is_image_compressed_masked, self.h_file_data_first_2_bytes
+        )
 
     def get_entry_type(self):
         result = self.entry_types.get(

@@ -40,7 +40,7 @@ class GuiFileHeaderInfoBox(tk.Frame):
         self.fh_text_obj_count.place(x=250, y=5, width=80, height=20)  # <-- object count box
         self.fh_text_obj_count.bind("<Button-3>", lambda event, arg=self: RightClicker(arg, event))
 
-        self.fh_label_dir_id = tk.Label(self.file_header_labelframe, text="Directory ID:", anchor="w")
+        self.fh_label_dir_id = tk.Label(self.file_header_labelframe, text="Format Ver.:", anchor="w")
         self.fh_label_dir_id.place(x=160, y=35, width=90, height=20)  # <-- directory id label
         self.fh_text_dir_id = tk.Text(
             self.file_header_labelframe,
