@@ -323,6 +323,14 @@ class EAImage:
             )
         elif entry_type == 5:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
+        elif entry_type == 14:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
+                ea_dir_entry.raw_data,
+                ea_dir_entry.h_width,
+                ea_dir_entry.h_height,
+                ImageFormats.GST422,
+                is_swizzled=True,
+            )
         elif entry_type == 33:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # palette
         elif entry_type == 34:

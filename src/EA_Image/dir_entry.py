@@ -16,7 +16,7 @@ class DirEntry:
         3: "3 | 0x03 | RGBA5551",
         4: "4 | 0x04 | RGB888",
         5: "5 | 0x05 | RGBA8888",
-        14: "14 | 0x0E | 8-BIT IMG + SWIZ",
+        14: "14 | 0x0E | GST 422",
         33: "33 | 0x21 | PALETTE",
         34: "34 | 0x22 | PALETTE",
         35: "35 | 0x23 | PALETTE",

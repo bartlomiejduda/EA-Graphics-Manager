@@ -1,5 +1,5 @@
 # EA Graphics Manager
-Program for parsing FSH, SSH, XSH, PSH, GSH, QFS and MSH files from EA games.
+Program for parsing FSH, SSH, XSH, PSH, GSH, ASH, QFS and MSH files from EA games.
 
 Technologies used: Python 3.11, tkinter
 

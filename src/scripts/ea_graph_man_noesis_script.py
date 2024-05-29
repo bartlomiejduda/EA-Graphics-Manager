@@ -44,6 +44,10 @@ def registerNoesisTypes():
     noesis.setHandlerTypeCheck(handle, ea_image_check_type)
     noesis.setHandlerLoadRGBA(handle, ea_image_load)
 
+    handle = noesis.register("EA ASH (GAMEBOY ADVANCE) FILES", ".ash")
+    noesis.setHandlerTypeCheck(handle, ea_image_check_type)
+    noesis.setHandlerLoadRGBA(handle, ea_image_load)
+
     if debug_mode_enabled:
         noesis.logPopup()
     return 1
