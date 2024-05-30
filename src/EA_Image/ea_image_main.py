@@ -12,6 +12,7 @@ from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
 from reversebox.image.image_decoder import ImageDecoder
 from reversebox.image.image_formats import ImageFormats
+from reversebox.image.palettes.palette_random import generate_random_palette
 from reversebox.image.swizzling.swizzle_ps2 import unswizzle_ps2_palette
 from reversebox.image.swizzling.swizzle_psp import unswizzle_psp
 
@@ -259,14 +260,6 @@ class EAImage:
             )
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type, gui_main):
-        def _generate_random_palette() -> bytes:
-            import random
-
-            random_palette = bytearray(1024)
-            for i in range(1024):
-                random_palette[i] = random.randint(0, 255)
-            return random_palette
-
         def _get_palette_data_from_dir_entry(_ea_dir_entry) -> bytes:
             # try to get palette from binary attachment first
             _palette_data: bytes = b""
@@ -285,7 +278,7 @@ class EAImage:
                     return ea_dir_entry.raw_data  # return palette from other dir entry
 
             logger.warn("Warning! Couldn't find palette data!")
-            return _generate_random_palette()  # return random palette if no palette has been found
+            return generate_random_palette()  # return random palette if no palette has been found
 
         ea_image_decoder = ImageDecoder()
 
@@ -324,8 +317,11 @@ class EAImage:
         elif entry_type == 5:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
         elif entry_type == 14:
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
+            palette_data = unswizzle_ps2_palette(palette_data)
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                 ea_dir_entry.raw_data,
+                palette_data,
                 ea_dir_entry.h_width,
                 ea_dir_entry.h_height,
                 ImageFormats.GST422,
