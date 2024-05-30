@@ -316,6 +316,28 @@ class EAImage:
             )
         elif entry_type == 5:
             ea_dir_entry.img_convert_data = ea_dir_entry.raw_data  # r8g8b8a8
+        elif entry_type == 11:
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
+            palette_data = unswizzle_ps2_palette(palette_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
+                ea_dir_entry.raw_data,
+                palette_data,
+                ea_dir_entry.h_width,
+                ea_dir_entry.h_height,
+                ImageFormats.GST821,
+                is_swizzled=True,
+            )
+        elif entry_type == 13:
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
+            palette_data = unswizzle_ps2_palette(palette_data)
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
+                ea_dir_entry.raw_data,
+                palette_data,
+                ea_dir_entry.h_width,
+                ea_dir_entry.h_height,
+                ImageFormats.GST222,
+                is_swizzled=True,
+            )
         elif entry_type == 14:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
             palette_data = unswizzle_ps2_palette(palette_data)
