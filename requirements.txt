@@ -5,4 +5,5 @@ pre-commit==3.3.3
 pyperclip==1.8.2
 pytest==7.0.1
 pytz==2022.1
+rawutil==2.7.4
 ReverseBox>=0.10.5
