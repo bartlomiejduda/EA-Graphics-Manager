@@ -53,6 +53,7 @@ class DirEntry:
         104: "104 | 0x68 | YUY2 (484)",
         105: "105 | 0x69 | METAL BIN",
         106: "106 | 0x6A | 32-BIT IMG (1010102)",
+        108: "108 | 0x6C | YUV (YUI)",
         109: "109 | 0x6D | ARGB4444",
         111: "111 | 0x6F | COMMENT",
         112: "112 | 0x70 | IMG NAME",

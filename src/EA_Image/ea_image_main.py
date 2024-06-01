@@ -282,7 +282,9 @@ class EAImage:
             return generate_random_palette()  # return random palette if no palette has been found
 
         def _get_image_format_by_palette_size(palette_size: int) -> ImageFormats:
-            if palette_size < 1024:
+            if palette_size == 512:
+                return ImageFormats.PAL8_RGBX5551
+            elif palette_size == 768:
                 return ImageFormats.PAL8_RGB888
             else:
                 return ImageFormats.PAL8_RGBA8888
@@ -507,21 +509,29 @@ class EAImage:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_compressed_image(
                 image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.DXT5
             )
+        elif entry_type == 104:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_yuv_image(
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.YUY2
+            )
         elif entry_type == 109:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
                 image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.ARGB4444
             )
         elif entry_type == 115:
-            image_data = image_data[1024:]
-            palette_data = image_data[:1024]
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
-                image_data, palette_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.PAL8_RGBA8888
+                image_data[1024:],
+                image_data[:1024],
+                ea_dir_entry.h_width,
+                ea_dir_entry.h_height,
+                ImageFormats.PAL8_RGBA8888,
             )
         elif entry_type == 119:
-            image_data = image_data[64:]
-            palette_data = image_data[:64]
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
-                image_data, palette_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.PAL4_RGBA8888
+                image_data[64:],
+                image_data[:64],
+                ea_dir_entry.h_width,
+                ea_dir_entry.h_height,
+                ImageFormats.PAL4_RGBA8888,
             )
         elif entry_type == 120:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
