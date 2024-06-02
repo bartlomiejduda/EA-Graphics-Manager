@@ -23,7 +23,7 @@ class GuiMenu(tk.Frame):
         gui_main.enable_swizzling_type2_menu_option = tk.BooleanVar()
         gui_main.enable_swizzling_type2_menu_option.set(True)
         self.toolsmenu.add_checkbutton(
-            label="Enable Palette Swizzling (Type 2)",
+            label="Enable Palette Swizzling",
             onvalue=1,
             offvalue=0,
             variable=gui_main.enable_swizzling_type2_menu_option,

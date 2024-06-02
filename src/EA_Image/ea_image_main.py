@@ -282,6 +282,8 @@ class EAImage:
             return generate_random_palette()  # return random palette if no palette has been found
 
         def _get_image_format_by_palette_size(palette_size: int) -> ImageFormats:
+            if palette_size < 512:
+                return ImageFormats.PAL8_RGBX2222  # TODO - fix logic for smaller palettes
             if palette_size == 512:
                 return ImageFormats.PAL8_RGBX5551
             elif palette_size == 768:
@@ -297,9 +299,10 @@ class EAImage:
             image_data = RefpackHandler().decompress_data(image_data)
 
         if entry_type == 1:
+            palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                 image_data,
-                _get_palette_data_from_dir_entry(ea_dir_entry),
+                palette_data,
                 ea_dir_entry.h_width,
                 ea_dir_entry.h_height,
                 ImageFormats.PAL4_RGBA8888,

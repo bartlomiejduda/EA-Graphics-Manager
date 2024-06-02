@@ -6,9 +6,11 @@ License: GPL-3.0 License
 """
 import io
 import os
+import subprocess
 import tkinter as tk
 import webbrowser
 from configparser import ConfigParser
+from pathlib import Path
 from tkinter import filedialog, messagebox
 
 from reversebox.common.logger import get_logger
@@ -231,6 +233,9 @@ class EAManGui:
         # create right-click popup menu
         self.tree_rclick_popup = tk.Menu(self.master, tearoff=0)
         if "direntry" not in item_iid and "binattach" not in item_iid:
+            self.tree_rclick_popup.add_command(
+                label="Open in Explorer", command=lambda: self.treeview_rclick_open_in_explorer(item_iid)
+            )
             self.tree_rclick_popup.add_command(label="Close File", command=lambda: self.treeview_rclick_close(item_iid))
             self.tree_rclick_popup.tk_popup(event.x_root, event.y_root, entry="0")
         elif "direntry" in item_iid and "binattach" not in item_iid:
@@ -261,6 +266,10 @@ class EAManGui:
         self.set_text_in_box(self.file_header_info_box.fh_text_f_size, "")
         self.set_text_in_box(self.file_header_info_box.fh_text_obj_count, "")
         self.set_text_in_box(self.file_header_info_box.fh_text_dir_id, "")
+
+    def treeview_rclick_open_in_explorer(self, item_iid):
+        ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
+        subprocess.Popen(rf'explorer /select,{Path(ea_img.f_path)}"')
 
     def treeview_rclick_export_dds(self, item_iid):
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
