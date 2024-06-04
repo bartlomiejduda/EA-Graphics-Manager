@@ -14,6 +14,7 @@ from reversebox.compression.compression_refpack import RefpackHandler
 from reversebox.image.image_decoder import ImageDecoder
 from reversebox.image.image_formats import ImageFormats
 from reversebox.image.palettes.palette_random import generate_random_palette
+from reversebox.image.swizzling.swizzle_morton import unswizzle_morton
 from reversebox.image.swizzling.swizzle_ps2 import unswizzle_ps2_palette
 from reversebox.image.swizzling.swizzle_psp import unswizzle_psp
 
@@ -25,6 +26,7 @@ from src.EA_Image.bin_attachment_entries import (
     PaletteEntry,
     UnknownEntry,
 )
+from src.EA_Image.common import get_bpp_for_image_type
 from src.EA_Image.constants import CONVERT_IMAGES_SUPPORTED_TYPES, PALETTE_TYPES
 from src.EA_Image.data_read import get_utf8_string
 from src.EA_Image.dir_entry import DirEntry
@@ -298,6 +300,19 @@ class EAImage:
         if is_image_compressed == 128:
             image_data = RefpackHandler().decompress_data(image_data)
 
+        # unswizzling logic
+        if ea_dir_entry.h_flag2_swizzled:
+            if self.sign in ("SHPX", "SHPI"):
+                image_data = unswizzle_morton(
+                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
+                )
+            elif self.sign == "SHPM":
+                image_data: bytes = unswizzle_psp(
+                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
+                )
+            else:
+                pass  # TODO - implement other swizzling methods
+
         if entry_type == 1:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
@@ -473,16 +488,8 @@ class EAImage:
                 image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.RGBA4444
             )
         elif entry_type == 91:
-            if ea_dir_entry.h_flag2_swizzled:
-                unswizzled_image_data: bytes = unswizzle_psp(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, 32
-                )
-                ea_dir_entry.img_convert_data = unswizzled_image_data
-            else:
-                ea_dir_entry.img_convert_data = image_data  # r8g8b8a8
+            ea_dir_entry.img_convert_data = image_data  # r8g8b8a8
         elif entry_type == 92:
-            if ea_dir_entry.h_flag2_swizzled:
-                image_data = unswizzle_psp(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, 4)
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                 image_data,
                 _get_palette_data_from_dir_entry(ea_dir_entry),
@@ -491,8 +498,6 @@ class EAImage:
                 ImageFormats.PAL4_RGBA8888,
             )
         elif entry_type == 93:
-            if ea_dir_entry.h_flag2_swizzled:
-                image_data: bytes = unswizzle_psp(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, 8)
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                 image_data,
                 _get_palette_data_from_dir_entry(ea_dir_entry),
