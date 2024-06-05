@@ -15,7 +15,11 @@ from reversebox.image.image_decoder import ImageDecoder
 from reversebox.image.image_formats import ImageFormats
 from reversebox.image.palettes.palette_random import generate_random_palette
 from reversebox.image.swizzling.swizzle_morton import unswizzle_morton
-from reversebox.image.swizzling.swizzle_ps2 import unswizzle_ps2_palette
+from reversebox.image.swizzling.swizzle_ps2 import (
+    unswizzle_ps2_4bit,
+    unswizzle_ps2_8bit,
+    unswizzle_ps2_palette,
+)
 from reversebox.image.swizzling.swizzle_psp import unswizzle_psp
 
 from src.EA_Image.bin_attachment_entries import (
@@ -302,14 +306,19 @@ class EAImage:
 
         # unswizzling logic
         if ea_dir_entry.h_flag2_swizzled:
-            if self.sign in ("SHPX", "SHPI"):
+            if self.sign in ("SHPX", "SHPI"):  # for XBOX and PC games
                 image_data = unswizzle_morton(
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
                 )
-            elif self.sign == "SHPM":
-                image_data: bytes = unswizzle_psp(
+            elif self.sign == "SHPM":  # for PSP games
+                image_data = unswizzle_psp(
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
                 )
+            elif self.sign == "SHPS" and (entry_type < 8 and entry_type > 15):  # for PS2 games
+                if get_bpp_for_image_type(entry_type) == 4:
+                    image_data = unswizzle_ps2_4bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
+                elif get_bpp_for_image_type(entry_type) == 8:
+                    image_data = unswizzle_ps2_8bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
             else:
                 pass  # TODO - implement other swizzling methods
 

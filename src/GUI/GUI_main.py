@@ -8,6 +8,7 @@ import io
 import os
 import subprocess
 import tkinter as tk
+import traceback
 import webbrowser
 from configparser import ConfigParser
 from pathlib import Path
@@ -433,6 +434,7 @@ class EAManGui:
             self.loading_label.destroy()
         except Exception as error:
             logger.error(f"Error while converting images! Error: {error}")
+            logger.error(traceback.format_exc())
 
         # fmt: off
         # set text for header
