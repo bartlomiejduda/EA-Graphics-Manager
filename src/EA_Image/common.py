@@ -3,155 +3,25 @@ Copyright © 2024  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
+# fmt: off
+
 
 def get_bpp_for_image_type(ea_img_type: int) -> int:
-    if ea_img_type == 0x23:
-        return 16
-    elif ea_img_type == 0x40:
-        return 4
-    elif ea_img_type == 0x41:
-        return 8
-    elif ea_img_type == 0x42:
-        return 16
-    elif ea_img_type == 0x43:
-        return 24
-    elif ea_img_type == 0x44:
+    if ea_img_type == 0x44:
         return 1
-    elif ea_img_type == 0x30:
-        return 16
-    elif ea_img_type == 0x31:
-        return 16
-    elif ea_img_type == 0x32:
-        return 15
-    elif ea_img_type == 0x10:
+    elif ea_img_type in (0x01, 0x10, 0x18, 0x1E, 0x40, 0x5C, 0x60, 0x63, 0x79, 0x7A):
         return 4
-    elif ea_img_type == 0x11:
+    elif ea_img_type in (0x02, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x11, 0x12, 0x19, 0x41, 0x5D, 0x61, 0x62, 0x64, 0x7B):
         return 8
-    elif ea_img_type == 0x12:
-        return 8
-    elif ea_img_type == 0x13:
-        return 16
-    elif ea_img_type == 0x14:
-        return 16
-    elif ea_img_type == 0x15:
-        return 15
-    elif ea_img_type == 0x16:
-        return 32
-    elif ea_img_type == 0x18:
-        return 4
-    elif ea_img_type == 0x19:
-        return 8
-    elif ea_img_type == 0x1A:
-        return 16
-    elif ea_img_type == 0x1E:
-        return 4
-    elif ea_img_type == 0x1C:
+    elif ea_img_type in (0x1C, 0x6C):
         return 12
-    elif ea_img_type == 0x38:
-        return 16
-    elif ea_img_type == 0x39:
+    elif ea_img_type in (0x03, 0x15, 0x20, 0x32, 0x39, 0x59, 0x7E):
         return 15
-    elif ea_img_type == 0x3A:
+    elif ea_img_type in (0x13, 0x14, 0x1A, 0x23, 0x27, 0x28, 0x29, 0x2D, 0x30, 0x31, 0x38, 0x3A, 0x42, 0x58, 0x5A, 0x65, 0x67, 0x68, 0x6D, 0x78):
         return 16
-    elif ea_img_type == 0x3B:
-        return 32
-    elif ea_img_type == 0x58:
-        return 16
-    elif ea_img_type == 0x59:
-        return 15
-    elif ea_img_type == 0x5A:
-        return 16
-    elif ea_img_type == 0x5B:
-        return 32
-    elif ea_img_type == 0x5C:
-        return 4
-    elif ea_img_type == 0x5D:
-        return 8
-    elif ea_img_type == 0x20:
-        return 15
-    elif ea_img_type == 0x21:
-        return 32
-    elif ea_img_type == 0x01:
-        return 4
-    elif ea_img_type == 0x02:
-        return 8
-    elif ea_img_type == 0x03:
-        return 15
-    elif ea_img_type == 0x04:
+    elif ea_img_type in (0x04, 0x22, 0x24, 0x43, 0x66, 0x7F):
         return 24
-    elif ea_img_type == 0x05:
+    elif ea_img_type in (0x05, 0x16, 0x21, 0x2A, 0x2C, 0x2E, 0x3B, 0x5B, 0x6A, 0x7D):
         return 32
-    elif ea_img_type == 0x08:
-        return 8
-    elif ea_img_type == 0x09:
-        return 8
-    elif ea_img_type == 0x0A:
-        return 8
-    elif ea_img_type == 0x0B:
-        return 8
-    elif ea_img_type == 0x0C:
-        return 8
-    elif ea_img_type == 0x0D:
-        return 8
-    elif ea_img_type == 0x0E:
-        return 8
-    elif ea_img_type == 0x0F:
-        return 8
-    elif ea_img_type == 0x22:
-        return 24
-    elif ea_img_type == 0x24:
-        return 24
-    elif ea_img_type == 0x29:
-        return 16
-    elif ea_img_type == 0x2A:
-        return 32
-    elif ea_img_type == 0x2C:
-        return 32
-    elif ea_img_type == 0x2D:
-        return 16
-    elif ea_img_type == 0x2E:
-        return 32
-    elif ea_img_type == 0x60:
-        return 4
-    elif ea_img_type == 0x61:
-        return 8
-    elif ea_img_type == 0x62:
-        return 8
-    elif ea_img_type == 0x64:
-        return 8
-    elif ea_img_type == 0x68:
-        return 16
-    elif ea_img_type == 0x6C:
-        return 12
-    elif ea_img_type == 0x6D:
-        return 16
-    elif ea_img_type == 0x79:
-        return 4
-    elif ea_img_type == 0x7A:
-        return 4
-    elif ea_img_type == 0x7B:
-        return 8
-    elif ea_img_type == 0x7D:
-        return 32
-    elif ea_img_type == 0x78:
-        return 16
-    elif ea_img_type == 0x67:
-        return 16
-    elif ea_img_type == 0x7E:
-        return 15
-    elif ea_img_type == 0x7F:
-        return 24
-    elif ea_img_type == 0x65:
-        return 16
-    elif ea_img_type == 0x66:
-        return 24
-    elif ea_img_type == 0x6A:
-        return 32
-    elif ea_img_type == 0x27:
-        return 16
-    elif ea_img_type == 0x28:
-        return 16
-    elif ea_img_type == 0x63:
-        return 4
     else:
-        raise Exception(f"Not supported bpp for image type {str(ea_img_type)}!")
+        raise Exception(f"Image type {str(ea_img_type)} not supported! Can't get bpp info!")

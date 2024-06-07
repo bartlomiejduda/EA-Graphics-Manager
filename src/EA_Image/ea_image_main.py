@@ -297,9 +297,15 @@ class EAImage:
             if palette_size == 512:
                 return ImageFormats.PAL8_RGBX5551
             elif palette_size == 768:
-                return ImageFormats.PAL8_RGB888
+                if gui_main.switch_rgb_to_bgr_menu_option.get():
+                    return ImageFormats.PAL8_BGR888
+                else:
+                    return ImageFormats.PAL8_RGB888
             else:
-                return ImageFormats.PAL8_RGBA8888
+                if gui_main.switch_rgb_to_bgr_menu_option.get():
+                    return ImageFormats.PAL8_BGRA8888
+                else:
+                    return ImageFormats.PAL8_RGBA8888
 
         ea_image_decoder = ImageDecoder()
         image_data: bytes = ea_dir_entry.raw_data
@@ -340,7 +346,7 @@ class EAImage:
             )
         elif entry_type == 2:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
-            if gui_main.enable_swizzling_type2_menu_option.get():
+            if gui_main.enable_palette_swizzling_menu_option.get():
                 palette_data = unswizzle_ps2_palette(palette_data)
 
             if len(palette_data) == 0:

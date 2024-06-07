@@ -20,13 +20,21 @@ class GuiMenu(tk.Frame):
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
         self.toolsmenu = tk.Menu(self.menubar, tearoff=0)
-        gui_main.enable_swizzling_type2_menu_option = tk.BooleanVar()
-        gui_main.enable_swizzling_type2_menu_option.set(True)
+        gui_main.enable_palette_swizzling_menu_option = tk.BooleanVar()
+        gui_main.enable_palette_swizzling_menu_option.set(True)
+        gui_main.switch_rgb_to_bgr_menu_option = tk.BooleanVar()
+        gui_main.switch_rgb_to_bgr_menu_option.set(False)
         self.toolsmenu.add_checkbutton(
             label="Enable Palette Swizzling",
             onvalue=1,
             offvalue=0,
-            variable=gui_main.enable_swizzling_type2_menu_option,
+            variable=gui_main.enable_palette_swizzling_menu_option,
+        )
+        self.toolsmenu.add_checkbutton(
+            label="Switch RGB to BGR",
+            onvalue=1,
+            offvalue=0,
+            variable=gui_main.switch_rgb_to_bgr_menu_option,
         )
         self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
 
