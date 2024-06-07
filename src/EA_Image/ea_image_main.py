@@ -453,6 +453,10 @@ class EAImage:
                 _get_image_format_by_palette_size(len(palette_data)),
                 is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
             )
+        elif entry_type == 20:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.RGB565, image_endianess="big"
+            )
         elif entry_type == 22:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
                 image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.ABGR8888
