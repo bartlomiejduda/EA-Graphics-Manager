@@ -147,6 +147,10 @@ class EAImage:
                 self.f_endianess = "<"
                 self.f_endianess_desc = "little"
 
+        if self.sign == "SHPG":  # fix for GameCube/WII files, endianess can't be determined by file size there
+            self.f_endianess = ">"
+            self.f_endianess_desc = "big"
+
         self.num_of_entries = struct.unpack(self.f_endianess + "L", in_file.read(4))[0]
         self.dir_id = in_file.read(4).decode("utf8")
         # fmt: on
@@ -319,8 +323,11 @@ class EAImage:
                     image_data = unswizzle_ps2_4bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
                 elif get_bpp_for_image_type(entry_type) == 8:
                     image_data = unswizzle_ps2_8bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
+            elif self.sign == "SHPG":  # for WII/GameCube games
+                # TODO - implement WII/GameCube swizzling
+                logger.warning("Image swizzled, but WII/GameCube swizzling is not implemented yet!")
             else:
-                pass  # TODO - implement other swizzling methods
+                pass  # image is not swizzled
 
         if entry_type == 1:
             palette_data = _get_palette_data_from_dir_entry(ea_dir_entry)
@@ -445,6 +452,26 @@ class EAImage:
                 ImageFormats.GST822,
                 _get_image_format_by_palette_size(len(palette_data)),
                 is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
+            )
+        elif entry_type == 22:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.ABGR8888
+            )
+        elif entry_type == 24:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
+                image_data,
+                _get_palette_data_from_dir_entry(ea_dir_entry),
+                ea_dir_entry.h_width,
+                ea_dir_entry.h_height,
+                ImageFormats.PAL4_RGB565,  # TODO - not decoding correctly
+            )
+        elif entry_type == 25:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
+                image_data,
+                _get_palette_data_from_dir_entry(ea_dir_entry),
+                ea_dir_entry.h_width,
+                ea_dir_entry.h_height,
+                ImageFormats.PAL8_RGB565,  # TODO - not decoding correctly
             )
         elif entry_type == 33:
             ea_dir_entry.img_convert_data = image_data  # palette
