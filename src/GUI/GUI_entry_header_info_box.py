@@ -8,7 +8,7 @@ class GuiEntryHeaderInfoBox(tk.Frame):
         super().__init__(parent)
 
         self.entry_header_labelframe = tk.LabelFrame(parent, text="Entry Header")
-        self.entry_header_labelframe.place(x=140, y=100, width=340, height=320)  # <-- entry header info box
+        self.entry_header_labelframe.place(x=5, y=100, width=340, height=320)  # <-- entry header info box
 
         # Record ID
         self.eh_label_rec_type = tk.Label(self.entry_header_labelframe, text="Record ID:", anchor="w")

@@ -9,21 +9,18 @@ from src.EA_Image.bin_attachment_entries import PaletteEntry
 logger = get_logger(__name__)
 
 
+# fmt: off
+
 class GuiEntryPreview(tk.Frame):
     def __init__(self, parent, gui_main):
         super().__init__(parent)
 
-        self.preview_labelframe_width = 340
-        self.preview_labelframe_height = 385
+        self.preview_labelframe_width = 440
+        self.preview_labelframe_height = 450
         self.canvas_height = self.preview_labelframe_height - 30
         self.canvas_width = self.preview_labelframe_width - 20
         self.preview_labelframe = tk.LabelFrame(parent, text="Preview")
-        self.preview_labelframe.place(
-            x=490,
-            y=5,
-            width=self.preview_labelframe_width,
-            height=self.preview_labelframe_height,
-        )
+        self.preview_labelframe.place(x=500, y=5, width=self.preview_labelframe_width, height=self.preview_labelframe_height)
 
         self.ph_img = None
         self.preview_instance = None

@@ -29,6 +29,7 @@ class DirEntry:
         22: "22 | 0x16 | ABGR8888",
         24: "24 | 0x18 | PAL4_RGB565",
         25: "25 | 0x19 | PAL8_RGB565",
+        30: "30 | 0x1E | DXT1/CMPR",
         33: "33 | 0x21 | PALETTE",
         34: "34 | 0x22 | PALETTE",
         35: "35 | 0x23 | PALETTE",

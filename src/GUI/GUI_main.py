@@ -21,15 +21,14 @@ from reversebox.image.image_dds import DDS_Image
 from src.EA_Image import ea_image_main
 from src.EA_Image.constants import CONVERT_IMAGES_SUPPORTED_TYPES, PALETTE_TYPES
 from src.GUI.about_window import AboutWindow
-from src.GUI.GUI_entry_header_info_box import GuiEntryHeaderInfoBox
 from src.GUI.GUI_entry_preview import GuiEntryPreview
-from src.GUI.GUI_file_header_info_box import GuiFileHeaderInfoBox
 from src.GUI.GUI_menu import GuiMenu
+from src.GUI.GUI_tab_controller import GuiTabController
 from src.GUI.GUI_treeview import GuiTreeView
 
 # default app settings
-WINDOW_HEIGHT = 480
-WINDOW_WIDTH = 840
+WINDOW_HEIGHT = 460
+WINDOW_WIDTH = 950
 MIN_WINDOW_HEIGHT = WINDOW_HEIGHT
 MIN_WINDOW_WIDTH = WINDOW_WIDTH
 MAX_WINDOW_HEIGHT = WINDOW_HEIGHT
@@ -76,8 +75,7 @@ class EAManGui:
 
         # gui objects
         self.tree_view = GuiTreeView(self.main_frame, self)
-        self.file_header_info_box = GuiFileHeaderInfoBox(self.main_frame, self)
-        self.entry_header_info_box = GuiEntryHeaderInfoBox(self.main_frame, self)
+        self.tab_controller = GuiTabController(self.main_frame, self)
         self.entry_preview = GuiEntryPreview(self.main_frame, self)
         self.menu = GuiMenu(self.master, self)
         self.loading_label = None
@@ -116,36 +114,36 @@ class EAManGui:
 
         # set text for header
         # fmt: off
-        self.set_text_in_box(self.file_header_info_box.fh_text_sign, ea_img.sign)
-        self.set_text_in_box(self.file_header_info_box.fh_text_f_size, ea_img.total_f_size)
-        self.set_text_in_box(self.file_header_info_box.fh_text_obj_count, ea_img.num_of_entries)
-        self.set_text_in_box(self.file_header_info_box.fh_text_dir_id, ea_img.dir_id)
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_sign, ea_img.sign)
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_f_size, ea_img.total_f_size)
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_obj_count, ea_img.num_of_entries)
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_dir_id, ea_img.dir_id)
         # fmt: on
 
         # set text for dir entry
         if "direntry" in item_iid and "binattach" not in item_iid:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
             # fmt: off
-            self.set_text_in_box(self.entry_header_info_box.eh_text_rec_type, ea_dir.get_entry_type())
-            self.set_text_in_box(self.entry_header_info_box.eh_text_size_of_the_block, ea_dir.h_size_of_the_block)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_mipmaps_count, ea_dir.h_mipmaps_count)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_width, ea_dir.h_width)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_height, ea_dir.h_height)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_center_x, ea_dir.h_center_x)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_center_y, ea_dir.h_center_y)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_left_x, ea_dir.h_default_x_position)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_top_y, ea_dir.h_default_y_position)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_header_offset, ea_dir.h_entry_header_offset)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, ea_dir.raw_data_offset)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, ea_dir.raw_data_size)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, ea_dir.h_entry_end_offset)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, ea_dir.h_record_id_masked)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, ea_dir.h_is_image_compressed_masked)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag1_referenced, ea_dir.h_flag1_referenced)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag2_swizzled, ea_dir.h_flag2_swizzled)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag3_transposed, ea_dir.h_flag3_transposed)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag4_reserved, ea_dir.h_flag4_reserved)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_image_bpp, ea_dir.h_image_bpp)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_rec_type, ea_dir.get_entry_type())
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_size_of_the_block, ea_dir.h_size_of_the_block)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_mipmaps_count, ea_dir.h_mipmaps_count)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_width, ea_dir.h_width)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_height, ea_dir.h_height)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_x, ea_dir.h_center_x)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_y, ea_dir.h_center_y)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_left_x, ea_dir.h_default_x_position)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_top_y, ea_dir.h_default_y_position)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_header_offset, ea_dir.h_entry_header_offset)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_offset, ea_dir.raw_data_offset)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_size, ea_dir.raw_data_size)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_end_offset, ea_dir.h_entry_end_offset)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_record_id_masked, ea_dir.h_record_id_masked)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_img_compression_masked, ea_dir.h_is_image_compressed_masked)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag1_referenced, ea_dir.h_flag1_referenced)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag2_swizzled, ea_dir.h_flag2_swizzled)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag3_transposed, ea_dir.h_flag3_transposed)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag4_reserved, ea_dir.h_flag4_reserved)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_image_bpp, ea_dir.h_image_bpp)
             # fmt: on
 
             # image preview logic START
@@ -167,26 +165,26 @@ class EAManGui:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, dir_iid)
             bin_attach = self.tree_view.tree_man.get_object_bin_attach(ea_dir, item_iid)
             # fmt: off
-            self.set_text_in_box(self.entry_header_info_box.eh_text_rec_type, bin_attach.get_entry_type())
-            self.set_text_in_box(self.entry_header_info_box.eh_text_size_of_the_block, bin_attach.h_size_of_the_block)
-            self.set_text_in_box(self.entry_header_info_box.eh_text_mipmaps_count, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_width, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_height, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_center_x, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_center_y, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_left_x, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_top_y, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_header_offset, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag1_referenced, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag2_swizzled, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag3_transposed, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag4_reserved, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_image_bpp, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_rec_type, bin_attach.get_entry_type())
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_size_of_the_block, bin_attach.h_size_of_the_block)
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_mipmaps_count, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_width, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_height, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_x, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_y, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_left_x, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_top_y, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_header_offset, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_offset, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_size, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_end_offset, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_record_id_masked, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_img_compression_masked, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag1_referenced, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag2_swizzled, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag3_transposed, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag4_reserved, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_image_bpp, "")
             # fmt: on
 
             # bin attachment preview logic START
@@ -205,26 +203,26 @@ class EAManGui:
 
         else:
             # fmt: off
-            self.set_text_in_box(self.entry_header_info_box.eh_text_rec_type, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_size_of_the_block, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_mipmaps_count, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_width, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_height, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_center_x, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_center_y, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_left_x, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_top_y, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_header_offset, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag1_referenced, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag2_swizzled, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag3_transposed, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag4_reserved, "")
-            self.set_text_in_box(self.entry_header_info_box.eh_text_entry_image_bpp, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_rec_type, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_size_of_the_block, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_mipmaps_count, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_width, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_height, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_x, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_y, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_left_x, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_top_y, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_header_offset, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_offset, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_size, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_end_offset, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_record_id_masked, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_img_compression_masked, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag1_referenced, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag2_swizzled, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag3_transposed, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag4_reserved, "")
+            self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_image_bpp, "")
             # fmt: on
 
             try:
@@ -269,10 +267,10 @@ class EAManGui:
         self.tree_view.treeview_widget.delete(item_iid)  # removing item from treeview
         del ea_img  # removing object from memory
 
-        self.set_text_in_box(self.file_header_info_box.fh_text_sign, "")
-        self.set_text_in_box(self.file_header_info_box.fh_text_f_size, "")
-        self.set_text_in_box(self.file_header_info_box.fh_text_obj_count, "")
-        self.set_text_in_box(self.file_header_info_box.fh_text_dir_id, "")
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_sign, "")
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_f_size, "")
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_obj_count, "")
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_dir_id, "")
 
     def treeview_rclick_open_in_explorer(self, item_iid):
         ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
@@ -444,32 +442,32 @@ class EAManGui:
 
         # fmt: off
         # set text for header
-        self.set_text_in_box(self.file_header_info_box.fh_text_sign, ea_img.sign)
-        self.set_text_in_box(self.file_header_info_box.fh_text_f_size, ea_img.total_f_size)
-        self.set_text_in_box(self.file_header_info_box.fh_text_obj_count, ea_img.num_of_entries)
-        self.set_text_in_box(self.file_header_info_box.fh_text_dir_id, ea_img.dir_id)
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_sign, ea_img.sign)
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_f_size, ea_img.total_f_size)
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_obj_count, ea_img.num_of_entries)
+        self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_dir_id, ea_img.dir_id)
 
         # set text for the first entry
-        self.set_text_in_box(self.entry_header_info_box.eh_text_rec_type, ea_img.dir_entry_list[0].get_entry_type())
-        self.set_text_in_box(self.entry_header_info_box.eh_text_size_of_the_block, ea_img.dir_entry_list[0].h_size_of_the_block)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_mipmaps_count, ea_img.dir_entry_list[0].h_mipmaps_count)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_width, ea_img.dir_entry_list[0].h_width)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_height, ea_img.dir_entry_list[0].h_height)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_center_x, ea_img.dir_entry_list[0].h_center_x)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_center_y, ea_img.dir_entry_list[0].h_center_y)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_left_x, ea_img.dir_entry_list[0].h_default_x_position)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_top_y, ea_img.dir_entry_list[0].h_default_y_position)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_header_offset, ea_img.dir_entry_list[0].h_entry_header_offset)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_data_offset, ea_img.dir_entry_list[0].raw_data_offset)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_data_size, ea_img.dir_entry_list[0].raw_data_size)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_end_offset, ea_img.dir_entry_list[0].h_entry_end_offset)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_record_id_masked, ea_img.dir_entry_list[0].h_record_id_masked)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_img_compression_masked, ea_img.dir_entry_list[0].h_is_image_compressed_masked)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag1_referenced, ea_img.dir_entry_list[0].h_flag1_referenced)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag2_swizzled, ea_img.dir_entry_list[0].h_flag2_swizzled)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag3_transposed, ea_img.dir_entry_list[0].h_flag3_transposed)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_flag4_reserved, ea_img.dir_entry_list[0].h_flag4_reserved)
-        self.set_text_in_box(self.entry_header_info_box.eh_text_entry_image_bpp, ea_img.dir_entry_list[0].h_image_bpp)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_rec_type, ea_img.dir_entry_list[0].get_entry_type())
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_size_of_the_block, ea_img.dir_entry_list[0].h_size_of_the_block)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_mipmaps_count, ea_img.dir_entry_list[0].h_mipmaps_count)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_width, ea_img.dir_entry_list[0].h_width)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_height, ea_img.dir_entry_list[0].h_height)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_x, ea_img.dir_entry_list[0].h_center_x)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_y, ea_img.dir_entry_list[0].h_center_y)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_left_x, ea_img.dir_entry_list[0].h_default_x_position)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_top_y, ea_img.dir_entry_list[0].h_default_y_position)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_header_offset, ea_img.dir_entry_list[0].h_entry_header_offset)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_offset, ea_img.dir_entry_list[0].raw_data_offset)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_size, ea_img.dir_entry_list[0].raw_data_size)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_end_offset, ea_img.dir_entry_list[0].h_entry_end_offset)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_record_id_masked, ea_img.dir_entry_list[0].h_record_id_masked)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_img_compression_masked, ea_img.dir_entry_list[0].h_is_image_compressed_masked)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag1_referenced, ea_img.dir_entry_list[0].h_flag1_referenced)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag2_swizzled, ea_img.dir_entry_list[0].h_flag2_swizzled)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag3_transposed, ea_img.dir_entry_list[0].h_flag3_transposed)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag4_reserved, ea_img.dir_entry_list[0].h_flag4_reserved)
+        self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_image_bpp, ea_img.dir_entry_list[0].h_image_bpp)
 
         # fmt: on
 

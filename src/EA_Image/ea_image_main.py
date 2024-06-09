@@ -483,6 +483,13 @@ class EAImage:
                 ea_dir_entry.h_height,
                 ImageFormats.PAL8_RGB565,  # TODO - not decoding correctly
             )
+        elif entry_type == 30:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_compressed_image(
+                image_data,
+                ea_dir_entry.h_width,
+                ea_dir_entry.h_height,
+                ImageFormats.DXT1,  # TODO - not decoding correctly
+            )
         elif entry_type == 33:
             ea_dir_entry.img_convert_data = image_data  # palette
         elif entry_type == 34:
