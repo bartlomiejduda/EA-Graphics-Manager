@@ -2,8 +2,11 @@
 Copyright © 2024  Bartłomiej Duda
 License: GPL-3.0 License
 """
+from reversebox.common.logger import get_logger
 
 # fmt: off
+
+logger = get_logger(__name__)
 
 
 def get_bpp_for_image_type(ea_img_type: int) -> int:
@@ -24,4 +27,5 @@ def get_bpp_for_image_type(ea_img_type: int) -> int:
     elif ea_img_type in (0x05, 0x16, 0x21, 0x2A, 0x2C, 0x2E, 0x3B, 0x5B, 0x6A, 0x7D):
         return 32
     else:
-        raise Exception(f"Image type {str(ea_img_type)} not supported! Can't get bpp info!")
+        logger.warning(f"Image type {str(ea_img_type)} not supported! Can't get bpp info!")
+        return 8  # default bpp

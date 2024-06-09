@@ -8,7 +8,7 @@ class GuiEntryHeaderInfoBox(tk.Frame):
         super().__init__(parent)
 
         self.entry_header_labelframe = tk.LabelFrame(parent, text="Entry Header")
-        self.entry_header_labelframe.place(x=140, y=100, width=340, height=290)  # <-- entry header info box
+        self.entry_header_labelframe.place(x=140, y=100, width=340, height=320)  # <-- entry header info box
 
         # Record ID
         self.eh_label_rec_type = tk.Label(self.entry_header_labelframe, text="Record ID:", anchor="w")
@@ -207,3 +207,25 @@ class GuiEntryHeaderInfoBox(tk.Frame):
         )
         self.eh_text_entry_flag3_transposed.place(x=270, y=245, width=30, height=20)
         self.eh_text_entry_flag3_transposed.bind("<Button-3>", lambda event, arg=self: RightClicker(arg, event))
+
+        # Flag 4 - Reserved
+        self.eh_label_flag4_reserved = tk.Label(self.entry_header_labelframe, text="Flag Res:", anchor="w")
+        self.eh_label_flag4_reserved.place(x=5, y=275, width=120, height=20)
+        self.eh_text_entry_flag4_reserved = tk.Text(
+            self.entry_header_labelframe,
+            bg=self.entry_header_labelframe["bg"],
+            state="disabled",
+        )
+        self.eh_text_entry_flag4_reserved.place(x=60, y=275, width=30, height=20)
+        self.eh_text_entry_flag4_reserved.bind("<Button-3>", lambda event, arg=self: RightClicker(arg, event))
+
+        # Image BPP
+        self.eh_label_image_bpp = tk.Label(self.entry_header_labelframe, text="Image bpp:", anchor="w")
+        self.eh_label_image_bpp.place(x=100, y=275, width=120, height=20)
+        self.eh_text_entry_image_bpp = tk.Text(
+            self.entry_header_labelframe,
+            bg=self.entry_header_labelframe["bg"],
+            state="disabled",
+        )
+        self.eh_text_entry_image_bpp.place(x=170, y=275, width=30, height=20)
+        self.eh_text_entry_image_bpp.bind("<Button-3>", lambda event, arg=self: RightClicker(arg, event))

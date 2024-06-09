@@ -1,3 +1,4 @@
+from src.EA_Image.common import get_bpp_for_image_type
 from src.EA_Image.data_read import (
     get_uint8,
     get_uint12_and_flags,
@@ -109,6 +110,7 @@ class DirEntry:
         self.h_entry_header_offset = None
         self.h_entry_end_offset = None
         self.h_file_data_first_2_bytes = None
+        self.h_image_bpp = None
 
         self.bin_attachments_list = []
         self.if_next_entry_exist_flag = None
@@ -132,6 +134,7 @@ class DirEntry:
             self.h_flag4_reserved,
         ) = get_uint12_and_flags(in_file, endianess)
         self.h_default_y_position, self.h_mipmaps_count = get_uint12_uint4(in_file, endianess)
+        self.h_image_bpp = get_bpp_for_image_type(self.h_record_id_masked)
 
     def set_raw_data(self, in_file, in_data_start_offset, in_data_end_offset=0):
         zero_size_flag = -1
