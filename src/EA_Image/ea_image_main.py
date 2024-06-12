@@ -311,7 +311,7 @@ class EAImage:
                 elif palette_entry_id == 45:
                     return ImageFormats.PAL4_RGBX5551
                 elif palette_entry_id == 50:
-                    return ImageFormats.PAL4_RGB5A3  # TODO, image type 25
+                    return ImageFormats.PAL4_RGB5A3
                 elif palette_entry_id == 59:
                     return ImageFormats.PAL4_RGBA8888
                 else:
@@ -336,7 +336,7 @@ class EAImage:
                 elif palette_entry_id == 45:
                     return ImageFormats.PAL8_BGRX5551
                 elif palette_entry_id == 50:
-                    return ImageFormats.PAL8_RGB5A3  # TODO, image type 25
+                    return ImageFormats.PAL8_RGB5A3
                 elif palette_entry_id == 59:
                     return ImageFormats.PAL8_RGBA8888
                 else:
@@ -517,9 +517,8 @@ class EAImage:
                 palette_data,
                 ea_dir_entry.h_width,
                 ea_dir_entry.h_height,
-                _get_indexed_image_format(
-                    palette_id, get_bpp_for_image_type(entry_type), len(palette_data)
-                ),  # TODO - not decoding correctly
+                _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
+                palette_endianess="big",
             )
         elif entry_type == 25:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
@@ -528,9 +527,8 @@ class EAImage:
                 palette_data,
                 ea_dir_entry.h_width,
                 ea_dir_entry.h_height,
-                _get_indexed_image_format(
-                    palette_id, get_bpp_for_image_type(entry_type), len(palette_data)
-                ),  # TODO - not decoding correctly
+                _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
+                palette_endianess="big",
             )
         elif entry_type == 30:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_compressed_image(
