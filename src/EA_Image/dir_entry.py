@@ -1,15 +1,20 @@
 from src.EA_Image.common import get_bpp_for_image_type
+from src.EA_Image.constants import (
+    NEW_SHAPE_ALLOWED_SIGNATURES,
+    OLD_SHAPE_ALLOWED_SIGNATURES,
+)
 from src.EA_Image.data_read import (
     get_uint8,
     get_uint12_and_flags,
     get_uint12_uint4,
     get_uint16,
     get_uint24,
+    get_uint32,
 )
 
 
 class DirEntry:
-    header_size = 16
+    header_size: int = 0
 
     entry_types = {
         1: "1 | 0x01 | PAL4",
@@ -123,26 +128,46 @@ class DirEntry:
         self.is_img_convert_supported = False
         self.img_convert_data = None
 
-    def set_entry_header(self, in_file, endianess):
-        self.h_entry_header_offset = in_file.tell()
-        self.h_record_id = get_uint8(in_file, endianess)
-        self.h_record_id_masked = self.h_record_id & 0x7F
-        self.h_size_of_the_block = get_uint24(in_file, endianess)
-        self.h_width = get_uint16(in_file, endianess)
-        self.h_height = get_uint16(in_file, endianess)
-        self.h_center_x = get_uint16(in_file, endianess)
-        self.h_center_y = get_uint16(in_file, endianess)
-        (
-            self.h_default_x_position,
-            self.h_flag1_referenced,
-            self.h_flag2_swizzled,
-            self.h_flag3_transposed,
-            self.h_flag4_reserved,
-        ) = get_uint12_and_flags(in_file, endianess)
-        self.h_default_y_position, self.h_mipmaps_count = get_uint12_uint4(in_file, endianess)
-        self.h_image_bpp = get_bpp_for_image_type(self.h_record_id_masked)
+        # new shape fields
+        self.new_shape_flags = None
 
-    def set_raw_data(self, in_file, in_data_start_offset, in_data_end_offset=0):
+    def set_entry_header(self, in_file, endianess: str, ea_image_sign: str) -> bool:
+        if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:
+            self.header_size = 16
+            self.h_entry_header_offset = in_file.tell()
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.h_record_id_masked = self.h_record_id & 0x7F
+            self.h_size_of_the_block = get_uint24(in_file, endianess)
+            self.h_width = get_uint16(in_file, endianess)
+            self.h_height = get_uint16(in_file, endianess)
+            self.h_center_x = get_uint16(in_file, endianess)
+            self.h_center_y = get_uint16(in_file, endianess)
+            (
+                self.h_default_x_position,
+                self.h_flag1_referenced,
+                self.h_flag2_swizzled,
+                self.h_flag3_transposed,
+                self.h_flag4_reserved,
+            ) = get_uint12_and_flags(in_file, endianess)
+            self.h_default_y_position, self.h_mipmaps_count = get_uint12_uint4(in_file, endianess)
+            self.h_image_bpp = get_bpp_for_image_type(self.h_record_id_masked)
+        elif ea_image_sign in NEW_SHAPE_ALLOWED_SIGNATURES:
+            self.header_size = 32
+            self.h_entry_header_offset = in_file.tell()
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.new_shape_flags = get_uint24(in_file, endianess)
+            self.h_size_of_the_block = get_uint32(in_file, endianess)
+            self.raw_data_offset = self.h_entry_header_offset + get_uint32(in_file, endianess)
+            self.raw_data_size = get_uint32(in_file, endianess)
+            self.h_default_x_position = get_uint32(in_file, endianess)
+            self.h_default_y_position = get_uint32(in_file, endianess)
+            self.h_width = get_uint32(in_file, endianess)
+            self.h_height = get_uint32(in_file, endianess)
+            self.h_image_bpp = get_bpp_for_image_type(self.h_record_id)
+
+        return True  # image header has been parsed
+
+    def set_raw_data(self, in_file, in_data_start_offset, in_data_end_offset=0) -> bool:
         zero_size_flag = -1
 
         if self.h_size_of_the_block == 0:
@@ -160,11 +185,13 @@ class DirEntry:
             self.raw_data = in_file.read(self.h_size_of_the_block - self.header_size)
 
         self.raw_data_size = len(self.raw_data)
+        return True
 
-    def set_img_end_offset(self):
+    def set_img_end_offset(self) -> bool:
         self.h_entry_end_offset = self.raw_data_offset + self.raw_data_size
+        return True
 
-    def set_is_image_compressed_masked(self, in_file):
+    def set_is_image_compressed_masked(self, in_file) -> bool:
         current_offset = in_file.tell()
         in_file.seek(self.raw_data_offset)
         self.h_file_data_first_2_bytes = in_file.read(2)
@@ -187,9 +214,10 @@ class DirEntry:
         self.h_is_image_compressed_masked = _get_img_compressed_string(
             is_image_compressed_masked, self.h_file_data_first_2_bytes
         )
+        return True
 
-    def get_entry_type(self):
-        result = self.entry_types.get(
+    def get_entry_type(self) -> str:
+        result: str = self.entry_types.get(
             self.h_record_id,
             str(self.h_record_id) + " | " + "0x%02X" % int(self.h_record_id) + " | UNKNOWN_TYPE",
         )

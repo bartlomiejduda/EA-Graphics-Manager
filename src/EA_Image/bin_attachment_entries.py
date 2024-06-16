@@ -1,3 +1,7 @@
+from src.EA_Image.constants import (
+    NEW_SHAPE_ALLOWED_SIGNATURES,
+    OLD_SHAPE_ALLOWED_SIGNATURES,
+)
 from src.EA_Image.data_read import (
     get_uint8,
     get_uint16,
@@ -46,7 +50,9 @@ class BinAttachmentEntry(DirEntry):
 
 
 class MetalBinEntry(BinAttachmentEntry):
-    header_size = 16
+    header_size = 8
+    new_shape_data_offset = None
+    new_shape_data_size = None
 
     def __init__(self, in_id, in_offset):
         super().__init__(in_id, in_offset)
@@ -54,58 +60,118 @@ class MetalBinEntry(BinAttachmentEntry):
         self.h_flags = None
         self.h_data_size = None
 
-    def set_entry_header(self, in_file, endianess):
-        self.h_record_id = get_uint8(in_file, endianess)
-        self.h_size_of_the_block = get_uint24(in_file, endianess)
-        self.h_data_size = get_uint16(in_file, endianess)
-        self.h_flags = get_uint16(in_file, endianess)
-        self.h_unknown = get_uint64(in_file, endianess)
+    def set_entry_header(self, in_file, endianess, ea_image_sign: str):
+        if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.h_size_of_the_block = get_uint24(in_file, endianess)
+            self.h_data_size = get_uint16(in_file, endianess)
+            self.h_flags = get_uint16(in_file, endianess)
+            self.h_unknown = get_uint64(in_file, endianess)
+            self.header_size = 16
+        elif ea_image_sign in NEW_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.new_shape_flags = get_uint24(in_file, endianess)
+            self.h_size_of_the_block = get_uint32(in_file, endianess)
+            self.new_shape_data_offset = get_uint32(in_file, endianess)
+            self.new_shape_data_size = get_uint32(in_file, endianess)
+            self.header_size = 16
 
 
 class CommentEntry(BinAttachmentEntry):
     header_size = 8
+    new_shape_data_offset = None
+    new_shape_data_size = None
 
     def __init__(self, in_id, in_offset):
         super().__init__(in_id, in_offset)
         self.h_comment_length = None
 
-    def set_entry_header(self, in_file, endianess):
-        self.h_record_id = get_uint8(in_file, endianess)
-        self.h_size_of_the_block = get_uint24(in_file, endianess)
-        self.h_comment_length = get_uint32(in_file, endianess)
+    def set_entry_header(self, in_file, endianess, ea_image_sign: str):
+        if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.h_size_of_the_block = get_uint24(in_file, endianess)
+            self.h_comment_length = get_uint32(in_file, endianess)
+            self.header_size = 8
+        elif ea_image_sign in NEW_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.new_shape_flags = get_uint24(in_file, endianess)
+            self.h_size_of_the_block = get_uint32(in_file, endianess)
+            self.new_shape_data_offset = get_uint32(in_file, endianess)
+            self.new_shape_data_size = get_uint32(in_file, endianess)
+            self.header_size = 16
 
 
 class ImgNameEntry(BinAttachmentEntry):
-    header_size = 4
+    header_size = 0
+    new_shape_data_offset = None
+    new_shape_data_size = None
 
-    def set_entry_header(self, in_file, endianess):
-        self.h_record_id = get_uint8(in_file, endianess)
-        self.h_size_of_the_block = get_uint24(in_file, endianess)
+    def set_entry_header(self, in_file, endianess, ea_image_sign: str):
+        if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.h_size_of_the_block = get_uint24(in_file, endianess)
+            self.header_size = 4
+        elif ea_image_sign in NEW_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.new_shape_flags = get_uint24(in_file, endianess)
+            self.h_size_of_the_block = get_uint32(in_file, endianess)
+            self.new_shape_data_offset = get_uint32(in_file, endianess)
+            self.new_shape_data_size = get_uint32(in_file, endianess)
+            self.header_size = 16
 
 
 class UnknownEntry(BinAttachmentEntry):
-    header_size = 4
+    header_size = 0
+    new_shape_data_offset = None
+    new_shape_data_size = None
 
-    def set_entry_header(self, in_file, endianess):
-        self.h_record_id = get_uint8(in_file, endianess)
-        self.h_size_of_the_block = get_uint24(in_file, endianess)
+    def set_entry_header(self, in_file, endianess, ea_image_sign: str):
+        if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.h_size_of_the_block = get_uint24(in_file, endianess)
+            self.header_size = 4
+        elif ea_image_sign in NEW_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.new_shape_flags = get_uint24(in_file, endianess)
+            self.h_size_of_the_block = get_uint32(in_file, endianess)
+            self.new_shape_data_offset = get_uint32(in_file, endianess)
+            self.new_shape_data_size = get_uint32(in_file, endianess)
+            self.header_size = 16
 
 
 class HotSpotEntry(BinAttachmentEntry):
-    header_size = 8
+    header_size = 0
 
     def __init__(self, in_id, in_offset):
         super().__init__(in_id, in_offset)
         self.num_of_pairs = None
+        self.new_shape_data_offset = None
+        self.new_shape_data_size = None
+        self.new_shape_center_x = None
+        self.new_shape_center_y = None
+        self.new_shape_dimension = None
 
-    def set_entry_header(self, in_file, endianess):
-        self.h_record_id = get_uint8(in_file, endianess)
-        self.h_size_of_the_block = get_uint24(in_file, endianess)
-        self.num_of_pairs = get_uint32(in_file, endianess)
+    def set_entry_header(self, in_file, endianess, ea_image_sign: str):
+        if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.h_size_of_the_block = get_uint24(in_file, endianess)
+            self.num_of_pairs = get_uint32(in_file, endianess)
+            self.header_size = 8
+        elif ea_image_sign in NEW_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.new_shape_flags = get_uint24(in_file, endianess)
+            self.h_size_of_the_block = get_uint32(in_file, endianess)
+            self.new_shape_data_offset = get_uint32(in_file, endianess)
+            self.new_shape_data_size = get_uint32(in_file, endianess)
+            self.new_shape_center_x = get_uint32(in_file, endianess)
+            self.new_shape_center_y = get_uint32(in_file, endianess)
+            self.new_shape_dimension = get_uint32(in_file, endianess)
+            self.num_of_pairs = get_uint32(in_file, endianess)
+            self.header_size = 32
 
 
 class PaletteEntry(BinAttachmentEntry):
-    header_size = 16
+    header_size = 0
 
     def __init__(self, in_id, in_offset):
         super().__init__(in_id, in_offset)
@@ -115,13 +181,30 @@ class PaletteEntry(BinAttachmentEntry):
         self.pal_entries = None
         self.pal_height = None
         self.pal_width = None
+        self.new_shape_palette_offset = None
+        self.new_shape_palette_data_size = None
+        self.new_shape_reserved1 = None
+        self.new_shape_reserved2 = None
 
-    def set_entry_header(self, in_file, endianess):
-        self.h_record_id = get_uint8(in_file, endianess)
-        self.h_size_of_the_block = get_uint24(in_file, endianess)
-        self.pal_width = get_uint16(in_file, endianess)
-        self.pal_height = get_uint16(in_file, endianess)
-        self.pal_entries = get_uint16(in_file, endianess)
-        self.unk1 = get_uint16(in_file, endianess)
-        self.unk2 = get_uint16(in_file, endianess)
-        self.unk3 = get_uint16(in_file, endianess)
+    def set_entry_header(self, in_file, endianess, ea_image_sign: str):
+        if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.h_size_of_the_block = get_uint24(in_file, endianess)
+            self.pal_width = get_uint16(in_file, endianess)
+            self.pal_height = get_uint16(in_file, endianess)
+            self.pal_entries = get_uint16(in_file, endianess)
+            self.unk1 = get_uint16(in_file, endianess)
+            self.unk2 = get_uint16(in_file, endianess)
+            self.unk3 = get_uint16(in_file, endianess)
+            self.header_size = 16
+        elif ea_image_sign in NEW_SHAPE_ALLOWED_SIGNATURES:
+            self.h_record_id = get_uint8(in_file, endianess)
+            self.new_shape_flags = get_uint24(in_file, endianess)
+            self.h_size_of_the_block = get_uint32(in_file, endianess)
+            self.new_shape_palette_offset = get_uint32(in_file, endianess)
+            self.new_shape_palette_data_size = get_uint32(in_file, endianess)
+            self.new_shape_reserved1 = get_uint32(in_file, endianess)
+            self.new_shape_reserved2 = get_uint32(in_file, endianess)
+            self.pal_width = get_uint32(in_file, endianess)
+            self.pal_height = get_uint32(in_file, endianess)
+            self.header_size = 32

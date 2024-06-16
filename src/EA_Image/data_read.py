@@ -1,9 +1,18 @@
 import struct
 
 
-def get_utf8_string(in_file, str_length):
-    result = in_file.read(str_length).decode("utf8")
+def get_string(in_file, str_length: int, encoding="utf8") -> str:
+    result = in_file.read(str_length).decode(encoding)
     return result
+
+
+def get_null_terminated_string(in_file, encoding="utf8") -> str:
+    binary_str: bytearray = bytearray()
+    while True:
+        c = in_file.read(1)
+        if c == b"\x00":
+            return binary_str.decode(encoding)
+        binary_str += c
 
 
 def get_uint8(in_file, endianess):
