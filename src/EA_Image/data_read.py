@@ -49,6 +49,26 @@ def get_uint12_and_flags(in_file, endianess) -> list:
     return out_list
 
 
+def get_new_shape_uint24_flags(uint24_flags_value: int) -> list:
+    val_int: int = uint24_flags_value
+    val_str = bin(val_int).lstrip("0b").zfill(24)
+
+    flag_new_format_str = val_str[23:24]
+    flag_new_format_int = int(flag_new_format_str, 2)
+
+    flag_compressed_str = val_str[22:23]
+    flag_compressed_int = int(flag_compressed_str, 2)
+
+    flag_swizzled_str = val_str[9:10]
+    flag_swizzled_int = int(flag_swizzled_str, 2)
+
+    number_of_mipmaps_str = val_str[0:4]
+    number_of_mipmaps_int = int(number_of_mipmaps_str, 2)
+
+    out_list = [flag_new_format_int, flag_compressed_int, flag_swizzled_int, number_of_mipmaps_int]
+    return out_list
+
+
 def get_uint12_uint4(in_file, endianess) -> list:
     bytes2 = in_file.read(2)
     val_int = struct.unpack(endianess + "H", bytes2)[0]

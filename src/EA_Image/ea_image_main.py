@@ -8,7 +8,6 @@ License: GPL-3.0 License
 import os
 import struct
 
-from reversebox.common.common import convert_int_to_bool
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
 from reversebox.image.image_decoder import ImageDecoder
@@ -367,6 +366,11 @@ class EAImage:
             logger.warning(f"Image format has not been found for palette_id={palette_entry_id} and bpp={bpp}")
             return ImageFormats.PAL4_RGB565  # default
 
+        def _is_image_swizzled() -> bool:
+            if ea_dir_entry.h_flag2_swizzled or ea_dir_entry.new_shape_flag_swizzled:
+                return True
+            return False
+
         ea_image_decoder = ImageDecoder()
         image_data: bytes = ea_dir_entry.raw_data
         is_image_compressed: int = entry_type & 0x80  # 0 - not compressed / 128 - compressed
@@ -375,21 +379,21 @@ class EAImage:
             image_data = RefpackHandler().decompress_data(image_data)
 
         # unswizzling logic
-        if ea_dir_entry.h_flag2_swizzled:
-            if self.sign in ("SHPX", "SHPI"):  # for XBOX and PC games
+        if _is_image_swizzled():
+            if self.sign in ("SHPX", "SHPI", "ShpX", "ShpF"):  # for XBOX and PC games
                 image_data = unswizzle_morton(
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
                 )
-            elif self.sign == "SHPM":  # for PSP games
+            elif self.sign in ("SHPM", "ShpM"):  # for PSP games
                 image_data = unswizzle_psp(
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
                 )
-            elif self.sign == "SHPS" and (entry_type < 8 or entry_type > 15):  # for PS2 games
+            elif self.sign in ("SHPS", "ShpS") and (entry_type < 8 or entry_type > 15):  # for PS2 games
                 if get_bpp_for_image_type(entry_type) == 4:
                     image_data = unswizzle_ps2_4bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
                 elif get_bpp_for_image_type(entry_type) == 8:
                     image_data = unswizzle_ps2_8bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
-            elif self.sign == "SHPG":  # for WII/GameCube games
+            elif self.sign in ("SHPG", "ShpG"):  # for WII/GameCube games
                 image_data = unswizzle_gamecube(
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
                 )
@@ -441,7 +445,7 @@ class EAImage:
                 ea_dir_entry.h_height,
                 ImageFormats.GST121,
                 _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
-                is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
+                is_swizzled=_is_image_swizzled(),
             )
         elif entry_type == 9:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
@@ -452,7 +456,7 @@ class EAImage:
                 ea_dir_entry.h_height,
                 ImageFormats.GST221,
                 _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
-                is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
+                is_swizzled=_is_image_swizzled(),
             )
         elif entry_type == 10:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
@@ -463,7 +467,7 @@ class EAImage:
                 ea_dir_entry.h_height,
                 ImageFormats.GST421,
                 _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
-                is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
+                is_swizzled=_is_image_swizzled(),
             )
         elif entry_type == 11:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
@@ -474,7 +478,7 @@ class EAImage:
                 ea_dir_entry.h_height,
                 ImageFormats.GST821,
                 _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
-                is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
+                is_swizzled=_is_image_swizzled(),
             )
         elif entry_type == 12:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
@@ -485,7 +489,7 @@ class EAImage:
                 ea_dir_entry.h_height,
                 ImageFormats.GST122,
                 _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
-                is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
+                is_swizzled=_is_image_swizzled(),
             )
         elif entry_type == 13:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
@@ -496,7 +500,7 @@ class EAImage:
                 ea_dir_entry.h_height,
                 ImageFormats.GST222,
                 _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
-                is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
+                is_swizzled=_is_image_swizzled(),
             )
         elif entry_type == 14:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
@@ -508,7 +512,7 @@ class EAImage:
                 ea_dir_entry.h_height,
                 ImageFormats.GST422,
                 _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
-                is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
+                is_swizzled=_is_image_swizzled(),
             )
         elif entry_type == 15:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
@@ -519,7 +523,7 @@ class EAImage:
                 ea_dir_entry.h_height,
                 ImageFormats.GST822,
                 _get_indexed_image_format(palette_id, get_bpp_for_image_type(entry_type), len(palette_data)),
-                is_swizzled=convert_int_to_bool(ea_dir_entry.h_flag2_swizzled),
+                is_swizzled=_is_image_swizzled(),
             )
         elif entry_type == 20:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(

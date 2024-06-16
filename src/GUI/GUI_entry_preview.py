@@ -99,14 +99,13 @@ class GuiEntryPreview(tk.Frame):
         self.preview_instance.place(x=5, y=5, width=285, height=130)
 
     def init_palette_preview_logic(self, palette_entry: PaletteEntry):
-        # TODO - fix palette logic
-        palette_width: int = int(math.sqrt(palette_entry.pal_entries))
-        palette_height: int = int(math.sqrt(palette_entry.pal_entries))
+        palette_width: int = palette_entry.pal_width
+        palette_height: int = palette_entry.pal_height
 
         try:
             pil_img = Image.frombuffer(
                 "RGBA",
-                (int(palette_width / 2), int(palette_height / 2)),
+                (math.ceil(palette_width / 2), math.ceil(palette_height / 2)),
                 palette_entry.raw_data,
                 "raw",
                 "RGBA",
@@ -124,7 +123,7 @@ class GuiEntryPreview(tk.Frame):
 
             self.preview_instance = tk.Canvas(
                 self.preview_labelframe,
-                bg="white",
+                bg="#595959",
                 width=self.canvas_width,
                 height=self.canvas_height,
             )

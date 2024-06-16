@@ -1,9 +1,12 @@
+from reversebox.common.common import convert_int_to_hex_string
+
 from src.EA_Image.common import get_bpp_for_image_type
 from src.EA_Image.constants import (
     NEW_SHAPE_ALLOWED_SIGNATURES,
     OLD_SHAPE_ALLOWED_SIGNATURES,
 )
 from src.EA_Image.data_read import (
+    get_new_shape_uint24_flags,
     get_uint8,
     get_uint12_and_flags,
     get_uint12_uint4,
@@ -130,6 +133,11 @@ class DirEntry:
 
         # new shape fields
         self.new_shape_flags = None
+        self.new_shape_flags_hex_str = None
+        self.new_shape_flag_new_format = None
+        self.new_shape_flag_compressed = None
+        self.new_shape_flag_swizzled = None
+        self.new_shape_number_of_mipmaps = None
 
     def set_entry_header(self, in_file, endianess: str, ea_image_sign: str) -> bool:
         if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:
@@ -156,6 +164,7 @@ class DirEntry:
             self.h_entry_header_offset = in_file.tell()
             self.h_record_id = get_uint8(in_file, endianess)
             self.new_shape_flags = get_uint24(in_file, endianess)
+            self.new_shape_flags_hex_str = convert_int_to_hex_string(self.new_shape_flags)
             self.h_size_of_the_block = get_uint32(in_file, endianess)
             self.raw_data_offset = self.h_entry_header_offset + get_uint32(in_file, endianess)
             self.raw_data_size = get_uint32(in_file, endianess)
@@ -164,6 +173,12 @@ class DirEntry:
             self.h_width = get_uint32(in_file, endianess)
             self.h_height = get_uint32(in_file, endianess)
             self.h_image_bpp = get_bpp_for_image_type(self.h_record_id)
+            (
+                self.new_shape_flag_new_format,
+                self.new_shape_flag_compressed,
+                self.new_shape_flag_swizzled,
+                self.new_shape_number_of_mipmaps,
+            ) = get_new_shape_uint24_flags(self.new_shape_flags)
 
         return True  # image header has been parsed
 
