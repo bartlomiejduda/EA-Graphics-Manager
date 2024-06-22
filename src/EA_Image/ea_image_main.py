@@ -7,6 +7,7 @@ License: GPL-3.0 License
 
 import os
 import struct
+import traceback
 
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
@@ -150,7 +151,7 @@ class EAImage:
             self.f_dir_endianess = "<"  # little
 
         # set endianess for the rest of the file
-        if self.sign in ("SHPG", "SHPM", "ShpG", "ShpM"):
+        if self.sign in ("SHPG", "ShpG", "ShpM"):
             _set_big_endianess()
         else:
             _set_little_endianess()
@@ -380,25 +381,35 @@ class EAImage:
 
         # unswizzling logic
         if _is_image_swizzled():
-            if self.sign in ("SHPX", "ShpX", "SHPI", "ShpF"):  # for XBOX and PC games
-                image_data = unswizzle_morton(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
-                )
-            elif self.sign in ("SHPM", "ShpM"):  # for PSP games
-                image_data = unswizzle_psp(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
-                )
-            elif self.sign in ("SHPS", "ShpS") and (entry_type < 8 or entry_type > 15):  # for PS2 games
-                if get_bpp_for_image_type(entry_type) == 4:
-                    image_data = unswizzle_ps2_4bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
-                elif get_bpp_for_image_type(entry_type) == 8:
-                    image_data = unswizzle_ps2_8bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
-            elif self.sign in ("SHPG", "ShpG"):  # for WII/GameCube games
-                image_data = unswizzle_gamecube(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
-                )
-            else:
-                logger.warning(f"Swizzling for signature {self.sign} is not supported yet!")
+            try:
+                if self.sign in ("SHPX", "ShpX", "SHPI", "ShpF"):  # for XBOX and PC games
+                    image_data = unswizzle_morton(
+                        image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
+                    )
+                elif self.sign in ("SHPM", "ShpM"):  # for PSP games
+                    image_data = unswizzle_psp(
+                        image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
+                    )
+                elif self.sign in ("SHPS", "ShpS") and (
+                    entry_type < 8 or entry_type > 15
+                ):  # for PS2 games (standard textures)
+                    if get_bpp_for_image_type(entry_type) == 4:
+                        image_data = unswizzle_ps2_4bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
+                    elif get_bpp_for_image_type(entry_type) == 8:
+                        image_data = unswizzle_ps2_8bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
+                elif (
+                    self.sign in ("SHPS", "ShpS") and entry_type >= 8 and entry_type <= 15
+                ):  # for PS2 games (GST textures)
+                    pass  # swizzling handled by decoder
+                elif self.sign in ("SHPG", "ShpG"):  # for WII/GameCube games
+                    image_data = unswizzle_gamecube(
+                        image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
+                    )
+                else:
+                    logger.warning(f"Swizzling for signature {self.sign} is not supported yet!")
+            except Exception as error:
+                logger.error(f"Error while unswizzling images! Error: {error}")
+                logger.error(traceback.format_exc())
 
         # decoding logic
         if entry_type == 1:

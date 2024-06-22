@@ -108,6 +108,7 @@ To use script with Noesis, please follow below steps:
 
 # Badges
 ![GitHub](https://img.shields.io/github/license/bartlomiejduda/EA-Graphics-Manager?style=plastic)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![GitHub repo size](https://img.shields.io/github/repo-size/bartlomiejduda/EA-Graphics-Manager?style=plastic)
 ![GitHub all releases](https://img.shields.io/github/downloads/bartlomiejduda/EA-Graphics-Manager/total)
 ![GitHub last commit](https://img.shields.io/github/last-commit/bartlomiejduda/EA-Graphics-Manager?style=plastic)
