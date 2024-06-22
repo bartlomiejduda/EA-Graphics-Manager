@@ -1,12 +1,23 @@
+#
+
 # EA Graphics Manager
-Program for parsing FSH, SSH, XSH, PSH, GSH, ASH, QFS and MSH files from EA games.
+It's free and open source program for handling FSH, SSH, XSH, PSH, GSH, ASH, QFS and MSH files from EA games.
+It was written in Python 3.11. GUI was created using tkinter library.
 
-Technologies used: Python 3.11, tkinter
+List of functionalities:
+ - Parsing EA Shape files (old shapes and new shapes)
+ - Preview for EA Images/Shapes
+ - Preview for all binary attachments
+ - Viewing entries from file header and entry header
+ - Exporting EA Shapes as DDS texture files
+ - Exporting raw data for further analysis
 
-This program **<ins>is not finished yet</ins>**.
-It may not support all image types.
 
-<img src="src\data\img\usage_v0.14.1.gif">
+
+This program **<ins>is still in development stage</ins>**.
+It may not support all existing image types yet.
+
+<img src="src\data\img\usage.gif">
 
 More info about EA Image file format can be found on [Xentax Wiki](https://web.archive.org/web/20230817170521/http://wiki.xentax.com/index.php/EA_SSH_FSH_Image).
 

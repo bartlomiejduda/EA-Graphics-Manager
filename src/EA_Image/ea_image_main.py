@@ -317,7 +317,7 @@ class EAImage:
                 if palette_entry_id == 33:
                     return ImageFormats.PAL4_RGBA8888
                 elif palette_entry_id == 34:
-                    return ImageFormats.PAL4_RGBX6666
+                    return ImageFormats.PAL4_RGBX6666  # TODO
                 elif palette_entry_id == 35:
                     return ImageFormats.PAL4_RGBX5551
                 elif palette_entry_id == 36:
@@ -380,7 +380,7 @@ class EAImage:
 
         # unswizzling logic
         if _is_image_swizzled():
-            if self.sign in ("SHPX", "SHPI", "ShpX", "ShpF"):  # for XBOX and PC games
+            if self.sign in ("SHPX", "ShpX", "SHPI", "ShpF"):  # for XBOX and PC games
                 image_data = unswizzle_morton(
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
                 )
@@ -398,7 +398,7 @@ class EAImage:
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
                 )
             else:
-                pass  # image is not swizzled
+                logger.warning(f"Swizzling for signature {self.sign} is not supported yet!")
 
         # decoding logic
         if entry_type == 1:

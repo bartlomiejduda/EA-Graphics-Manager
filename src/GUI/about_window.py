@@ -1,6 +1,8 @@
 import tkinter as tk
+import webbrowser
 
 import center_tk_window
+from PIL import Image, ImageTk
 from reversebox.common.logger import get_logger
 
 logger = get_logger(__name__)
@@ -8,45 +10,76 @@ logger = get_logger(__name__)
 
 class AboutWindow:
     def __init__(self, gui_object):
-        about_window = tk.Toplevel()
-        about_window.wm_title("About")
+        ABOUT_WINDOW_WIDTH = 400
+        ABOUT_WINDOW_HEIGHT = 190
+        self.about_window = tk.Toplevel(width=ABOUT_WINDOW_WIDTH, height=ABOUT_WINDOW_HEIGHT)
+        self.about_window.wm_title("About EA Graphics Manager")
 
-        icon_dir = None
+        self.about_window.minsize(ABOUT_WINDOW_WIDTH, ABOUT_WINDOW_HEIGHT)
+        self.about_window.maxsize(ABOUT_WINDOW_WIDTH, ABOUT_WINDOW_HEIGHT)
+        self.about_window.resizable(False, False)
+        self.about_window.wm_attributes("-toolwindow", "True")  # remove default tkinter icon
+        self.about_window.attributes("-topmost", "true")  # about window always on top
+
+        self.about_main_frame = tk.Frame(self.about_window, bg="#f0f0f0")
+        self.about_main_frame.place(x=0, y=0, relwidth=1, relheight=1)
+
+        self.about_title_frame = tk.Frame(
+            self.about_main_frame, bg="#f0f0f0", highlightbackground="#a6a6a6", highlightthickness=1
+        )
+        self.about_title_frame.place(x=5, y=5, width=390, height=70)
+
+        self.about_description_frame = tk.Frame(
+            self.about_main_frame, bg="#f0f0f0", highlightbackground="#a6a6a6", highlightthickness=1
+        )
+        self.about_description_frame.place(x=5, y=80, width=390, height=70)
+
+        ICON_WIDTH = 60
+        ICON_HEIGHT = 60
+        self.canvas_for_icon = tk.Canvas(self.about_title_frame, bg="green", borderwidth=0, highlightthickness=0)
+        self.canvas_for_icon.place(x=5, y=5, width=ICON_WIDTH, height=ICON_HEIGHT)
         try:
-            icon_dir = gui_object.icon_dir
-            about_window.iconbitmap(icon_dir)
-        except tk.TclError:
-            logger.error(f"Can't load the icon file from {icon_dir}")
+            ea_icon = Image.open(gui_object.icon_dir)
+            self.canvas_for_icon.image = ImageTk.PhotoImage(ea_icon.resize((ICON_WIDTH, ICON_HEIGHT)))
+            self.canvas_for_icon.create_image(0, 0, image=self.canvas_for_icon.image, anchor="nw")
+        except Exception as error:
+            logger.error(f"Can't load the icon file from {gui_object.icon_dir}. Error: {error}")
 
-        a_text = (
-            "EA Graphics Manager\n"
-            "Version: " + gui_object.VERSION_NUM + "\n"
-            "\n"
-            "Program has been created\n"
-            "by Bartłomiej Duda.\n"
-            "\n"
-            "If you want to support me,\n"
-            "you can do it here:"
+        self.about_title_label_tool_name_label = tk.Label(
+            self.about_title_frame, text="EA Graphics Manager", font=("Arial", 20), anchor="center"
         )
-        a_text2 = "https://www.paypal.me/kolatek55"
-        a_text3 = "\n" "If you want to see my other tools,\n" + "go to my github page:"
-        a_text4 = "https://github.com/bartlomiejduda"
+        self.about_title_label_tool_name_label.place(x=75, y=5, width=300, height=40)
 
-        l1 = tk.Label(about_window, text=a_text)
-        l1.pack(side="top", fill="both", padx=10)
-        l2 = tk.Label(about_window, text=a_text2, fg="blue", cursor="hand2")
-        l2.bind("<Button-1>", lambda e: gui_object.web_callback(a_text2))
-        l2.pack(side="top", anchor="n")
-        l3 = tk.Label(about_window, text=a_text3)
-        l3.pack(side="top", fill="both", padx=10)
-        l4 = tk.Label(about_window, text=a_text4, fg="blue", cursor="hand2")
-        l4.bind("<Button-1>", lambda e: gui_object.web_callback(a_text4))
-        l4.pack(side="top", anchor="n")
-        close_button = tk.Button(about_window, text="Close")
-        close_button.pack()
-        close_button.bind(
+        self.about_title_label_version_label = tk.Label(
+            self.about_title_frame, text="Version: " + str(gui_object.VERSION_NUM), font=("Arial", 12), anchor="center"
+        )
+        self.about_title_label_version_label.place(x=75, y=45, width=300, height=20)
+
+        copyright_text: str = (
+            "Copyright 2021-2024 © Bartlomiej Duda. All Rights Reserved.\n"
+            "For the latest version visit EA Graphics Manager Github page at\n"
+        )
+        self.about_description_copyright_label = tk.Label(
+            self.about_description_frame, text=copyright_text, anchor="center"
+        )
+        self.about_description_copyright_label.place(x=5, y=0, width=380, height=60)
+
+        github_link: str = "https://github.com/bartlomiejduda/EA-Graphics-Manager"
+        self.about_description_github_button = tk.Button(
+            self.about_description_frame,
+            text=github_link,
+            command=lambda: webbrowser.open(github_link),
+            anchor="center",
+        )
+        self.about_description_github_button.place(x=35, y=40, width=330, height=20)
+
+        self.ok_button = tk.Button(self.about_main_frame, text="OK")
+        self.ok_button.place(x=160, y=155, width=90, height=30)
+        self.ok_button.bind(
             "<Button-1>",
-            lambda event, arg=about_window: gui_object.close_toplevel_window(arg),
+            lambda event, arg=self.about_window: gui_object.close_toplevel_window(arg),
         )
 
-        center_tk_window.center_on_screen(about_window)
+        self.about_window.lift()
+        self.about_window.focus_force()
+        center_tk_window.center_on_screen(self.about_window)

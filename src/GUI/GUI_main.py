@@ -601,7 +601,8 @@ class EAManGui:
         in_file.close()
 
     def show_about_window(self):
-        AboutWindow(self)
+        if not any(isinstance(x, tk.Toplevel) for x in self.master.winfo_children()):
+            AboutWindow(self)
 
     @staticmethod
     def set_text_in_box(in_box, in_text):
