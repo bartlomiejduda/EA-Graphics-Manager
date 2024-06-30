@@ -13,10 +13,11 @@ import webbrowser
 from configparser import ConfigParser
 from pathlib import Path
 from tkinter import filedialog, messagebox
+from typing import Optional
 
+from reversebox.common.common import get_file_extension
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
-from reversebox.image.image_dds import DDS_Image
 
 from src.EA_Image import ea_image_main
 from src.EA_Image.constants import (
@@ -24,6 +25,10 @@ from src.EA_Image.constants import (
     NEW_SHAPE_ALLOWED_SIGNATURES,
     OLD_SHAPE_ALLOWED_SIGNATURES,
     PALETTE_TYPES,
+)
+from src.EA_Image.ea_image_export_import import (
+    get_pil_image_file_data_for_export,
+    get_pil_rgba_data_for_import,
 )
 from src.GUI.about_window import AboutWindow
 from src.GUI.GUI_entry_preview import GuiEntryPreview
@@ -66,6 +71,14 @@ class EAManGui:
             (
                 "EA Graphics files",
                 ["*.fsh", "*.psh", "*.ssh", "*.msh", "*.xsh", "*.gsh", "*.qfs", "*.ash"],
+            ),
+            ("All files", ["*.*"]),
+        ]
+
+        self.allowed_import_image_filetypes = [
+            (
+                "Image files",
+                ["*.dds", "*.png", "*.bmp"],
             ),
             ("All files", ["*.*"]),
         ]
@@ -336,7 +349,10 @@ class EAManGui:
                 command=lambda: self.treeview_rclick_export_raw(item_iid),
             )
             self.tree_rclick_popup.add_command(
-                label="Export Image as DDS", command=lambda: self.treeview_rclick_export_dds(item_iid)
+                label="Export Image as DDS/PNG/BMP", command=lambda: self.treeview_rclick_export_image(item_iid)
+            )
+            self.tree_rclick_popup.add_command(
+                label="Import Image from DDS/PNG/BMP", command=lambda: self.treeview_rclick_import_image(item_iid)
             )
             self.tree_rclick_popup.tk_popup(event.x_root, event.y_root, entry="0")
         elif "direntry" in item_iid and "binattach" in item_iid:
@@ -372,17 +388,15 @@ class EAManGui:
         ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
         subprocess.Popen(rf'explorer /select,{Path(ea_img.f_path)}"')
 
-    def treeview_rclick_export_dds(self, item_iid):
+    def treeview_rclick_export_image(self, item_iid):
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
-        out_data = None
+        out_data: Optional[bytes] = None
+        ea_dir = None
         if "direntry" in item_iid and "binattach" not in item_iid:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
-            if ea_dir.h_record_id in CONVERT_IMAGES_SUPPORTED_TYPES:
-                # pack converted RGBA data in DDS file
-                out_data = DDS_Image(ea_dir.h_width, ea_dir.h_height, ea_dir.img_convert_data).get_file_data()
-            else:
-                messagebox.showwarning("Warning", f"Image type {ea_dir.h_record_id} is not supported for DDS export!")
+            if ea_dir.h_record_id not in CONVERT_IMAGES_SUPPORTED_TYPES:
+                messagebox.showwarning("Warning", f"Image type {ea_dir.h_record_id} is not supported for export!")
                 return
 
         else:
@@ -395,7 +409,7 @@ class EAManGui:
                 defaultextension=".dds",
                 initialdir=self.current_save_directory_path,
                 initialfile=ea_img.f_name + "_" + item_iid,
-                filetypes=(("DDS files", "*.dds"), ("all files", "*.*")),
+                filetypes=(("DDS files", "*.dds"), ("PNG files", "*.png"), ("BMP files", "*.bmp")),
             )
             try:
                 selected_directory = os.path.dirname(out_file.name)
@@ -413,9 +427,55 @@ class EAManGui:
         if out_file is None:
             return
 
+        # pack converted RGBA data in DDS file
+        file_extension: str = get_file_extension(out_file.name)
+        out_data = get_pil_image_file_data_for_export(
+            ea_dir.img_convert_data, ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
+        )
+        if not out_data:
+            logger.error("Empty data to export!")
+            messagebox.showwarning("Warning", "Empty image data! Export not possible!")
+            return
+
         out_file.write(out_data)
         out_file.close()
         messagebox.showinfo("Info", "File saved successfully!")
+
+    def treeview_rclick_import_image(self, item_iid):
+        ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
+
+        ea_dir = None
+        if "direntry" in item_iid and "binattach" not in item_iid:
+            ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
+
+        try:
+            in_file = filedialog.askopenfile(
+                filetypes=self.allowed_import_image_filetypes, mode="rb", initialdir=self.current_open_directory_path
+            )
+            if not in_file:
+                return
+            try:
+                selected_directory = os.path.dirname(in_file.name)
+            except Exception:
+                selected_directory = ""
+            self.current_open_directory_path = selected_directory  # set directory path from history
+            self.user_config.set(
+                "config", "open_directory_path", selected_directory
+            )  # save directory path to config file
+            with open(self.user_config_file_name, "w") as configfile:
+                self.user_config.write(configfile)
+            in_file_path = in_file.name
+        except Exception as error:
+            logger.error(f"Failed to open file! Error: {error}")
+            messagebox.showwarning("Warning", "Failed to open file!")
+            return
+
+        # import logic
+        rgba_data: bytes = get_pil_rgba_data_for_import(in_file_path)
+        ea_dir.img_convert_data = rgba_data
+        self.entry_preview.init_image_preview_logic(ea_dir, item_iid)  # refresh preview for imported image
+
+        # TODO - image encoding
 
     def treeview_rclick_export_raw(self, item_iid):
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
