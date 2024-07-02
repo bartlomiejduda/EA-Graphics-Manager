@@ -427,7 +427,7 @@ class EAManGui:
         if out_file is None:
             return
 
-        # pack converted RGBA data in DDS file
+        # pack converted RGBA data
         file_extension: str = get_file_extension(out_file.name)
         out_data = get_pil_image_file_data_for_export(
             ea_dir.img_convert_data, ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
