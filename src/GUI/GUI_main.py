@@ -22,10 +22,12 @@ from reversebox.compression.compression_refpack import RefpackHandler
 from src.EA_Image import ea_image_main
 from src.EA_Image.constants import (
     CONVERT_IMAGES_SUPPORTED_TYPES,
+    IMPORT_IMAGES_SUPPORTED_TYPES,
     NEW_SHAPE_ALLOWED_SIGNATURES,
     OLD_SHAPE_ALLOWED_SIGNATURES,
     PALETTE_TYPES,
 )
+from src.EA_Image.ea_image_encoder import encode_ea_image
 from src.EA_Image.ea_image_export_import import (
     get_pil_image_file_data_for_export,
     get_pil_rgba_data_for_import,
@@ -388,7 +390,7 @@ class EAManGui:
         ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
         subprocess.Popen(rf'explorer /select,{Path(ea_img.f_path)}"')
 
-    def treeview_rclick_export_image(self, item_iid):
+    def treeview_rclick_export_image(self, item_iid) -> bool:
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
         out_data: Optional[bytes] = None
@@ -397,7 +399,7 @@ class EAManGui:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
             if ea_dir.h_record_id not in CONVERT_IMAGES_SUPPORTED_TYPES:
                 messagebox.showwarning("Warning", f"Image type {ea_dir.h_record_id} is not supported for export!")
-                return
+                return False
 
         else:
             logger.warning("Warning! Unsupported entry while saving output binary data!")
@@ -425,7 +427,7 @@ class EAManGui:
             logger.error(f"Error: {error}")
             messagebox.showwarning("Warning", "Failed to save file!")
         if out_file is None:
-            return
+            return False
 
         # pack converted RGBA data
         file_extension: str = get_file_extension(out_file.name)
@@ -435,25 +437,30 @@ class EAManGui:
         if not out_data:
             logger.error("Empty data to export!")
             messagebox.showwarning("Warning", "Empty image data! Export not possible!")
-            return
+            return False
 
         out_file.write(out_data)
         out_file.close()
         messagebox.showinfo("Info", "File saved successfully!")
+        logger.info(f"Image has been exported successfully to {out_file.name}")
+        return True
 
-    def treeview_rclick_import_image(self, item_iid):
+    def treeview_rclick_import_image(self, item_iid) -> bool:
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
         ea_dir = None
         if "direntry" in item_iid and "binattach" not in item_iid:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
+            if ea_dir.h_record_id not in IMPORT_IMAGES_SUPPORTED_TYPES:
+                messagebox.showwarning("Warning", f"Image type {ea_dir.h_record_id} is not supported for IMPORT!")
+                return False
 
         try:
             in_file = filedialog.askopenfile(
                 filetypes=self.allowed_import_image_filetypes, mode="rb", initialdir=self.current_open_directory_path
             )
             if not in_file:
-                return
+                return False
             try:
                 selected_directory = os.path.dirname(in_file.name)
             except Exception:
@@ -468,14 +475,40 @@ class EAManGui:
         except Exception as error:
             logger.error(f"Failed to open file! Error: {error}")
             messagebox.showwarning("Warning", "Failed to open file!")
-            return
+            return False
 
         # import logic
         rgba_data: bytes = get_pil_rgba_data_for_import(in_file_path)
-        ea_dir.img_convert_data = rgba_data
+        import_raw_data: bytes = encode_ea_image(rgba_data, ea_dir)
+
+        if len(import_raw_data) > len(ea_dir.raw_data):
+            messsage: str = "Image data for import is too big. Can't import image!"
+            messagebox.showwarning("Warning", messsage)
+            logger.error(messsage)
+            return False
+
+        elif len(import_raw_data) < len(ea_dir.raw_data):
+            messsage: str = "Image data for import is too short. Can't import image!"
+            messagebox.showwarning("Warning", messsage)
+            logger.error(messsage)
+            return False
+
+        ea_dir.raw_data = import_raw_data
+
+        # preview update logic start
+        if len(ea_dir.img_convert_data) != len(rgba_data):
+            messsage: str = "Wrong size of image preview data!"
+            messagebox.showwarning("Warning", messsage)
+            logger.error(messsage)
+            return False
+
+        # preview update
+        logger.info("Preview update for imported image")
+        ea_img.convert_image_data_for_export_and_preview(ea_dir, ea_dir.h_record_id, self)
         self.entry_preview.init_image_preview_logic(ea_dir, item_iid)  # refresh preview for imported image
 
-        # TODO - image encoding
+        logger.info("Image has been imported successfully")
+        return True
 
     def treeview_rclick_export_raw(self, item_iid):
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
