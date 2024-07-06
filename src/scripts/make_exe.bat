@@ -20,10 +20,14 @@ if exist __pycache__ (rd /s /q __pycache__)
 
 echo Copying files...
 set BUILD_PATH=.\build_final\EA_Graphics_Manager
+set TARGET_SRC_PATH=%BUILD_PATH%\lib\src
 copy .\src\data\docs\readme.txt %BUILD_PATH%\readme.txt
 copy .\LICENSE %BUILD_PATH%\LICENSE
 mkdir %BUILD_PATH%\src\data\img
 copy .\src\data\img\ea_icon.ico %BUILD_PATH%\src\data\img\ea_icon.ico
+copy .\src\data\img\checkmark.png %BUILD_PATH%\src\data\img\checkmark.png
+if exist %TARGET_SRC_PATH%\log.txt (del %TARGET_SRC_PATH%\log.txt)
+if exist %TARGET_SRC_PATH%\config.ini (del %TARGET_SRC_PATH%\config.ini)
 
 
 echo BUILD SUCCESSFUL!

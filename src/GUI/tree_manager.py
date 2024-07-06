@@ -11,14 +11,21 @@ class TreeManager:
 
     def add_object(self, in_obj):
         self.tree_widget.insert(
-            "", tk.END, text=in_obj.f_name, iid=in_obj.ea_image_id, open=True
+            "",
+            tk.END,
+            text=in_obj.f_name,
+            iid=in_obj.ea_image_id,
+            open=True,
+            tags=(in_obj.ea_image_id, "add_object_tag_01"),
         )  # add file to tree, e.g. "awards.ssh"
 
         # add object children (ea images) to tree
         sub_id = 0
         for dir_entry in in_obj.dir_entry_list:
             sub_id += 1
-            self.tree_widget.insert("", tk.END, text=dir_entry.tag, iid=dir_entry.id, open=False)
+            self.tree_widget.insert(
+                "", tk.END, text=dir_entry.tag, iid=dir_entry.id, open=False, tags=(dir_entry.id, "add_object_tag_02")
+            )
             self.tree_widget.move(dir_entry.id, in_obj.ea_image_id, sub_id)
 
             # add binary attachments to tree
@@ -31,6 +38,7 @@ class TreeManager:
                     text=bin_att_entry.tag,
                     iid=bin_att_entry.id,
                     open=True,
+                    tags=(bin_att_entry.id, "add_object_tag_03"),
                 )
                 self.tree_widget.move(bin_att_entry.id, dir_entry.id, bin_att_sub_id)
 

@@ -15,6 +15,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox
 from typing import Optional
 
+from PIL import Image, ImageTk
 from reversebox.common.common import get_file_extension
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
@@ -62,12 +63,14 @@ class EAManGui:
         master.resizable(width=0, height=0)
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.tree_rclick_popup = None
-        self.icon_dir = self.MAIN_DIRECTORY + "\\data\\img\\ea_icon.ico"
+        self.icon_path = self.MAIN_DIRECTORY + "\\data\\img\\ea_icon.ico"
+        self.checkmark_path = self.MAIN_DIRECTORY + "\\data\\img\\checkmark.png"
+        self.checkmark_image = None
 
         try:
-            self.master.iconbitmap(self.icon_dir)
+            self.master.iconbitmap(self.icon_path)
         except tk.TclError:
-            logger.error(f"Can't load the icon file from {self.icon_dir}")
+            logger.error(f"Can't load the icon file from {self.icon_path}")
 
         self.allowed_filetypes = [
             (
@@ -506,6 +509,12 @@ class EAManGui:
         logger.info("Preview update for imported image")
         ea_img.convert_image_data_for_export_and_preview(ea_dir, ea_dir.h_record_id, self)
         self.entry_preview.init_image_preview_logic(ea_dir, item_iid)  # refresh preview for imported image
+
+        # update tree view entry
+        checkmark_image = Image.open(self.checkmark_path).resize((15, 15))
+        self.checkmark_image = ImageTk.PhotoImage(checkmark_image)
+        self.tree_view.treeview_widget.tag_configure(item_iid, font=("Segoe UI", 9, "bold"))
+        self.tree_view.treeview_widget.tag_configure(item_iid, image=self.checkmark_image)
 
         logger.info("Image has been imported successfully")
         return True

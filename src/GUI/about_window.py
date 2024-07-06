@@ -39,11 +39,11 @@ class AboutWindow:
         self.canvas_for_icon = tk.Canvas(self.about_title_frame, bg="green", borderwidth=0, highlightthickness=0)
         self.canvas_for_icon.place(x=5, y=5, width=ICON_WIDTH, height=ICON_HEIGHT)
         try:
-            ea_icon = Image.open(gui_object.icon_dir)
+            ea_icon = Image.open(gui_object.icon_path)
             self.canvas_for_icon.image = ImageTk.PhotoImage(ea_icon.resize((ICON_WIDTH, ICON_HEIGHT)))
             self.canvas_for_icon.create_image(0, 0, image=self.canvas_for_icon.image, anchor="nw")
         except Exception as error:
-            logger.error(f"Can't load the icon file from {gui_object.icon_dir}. Error: {error}")
+            logger.error(f"Can't load the icon file from {gui_object.icon_path}. Error: {error}")
 
         self.about_title_label_tool_name_label = tk.Label(
             self.about_title_frame, text="EA Graphics Manager", font=("Arial", 20), anchor="center"
@@ -68,7 +68,7 @@ class AboutWindow:
         self.about_description_github_button = tk.Button(
             self.about_description_frame,
             text=github_link,
-            command=lambda: webbrowser.open(github_link),
+            command=lambda: self._open_browser_and_close_about_window(gui_object, github_link),
             anchor="center",
         )
         self.about_description_github_button.place(x=35, y=40, width=330, height=20)
@@ -83,3 +83,7 @@ class AboutWindow:
         self.about_window.lift()
         self.about_window.focus_force()
         center_tk_window.center_on_screen(self.about_window)
+
+    def _open_browser_and_close_about_window(self, gui_object, link_to_open):
+        webbrowser.open(link_to_open)
+        gui_object.close_toplevel_window(self.about_window)
