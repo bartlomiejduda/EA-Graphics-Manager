@@ -1,3 +1,5 @@
+from typing import Optional
+
 from reversebox.common.common import convert_int_to_hex_string
 
 from src.EA_Image.common import get_bpp_for_image_type
@@ -128,8 +130,9 @@ class DirEntry:
 
         self.bin_attachments_list = []
         self.if_next_entry_exist_flag = None
-        self.is_img_convert_supported = False
-        self.img_convert_data = None
+        self.is_img_convert_supported: bool = False
+        self.img_convert_data: Optional[bytes] = None
+        self.entry_import_flag: bool = False
 
         # new shape fields
         self.new_shape_flags = None

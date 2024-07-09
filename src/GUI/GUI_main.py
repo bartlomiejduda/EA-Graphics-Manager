@@ -16,7 +16,7 @@ from tkinter import filedialog, messagebox
 from typing import Optional
 
 from PIL import Image, ImageTk
-from reversebox.common.common import get_file_extension
+from reversebox.common.common import get_file_extension, get_file_extension_uppercase
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
 
@@ -347,6 +347,9 @@ class EAManGui:
                 label="Open in Explorer", command=lambda: self.treeview_rclick_open_in_explorer(item_iid)
             )
             self.tree_rclick_popup.add_command(label="Close File", command=lambda: self.treeview_rclick_close(item_iid))
+            self.tree_rclick_popup.add_command(
+                label="Save File As...", command=lambda: self.treeview_rclick_save_file_as(item_iid)
+            )
             self.tree_rclick_popup.tk_popup(event.x_root, event.y_root, entry="0")
         elif "direntry" in item_iid and "binattach" not in item_iid:
             self.tree_rclick_popup.add_command(
@@ -389,6 +392,60 @@ class EAManGui:
 
         del ea_img  # removing object from memory
 
+    def treeview_rclick_save_file_as(self, item_iid):
+        ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
+        with open(ea_img.f_path, "rb") as ea_img_file:
+            ea_img_file_data: bytes = ea_img_file.read()
+
+        ea_img_memory_file = io.BytesIO(ea_img_file_data)
+
+        for ea_dir in ea_img.dir_entry_list:
+            if ea_dir.entry_import_flag:
+                ea_img_memory_file.seek(ea_dir.raw_data_offset)
+                ea_img_memory_file.write(ea_dir.raw_data)
+
+        out_file_extension: str = get_file_extension(ea_img.f_path)
+
+        logger.info(f"Opening save file dialog for file {ea_img.f_name}...")
+        out_file = None
+        try:
+            out_file = filedialog.asksaveasfile(
+                mode="wb",
+                defaultextension=out_file_extension,
+                initialdir=self.current_save_directory_path,
+                initialfile=ea_img.f_name,
+                filetypes=(("EA Image File", f"*{out_file_extension}"),),
+            )
+            try:
+                selected_directory = os.path.dirname(out_file.name)
+            except Exception:
+                selected_directory = ""
+            self.current_save_directory_path = selected_directory  # set directory path from history
+            self.user_config.set(
+                "config", "save_directory_path", selected_directory
+            )  # save directory path to config file
+            with open(self.user_config_file_name, "w") as configfile:
+                self.user_config.write(configfile)
+        except Exception as error:
+            logger.error(f"Error: {error}")
+            messagebox.showwarning("Warning", "Failed to save file!")
+        if out_file is None:
+            return False  # user closed file dialog on purpose
+
+        # Saving data
+        ea_img_memory_file.seek(0)
+        out_data: Optional[bytes] = ea_img_memory_file.read()
+        if not out_data:
+            logger.error("Empty data to export!")
+            messagebox.showwarning("Warning", "Empty data! Export not possible!")
+            return False
+
+        out_file.write(out_data)
+        out_file.close()
+        messagebox.showinfo("Info", "File saved successfully!")
+        logger.info(f"EA Image has been exported successfully to {out_file.name}")
+        return True
+
     def treeview_rclick_open_in_explorer(self, item_iid):
         ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
         subprocess.Popen(rf'explorer /select,{Path(ea_img.f_path)}"')
@@ -430,10 +487,10 @@ class EAManGui:
             logger.error(f"Error: {error}")
             messagebox.showwarning("Warning", "Failed to save file!")
         if out_file is None:
-            return False
+            return False  # user closed file dialog on purpose
 
         # pack converted RGBA data
-        file_extension: str = get_file_extension(out_file.name)
+        file_extension: str = get_file_extension_uppercase(out_file.name)
         out_data = get_pil_image_file_data_for_export(
             ea_dir.img_convert_data, ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
         )
@@ -480,7 +537,7 @@ class EAManGui:
             messagebox.showwarning("Warning", "Failed to open file!")
             return False
 
-        # import logic
+        # import logic (raw data replace)
         rgba_data: bytes = get_pil_rgba_data_for_import(in_file_path)
         import_raw_data: bytes = encode_ea_image(rgba_data, ea_dir)
 
@@ -497,6 +554,7 @@ class EAManGui:
             return False
 
         ea_dir.raw_data = import_raw_data
+        ea_dir.entry_import_flag = True
 
         # preview update logic start
         if len(ea_dir.img_convert_data) != len(rgba_data):
