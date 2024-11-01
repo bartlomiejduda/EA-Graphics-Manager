@@ -99,8 +99,8 @@ class GuiEntryPreview(tk.Frame):
         self.preview_instance.place(x=5, y=5, width=285, height=130)
 
     def init_palette_preview_logic(self, palette_entry: PaletteEntry):
-        palette_width: int = palette_entry.pal_width
-        palette_height: int = palette_entry.pal_height
+        palette_width: int = palette_entry.h_width
+        palette_height: int = palette_entry.h_height
 
         try:
             pil_img = Image.frombuffer(

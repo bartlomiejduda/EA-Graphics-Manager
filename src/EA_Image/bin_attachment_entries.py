@@ -175,12 +175,6 @@ class PaletteEntry(BinAttachmentEntry):
 
     def __init__(self, in_id, in_offset):
         super().__init__(in_id, in_offset)
-        self.unk3 = None
-        self.unk2 = None
-        self.unk1 = None
-        self.pal_entries = None
-        self.pal_height = None
-        self.pal_width = None
         self.new_shape_palette_offset = None
         self.new_shape_palette_data_size = None
         self.new_shape_reserved1 = None
@@ -190,12 +184,12 @@ class PaletteEntry(BinAttachmentEntry):
         if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:
             self.h_record_id = get_uint8(in_file, endianess)
             self.h_size_of_the_block = get_uint24(in_file, endianess)
-            self.pal_width = get_uint16(in_file, endianess)
-            self.pal_height = get_uint16(in_file, endianess)
-            self.pal_entries = get_uint16(in_file, endianess)
-            self.unk1 = get_uint16(in_file, endianess)
-            self.unk2 = get_uint16(in_file, endianess)
-            self.unk3 = get_uint16(in_file, endianess)
+            self.h_width = get_uint16(in_file, endianess)
+            self.h_height = get_uint16(in_file, endianess)
+            self.h_center_x = get_uint16(in_file, endianess)
+            self.h_center_y = get_uint16(in_file, endianess)
+            self.h_default_x_position = get_uint16(in_file, endianess)  # shape X
+            self.h_default_y_position = get_uint16(in_file, endianess)  # shape Y
             self.header_size = 16
         elif ea_image_sign in NEW_SHAPE_ALLOWED_SIGNATURES:
             self.h_record_id = get_uint8(in_file, endianess)
@@ -205,6 +199,6 @@ class PaletteEntry(BinAttachmentEntry):
             self.new_shape_palette_data_size = get_uint32(in_file, endianess)
             self.new_shape_reserved1 = get_uint32(in_file, endianess)
             self.new_shape_reserved2 = get_uint32(in_file, endianess)
-            self.pal_width = get_uint32(in_file, endianess)
-            self.pal_height = get_uint32(in_file, endianess)
+            self.h_width = get_uint32(in_file, endianess)
+            self.h_height = get_uint32(in_file, endianess)
             self.header_size = 32

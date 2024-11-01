@@ -1,4 +1,3 @@
-#
 
 # EA Graphics Manager
 It's free and open source program for handling FSH, SSH, XSH, PSH, GSH, ASH, QFS and MSH files from EA games.

@@ -9,7 +9,6 @@ import os
 import subprocess
 import tkinter as tk
 import traceback
-import webbrowser
 from configparser import ConfigParser
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -21,6 +20,7 @@ from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
 
 from src.EA_Image import ea_image_main
+from src.EA_Image.bin_attachment_entries import PaletteEntry
 from src.EA_Image.constants import (
     CONVERT_IMAGES_SUPPORTED_TYPES,
     IMPORT_IMAGES_SUPPORTED_TYPES,
@@ -50,6 +50,8 @@ MAX_WINDOW_WIDTH = WINDOW_WIDTH
 
 logger = get_logger(__name__)
 
+
+# fmt: off
 
 class EAManGui:
     def __init__(self, master, in_version_num, in_main_directory):
@@ -147,7 +149,6 @@ class EAManGui:
         ea_img = self.tree_view.tree_man.get_object(item_id, self.opened_ea_images)
 
         # set text for header
-        # fmt: off
         if ea_img.sign in OLD_SHAPE_ALLOWED_SIGNATURES:
             self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_sign, ea_img.sign)
             self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_f_size, ea_img.total_f_size)
@@ -160,12 +161,11 @@ class EAManGui:
             self.set_text_in_box(self.tab_controller.new_shape_file_header_info_box.fh_text_obj_count, ea_img.num_of_entries)
             self.set_text_in_box(self.tab_controller.new_shape_file_header_info_box.fh_text_header_and_toc_size, ea_img.header_and_toc_size)
             self._execute_new_shape_tab_logic()
-        # fmt: on
 
         # set text for dir entry
         if "direntry" in item_iid and "binattach" not in item_iid:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
-            # fmt: off
+
             if ea_img.sign in OLD_SHAPE_ALLOWED_SIGNATURES:
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_rec_type, ea_dir.get_entry_type())
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_size_of_the_block, ea_dir.h_size_of_the_block)
@@ -207,7 +207,6 @@ class EAManGui:
                 self.set_text_in_box(self.tab_controller.new_shape_entry_header_info_box.eh_text_entry_flag_compressed, ea_dir.new_shape_flag_compressed)
                 self.set_text_in_box(self.tab_controller.new_shape_entry_header_info_box.eh_text_entry_flag_swizzled, ea_dir.new_shape_flag_swizzled)
                 self._execute_new_shape_tab_logic()
-            # fmt: on
 
             # image preview logic START
             try:
@@ -227,17 +226,27 @@ class EAManGui:
             dir_iid = item_iid.split("_binattach")[0]
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, dir_iid)
             bin_attach = self.tree_view.tree_man.get_object_bin_attach(ea_dir, item_iid)
-            # fmt: off
+
             if ea_img.sign in OLD_SHAPE_ALLOWED_SIGNATURES:
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_rec_type, bin_attach.get_entry_type())
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_size_of_the_block, bin_attach.h_size_of_the_block)
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_mipmaps_count, "")
-                self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_width, "")
-                self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_height, "")
-                self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_x, "")
-                self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_y, "")
-                self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_left_x, "")
-                self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_top_y, "")
+
+                if isinstance(bin_attach, PaletteEntry):
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_width, bin_attach.h_width)
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_height, bin_attach.h_height)
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_x, bin_attach.h_center_x)
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_y, bin_attach.h_center_y)
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_left_x, bin_attach.h_default_x_position)
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_top_y, bin_attach.h_default_y_position)
+                else:
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_width, "")
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_height, "")
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_x, "")
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_y, "")
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_left_x, "")
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_top_y, "")
+
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_header_offset, "")
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_offset, "")
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_data_size, "")
@@ -269,7 +278,6 @@ class EAManGui:
                 self.set_text_in_box(self.tab_controller.new_shape_entry_header_info_box.eh_text_entry_flag_compressed, "")
                 self.set_text_in_box(self.tab_controller.new_shape_entry_header_info_box.eh_text_entry_flag_swizzled, "")
                 self._execute_new_shape_tab_logic()
-            # fmt: on
 
             # bin attachment preview logic START
             try:
@@ -277,16 +285,13 @@ class EAManGui:
             except Exception:
                 pass
 
-            # fmt: off
             if bin_attach.h_record_id in PALETTE_TYPES:  # palette types
                 self.entry_preview.init_palette_preview_logic(bin_attach)
             else:
                 self.entry_preview.init_binary_preview_logic(bin_attach)
-            # fmt: on
             # bin attachment preview logic END
 
         else:
-            # fmt: off
             if ea_img.sign in OLD_SHAPE_ALLOWED_SIGNATURES:
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_rec_type, "")
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_size_of_the_block, "")
@@ -328,7 +333,6 @@ class EAManGui:
                 self.set_text_in_box(self.tab_controller.new_shape_entry_header_info_box.eh_text_entry_flag_compressed, "")
                 self.set_text_in_box(self.tab_controller.new_shape_entry_header_info_box.eh_text_entry_flag_swizzled, "")
                 self._execute_new_shape_tab_logic()
-            # fmt: on
 
             try:
                 self.entry_preview.preview_instance.destroy()
@@ -696,7 +700,6 @@ class EAManGui:
             logger.error(f"Error while converting images! Error: {error}")
             logger.error(traceback.format_exc())
 
-            # fmt: off
             # set text for header
             if ea_img.sign in OLD_SHAPE_ALLOWED_SIGNATURES:
                 self.set_text_in_box(self.tab_controller.file_header_info_box.fh_text_sign, ea_img.sign)
@@ -754,7 +757,6 @@ class EAManGui:
                 self.set_text_in_box(self.tab_controller.new_shape_entry_header_info_box.eh_text_entry_flag_swizzled, ea_img.dir_entry_list[0].new_shape_flag_swizzled)
                 self._execute_new_shape_tab_logic()
 
-        # fmt: on
 
         self.tree_view.tree_man.add_object(ea_img)
 
@@ -775,6 +777,4 @@ class EAManGui:
     def close_toplevel_window(wind):
         wind.destroy()
 
-    @staticmethod
-    def web_callback(url):
-        webbrowser.open_new(url)
+# fmt: on

@@ -117,11 +117,11 @@ class DirEntry:
         self.h_center_x = None
         self.h_center_y = None
         self.h_default_x_position = None
+        self.h_default_y_position = None
         self.h_flag1_referenced = None
         self.h_flag2_swizzled = None
         self.h_flag3_transposed = None
         self.h_flag4_reserved = None
-        self.h_default_y_position = None
         self.h_mipmaps_count = None
         self.h_entry_header_offset = None
         self.h_entry_end_offset = None
