@@ -295,19 +295,29 @@ class EAImage:
             # try to get palette from binary attachment first
             _palette_data: bytes = b""
             _entry_id: int = 33  # default palette
+            _h_default_x_position = -1
             for attachment in _ea_dir_entry.bin_attachments_list:
                 if isinstance(attachment, PaletteEntry):
                     _palette_data = attachment.raw_data
                     _entry_id = attachment.h_record_id
+                    _h_default_x_position = attachment.h_default_x_position
                     break
 
             if _palette_data and len(_palette_data) > 0:
+                if _entry_id in (33, 59) and _h_default_x_position & 0x2000:  # check for palette swizzle flag
+                    return _entry_id, unswizzle_ps2_palette(_palette_data)
+
                 return _entry_id, _palette_data  # return palette from binary attachment
 
             # try to get palette from other dir entry
             for i in range(self.num_of_entries):
                 ea_dir_entry = self.dir_entry_list[i]
                 if ea_dir_entry.h_record_id in PALETTE_TYPES:
+                    if (
+                        ea_dir_entry.h_record_id in (33, 59) and ea_dir_entry.h_default_x_position & 0x2000
+                    ):  # check for palette swizzle flag
+                        return ea_dir_entry.h_record_id, unswizzle_ps2_palette(ea_dir_entry.raw_data)
+
                     return ea_dir_entry.h_record_id, ea_dir_entry.raw_data  # return palette from other dir entry
 
             logger.warn("Warning! Couldn't find palette data!")
@@ -423,8 +433,6 @@ class EAImage:
             )
         elif entry_type == 2:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
-            if gui_main.enable_palette_swizzling_menu_option.get():
-                palette_data = unswizzle_ps2_palette(palette_data)
 
             if len(palette_data) == 0:
                 logger.error("Error while converting palette data for type 2!")
