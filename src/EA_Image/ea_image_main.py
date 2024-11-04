@@ -410,7 +410,7 @@ class EAImage:
                 elif (
                     self.sign in ("SHPS", "ShpS") and entry_type >= 8 and entry_type <= 15
                 ):  # for PS2 games (GST textures)
-                    pass  # swizzling handled by decoder
+                    pass  # swizzling handled by GST decoder
                 elif self.sign in ("SHPG", "ShpG"):  # for WII/GameCube games
                     image_data = unswizzle_gamecube(
                         image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
@@ -523,7 +523,6 @@ class EAImage:
             )
         elif entry_type == 14:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
-            palette_data = unswizzle_ps2_palette(palette_data)
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                 image_data,
                 palette_data,
@@ -713,7 +712,7 @@ class EAImage:
             )
         elif entry_type == 125:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
-                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.ARGB8888
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.BGRA8888
             )
         elif entry_type == 126:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
