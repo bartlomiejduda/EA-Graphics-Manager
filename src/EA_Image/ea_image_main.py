@@ -17,7 +17,6 @@ from reversebox.image.palettes.palette_random import generate_random_palette
 from reversebox.image.swizzling.swizzle_gamecube import unswizzle_gamecube
 from reversebox.image.swizzling.swizzle_morton import unswizzle_morton
 from reversebox.image.swizzling.swizzle_ps2 import (
-    unswizzle_ps2_4bit,
     unswizzle_ps2_8bit,
     unswizzle_ps2_palette,
 )
@@ -392,7 +391,11 @@ class EAImage:
         # unswizzling logic
         if _is_image_swizzled():
             try:
-                if self.sign in ("SHPX", "ShpX", "SHPI", "ShpF"):  # for XBOX and PC games
+                if entry_type >= 8 and entry_type <= 15:  # for PS2 games (GST textures)
+                    pass  # swizzling handled by GST decoder
+                elif entry_type == 30:  # for WII games (DXT1/CMPR textures)
+                    pass  # swizzling handled by N64 decoder
+                elif self.sign in ("SHPX", "ShpX", "SHPI", "ShpF"):  # for XBOX and PC games
                     image_data = unswizzle_morton(
                         image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
                     )
@@ -404,13 +407,10 @@ class EAImage:
                     entry_type < 8 or entry_type > 15
                 ):  # for PS2 games (standard textures)
                     if get_bpp_for_image_type(entry_type) == 4:
-                        image_data = unswizzle_ps2_4bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
+                        # image_data = unswizzle_ps2_4bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
+                        pass  # TODO - fix 4-bit swizzle
                     elif get_bpp_for_image_type(entry_type) == 8:
                         image_data = unswizzle_ps2_8bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
-                elif (
-                    self.sign in ("SHPS", "ShpS") and entry_type >= 8 and entry_type <= 15
-                ):  # for PS2 games (GST textures)
-                    pass  # swizzling handled by GST decoder
                 elif self.sign in ("SHPG", "ShpG"):  # for WII/GameCube games
                     image_data = unswizzle_gamecube(
                         image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
@@ -549,7 +549,7 @@ class EAImage:
             )
         elif entry_type == 22:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
-                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.ABGR8888
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.ARGB8888
             )
         elif entry_type == 24:
             palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
@@ -572,11 +572,11 @@ class EAImage:
                 palette_endianess="big",
             )
         elif entry_type == 30:
-            ea_dir_entry.img_convert_data = ea_image_decoder.decode_compressed_image(
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_n64_image(
                 image_data,
                 ea_dir_entry.h_width,
                 ea_dir_entry.h_height,
-                ImageFormats.DXT1,  # TODO - not decoding correctly
+                ImageFormats.N64_CMPR,
             )
         elif entry_type == 33:
             ea_dir_entry.img_convert_data = image_data  # palette
@@ -662,9 +662,17 @@ class EAImage:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_compressed_image(
                 image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.DXT5
             )
+        elif entry_type == 100:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.N64_I8
+            )
+        elif entry_type == 101:
+            ea_dir_entry.img_convert_data = ea_image_decoder.decode_n64_image(
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.N64_IA8
+            )
         elif entry_type == 104:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_yuv_image(
-                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.YUY2
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.YUV422_YUY2
             )
         elif entry_type == 109:
             ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
