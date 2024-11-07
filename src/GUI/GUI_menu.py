@@ -19,17 +19,6 @@ class GuiMenu(tk.Frame):
         parent.bind_all("<Control-q>", lambda x: gui_main.quit_program())
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
-        self.toolsmenu = tk.Menu(self.menubar, tearoff=0)
-        gui_main.switch_rgb_to_bgr_menu_option = tk.BooleanVar()
-        gui_main.switch_rgb_to_bgr_menu_option.set(False)
-        self.toolsmenu.add_checkbutton(
-            label="Switch RGB to BGR",
-            onvalue=1,
-            offvalue=0,
-            variable=gui_main.switch_rgb_to_bgr_menu_option,
-        )
-        self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
-
         self.helpmenu = tk.Menu(self.menubar, tearoff=0)
         self.helpmenu.add_command(label="About...", command=lambda: gui_main.show_about_window())
         self.menubar.add_cascade(label="Help", menu=self.helpmenu)

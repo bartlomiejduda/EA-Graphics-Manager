@@ -25,6 +25,12 @@ def get_uint16(in_file, endianess):
     return result
 
 
+# needed for center_x and center_y
+def get_int16(in_file, endianess):
+    result = struct.unpack(endianess + "h", in_file.read(2))[0]
+    return result
+
+
 def get_uint12_and_flags(in_file, endianess) -> list:
     bytes2 = in_file.read(2)
     val_int = struct.unpack(endianess + "H", bytes2)[0]

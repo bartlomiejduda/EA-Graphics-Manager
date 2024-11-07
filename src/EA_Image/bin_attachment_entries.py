@@ -179,6 +179,8 @@ class PaletteEntry(BinAttachmentEntry):
         self.new_shape_palette_data_size = None
         self.new_shape_reserved1 = None
         self.new_shape_reserved2 = None
+        self.h_default_x_position = -1
+        self.h_default_y_position = -1
 
     def set_entry_header(self, in_file, endianess, ea_image_sign: str):
         if ea_image_sign in OLD_SHAPE_ALLOWED_SIGNATURES:

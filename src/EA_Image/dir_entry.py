@@ -8,6 +8,7 @@ from src.EA_Image.constants import (
     OLD_SHAPE_ALLOWED_SIGNATURES,
 )
 from src.EA_Image.data_read import (
+    get_int16,
     get_new_shape_uint24_flags,
     get_uint8,
     get_uint12_and_flags,
@@ -42,26 +43,26 @@ class DirEntry:
         30: "30 | 0x1E | N64 CMPR",
         33: "33 | 0x21 | PALETTE 32-BIT 8888",
         34: "34 | 0x22 | PALETTE 24-BIT 666",
-        35: "35 | 0x23 | PALETTE",
+        35: "35 | 0x23 | PALETTE BGR555",
         36: "36 | 0x24 | PALETTE 24-BIT 888",
         41: "41 | 0x29 | PALETTE 16-BIT 565",
         42: "42 | 0x2A | PALETTE 32-BIT 8888",
         44: "44 | 0x2C | PALETTE 32-BIT 8565",
-        45: "45 | 0x2D | PALETTE 15-BIT 555",
+        45: "45 | 0x2D | PALETTE RGB555",
         46: "46 | 0x2E | PALETTE 32-BIT 8555",
         47: "47 | 0x2F | PALETTE 24-BIT 888",
         48: "48 | 0x30 | PALETTE 16-BIT IA8",
         49: "49 | 0x31 | PALETTE 16-BIT 565",
         50: "50 | 0x32 | PALETTE RGB5A3",
         58: "58 | 0x3A | PALETTE",
-        59: "59 | 0x3B | PALETTE",
+        59: "59 | 0x3B | PALETTE RGBA8888",
         64: "64 | 0x40 | PAL4",
         65: "65 | 0x41 | PAL8",
-        66: "66 | 0x42 | R5G5B5P1",
+        66: "66 | 0x42 | XBGR1555",
         67: "67 | 0x43 | RGB888",
         88: "88 | 0x58 | RGB565",
         89: "89 | 0x59 | RGB565",
-        90: "90 | 0x5A | RGBA4444",
+        90: "90 | 0x5A | BGRX4444",
         91: "91 | 0x5B | RGBA8888",
         92: "92 | 0x5C | PAL4",
         93: "93 | 0x5D | PAL8",
@@ -151,8 +152,8 @@ class DirEntry:
             self.h_size_of_the_block = get_uint24(in_file, endianess)
             self.h_width = get_uint16(in_file, endianess)
             self.h_height = get_uint16(in_file, endianess)
-            self.h_center_x = get_uint16(in_file, endianess)
-            self.h_center_y = get_uint16(in_file, endianess)
+            self.h_center_x = get_int16(in_file, endianess)
+            self.h_center_y = get_int16(in_file, endianess)
             (
                 self.h_default_x_position,
                 self.h_flag1_referenced,
