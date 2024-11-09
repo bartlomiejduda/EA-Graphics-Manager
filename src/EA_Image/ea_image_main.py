@@ -16,10 +16,7 @@ from reversebox.image.image_formats import ImageFormats
 from reversebox.image.palettes.palette_random import generate_random_palette
 from reversebox.image.swizzling.swizzle_gamecube import unswizzle_gamecube
 from reversebox.image.swizzling.swizzle_morton import unswizzle_morton
-from reversebox.image.swizzling.swizzle_ps2 import (
-    unswizzle_ps2_8bit,
-    unswizzle_ps2_palette,
-)
+from reversebox.image.swizzling.swizzle_ps2 import unswizzle_ps2, unswizzle_ps2_palette
 from reversebox.image.swizzling.swizzle_psp import unswizzle_psp
 
 from src.EA_Image.bin_attachment_entries import (
@@ -407,11 +404,14 @@ class EAImage:
                 elif self.sign in ("SHPS", "ShpS") and (
                     entry_type < 8 or entry_type > 15
                 ):  # for PS2 games (standard textures)
-                    if get_bpp_for_image_type(entry_type) == 4:
-                        # image_data = unswizzle_ps2_4bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
+                    bpp = get_bpp_for_image_type(entry_type)
+                    if bpp == 4:
+                        # image_data = unswizzle_ps2(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, bpp)
                         pass  # TODO - fix 4-bit swizzle
-                    elif get_bpp_for_image_type(entry_type) == 8:
-                        image_data = unswizzle_ps2_8bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height)
+                    elif bpp == 8:
+                        image_data = unswizzle_ps2(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, bpp)
+                    else:
+                        logger.warning(f"PS2 unswizzle for bpp {bpp} is not supported yet!")
                 elif self.sign in ("SHPG", "ShpG"):  # for WII/GameCube games
                     image_data = unswizzle_gamecube(
                         image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
