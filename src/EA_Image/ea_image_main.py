@@ -16,7 +16,11 @@ from reversebox.image.image_formats import ImageFormats
 from reversebox.image.palettes.palette_random import generate_random_palette
 from reversebox.image.swizzling.swizzle_gamecube import unswizzle_gamecube
 from reversebox.image.swizzling.swizzle_morton import unswizzle_morton
-from reversebox.image.swizzling.swizzle_ps2 import unswizzle_ps2, unswizzle_ps2_palette
+from reversebox.image.swizzling.swizzle_ps2 import (
+    unswizzle_ps2,
+    unswizzle_ps2_ea_4bit,
+    unswizzle_ps2_palette,
+)
 from reversebox.image.swizzling.swizzle_psp import unswizzle_psp
 
 from src.EA_Image.bin_attachment_entries import (
@@ -406,8 +410,7 @@ class EAImage:
                 ):  # for PS2 games (standard textures)
                     bpp = get_bpp_for_image_type(entry_type)
                     if bpp == 4:
-                        # image_data = unswizzle_ps2(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, bpp)
-                        pass  # TODO - fix 4-bit swizzle
+                        image_data = unswizzle_ps2_ea_4bit(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, bpp)
                     elif bpp in (8, 15, 16):
                         image_data = unswizzle_ps2(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, bpp)
                     else:
