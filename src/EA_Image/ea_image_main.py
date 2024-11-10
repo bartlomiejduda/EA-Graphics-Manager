@@ -408,7 +408,7 @@ class EAImage:
                     if bpp == 4:
                         # image_data = unswizzle_ps2(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, bpp)
                         pass  # TODO - fix 4-bit swizzle
-                    elif bpp == 8:
+                    elif bpp in (8, 15, 16):
                         image_data = unswizzle_ps2(image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, bpp)
                     else:
                         logger.warning(f"PS2 unswizzle for bpp {bpp} is not supported yet!")
