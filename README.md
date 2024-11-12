@@ -28,14 +28,19 @@ More info about EA Image file format can be found on [Xentax Wiki](https://web.a
 
 # Building on Windows
 
-1. Install  **[Python 3.11.6](https://www.python.org/downloads/release/python-3116/)**
-2. Install **[PyCharm 2023 (Community Edition)](https://www.jetbrains.com/pycharm/download/other.html)**
-3. Create virtualenv and activate it
-   - python3 -m venv \path\to\new\virtual\environment
-   - .\venv\Scripts\activate.bat
-4. Install all libraries from requirements.txt
-   - pip3 install -r requirements.txt
-5. Run the src\main.py file
+1. Download and install  **[Python 3.11.6](https://www.python.org/downloads/release/python-3116/)**. Remember to add Python to PATH during installation
+2. Download project's source code and save it in "EA-Graphics-Manager-main" directory
+3. Go to the directory containing source code
+   - ```cd EA-Graphics-Manager-main```
+4. Create virtualenv and activate it
+   - ```python -m venv my_env```
+   - ```.\my_env\Scripts\activate.bat```
+5. Install all libraries from requirements.txt file
+   - ```pip install -r requirements.txt```
+6. Add project's directory to PYTHONPATH environment variable
+   - ```set PYTHONPATH=C:\Users\user\Desktop\EA-Graphics-Manager-main```
+7. Run the src\main.py file
+   - ```python src\main.py```
 
 
 # Image formats support table
@@ -96,16 +101,6 @@ More info about EA Image file format can be found on [Xentax Wiki](https://web.a
 | <center>248 / 0xF8</center> | <center>✔️</center>    | <center>❌</center>  | Need For Speed: Porsche Unleashed (PC)                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | <center>251 / 0xFB</center> | <center>✔️</center>    | <center>❌</center>  | Need For Speed: Porsche Unleashed (PC)  <br>FIFA Soccer 97 (PC)                                                                                                                                                                                                                                                                                                                                                                                                   |
 
-
-# EA-Graph-Man Noesis Script
-
-In the src\scripts directory there is an script
-which can be used for viewing EA graphics in Noesis.
-To use script with Noesis, please follow below steps:
-
-1. Go to \src\scripts\ directory
-2. Copy script to \noesis\plugins\python\ directory
-3. Open any EA Image in Noesis
 
 # Badges
 ![GitHub](https://img.shields.io/github/license/bartlomiejduda/EA-Graphics-Manager?style=plastic)
