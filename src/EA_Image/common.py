@@ -2,6 +2,7 @@
 Copyright © 2024  Bartłomiej Duda
 License: GPL-3.0 License
 """
+
 from reversebox.common.logger import get_logger
 
 # fmt: off
