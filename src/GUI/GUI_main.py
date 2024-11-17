@@ -18,6 +18,7 @@ from PIL import Image, ImageTk
 from reversebox.common.common import get_file_extension, get_file_extension_uppercase
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
+from reversebox.image.pillow_wrapper import PillowWrapper
 
 from src.EA_Image import ea_image_main
 from src.EA_Image.bin_attachment_entries import PaletteEntry
@@ -29,10 +30,6 @@ from src.EA_Image.constants import (
     PALETTE_TYPES,
 )
 from src.EA_Image.ea_image_encoder import encode_ea_image
-from src.EA_Image.ea_image_export_import import (
-    get_pil_image_file_data_for_export,
-    get_pil_rgba_data_for_import,
-)
 from src.GUI.about_window import AboutWindow
 from src.GUI.GUI_entry_preview import GuiEntryPreview
 from src.GUI.GUI_menu import GuiMenu
@@ -495,9 +492,11 @@ class EAManGui:
 
         # pack converted RGBA data
         file_extension: str = get_file_extension_uppercase(out_file.name)
-        out_data = get_pil_image_file_data_for_export(
+        pillow_wrapper = PillowWrapper()
+        out_data = pillow_wrapper.get_pil_image_file_data_for_export(
             ea_dir.img_convert_data, ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
         )
+        del pillow_wrapper
         if not out_data:
             logger.error("Empty data to export!")
             messagebox.showwarning("Warning", "Empty image data! Export not possible!")
@@ -542,19 +541,21 @@ class EAManGui:
             return False
 
         # import logic (raw data replace)
-        rgba_data: bytes = get_pil_rgba_data_for_import(in_file_path)
+        pillow_wrapper = PillowWrapper()
+        rgba_data: bytes = pillow_wrapper.get_pil_rgba_data_for_import(in_file_path)
+        del pillow_wrapper
         import_raw_data: bytes = encode_ea_image(rgba_data, ea_dir)
 
         if len(import_raw_data) > len(ea_dir.raw_data):
-            messsage: str = "Image data for import is too big. Can't import image!"
-            messagebox.showwarning("Warning", messsage)
-            logger.error(messsage)
+            message: str = "Image data for import is too big. Can't import image!"
+            messagebox.showwarning("Warning", message)
+            logger.error(message)
             return False
 
         elif len(import_raw_data) < len(ea_dir.raw_data):
-            messsage: str = "Image data for import is too short. Can't import image!"
-            messagebox.showwarning("Warning", messsage)
-            logger.error(messsage)
+            message: str = "Image data for import is too short. Can't import image!"
+            messagebox.showwarning("Warning", message)
+            logger.error(message)
             return False
 
         ea_dir.raw_data = import_raw_data
@@ -562,9 +563,9 @@ class EAManGui:
 
         # preview update logic start
         if len(ea_dir.img_convert_data) != len(rgba_data):
-            messsage: str = "Wrong size of image preview data!"
-            messagebox.showwarning("Warning", messsage)
-            logger.error(messsage)
+            message: str = "Wrong size of image preview data!"
+            messagebox.showwarning("Warning", message)
+            logger.error(message)
             return False
 
         # preview update
