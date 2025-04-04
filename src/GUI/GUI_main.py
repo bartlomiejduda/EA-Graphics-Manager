@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
-Copyright © 2024  Bartłomiej Duda
+Copyright © 2024-2025  Bartłomiej Duda
 License: GPL-3.0 License
 """
+
 import io
 import os
 import subprocess

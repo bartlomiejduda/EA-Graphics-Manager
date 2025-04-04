@@ -1,3 +1,8 @@
+"""
+Copyright © 2023-2025  Bartłomiej Duda
+License: GPL-3.0 License
+"""
+
 from typing import Optional
 
 from reversebox.common.common import convert_int_to_hex_string
@@ -43,7 +48,7 @@ class DirEntry:
         30: "30 | 0x1E | N64 CMPR",
         33: "33 | 0x21 | PALETTE 32-BIT 8888",
         34: "34 | 0x22 | PALETTE 24-BIT 666",
-        35: "35 | 0x23 | PALETTE BGR555",
+        35: "35 | 0x23 | PALETTE RGBX5551",
         36: "36 | 0x24 | PALETTE 24-BIT 888",
         41: "41 | 0x29 | PALETTE 16-BIT 565",
         42: "42 | 0x2A | PALETTE 32-BIT 8888",
@@ -58,11 +63,11 @@ class DirEntry:
         59: "59 | 0x3B | PALETTE RGBA8888",
         64: "64 | 0x40 | PAL4",
         65: "65 | 0x41 | PAL8",
-        66: "66 | 0x42 | XBGR1555",
+        66: "66 | 0x42 | RGBT5551",
         67: "67 | 0x43 | RGB888",
         88: "88 | 0x58 | RGB565",
         89: "89 | 0x59 | RGB565",
-        90: "90 | 0x5A | BGRX4444",
+        90: "90 | 0x5A | RGBX4444",
         91: "91 | 0x5B | RGBA8888",
         92: "92 | 0x5C | PAL4",
         93: "93 | 0x5D | PAL8",
@@ -77,17 +82,17 @@ class DirEntry:
         105: "105 | 0x69 | METAL BIN",
         106: "106 | 0x6A | 32-BIT IMG (1010102)",
         108: "108 | 0x6C | YUV (YUI)",
-        109: "109 | 0x6D | ARGB4444",
+        109: "109 | 0x6D | BGRA4444",
         111: "111 | 0x6F | COMMENT",
         112: "112 | 0x70 | IMG NAME",
         115: "115 | 0x73 | PAL8",
         119: "119 | 0x77 | PAL4",
-        120: "120 | 0x78 | RGB565",
+        120: "120 | 0x78 | BGR565",
         121: "121 | 0x79 | PAL4",
         123: "123 | 0x7B | PAL8",
         124: "124 | 0x7C | HOT SPOT",
         125: "125 | 0x7D | BGRA8888",
-        126: "126 | 0x7E | XRGB1555",
+        126: "126 | 0x7E | BGRA5551",
         127: "127 | 0x7F | BGR888",
         130: "130 | 0x82 | PAL8",
         131: "131 | 0x83 | XBGR1555",

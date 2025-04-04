@@ -1,3 +1,8 @@
+"""
+Copyright © 2024-2025  Bartłomiej Duda
+License: GPL-3.0 License
+"""
+
 import struct
 
 

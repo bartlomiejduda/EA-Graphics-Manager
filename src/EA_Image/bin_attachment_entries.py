@@ -1,3 +1,8 @@
+"""
+Copyright © 2024-2025  Bartłomiej Duda
+License: GPL-3.0 License
+"""
+
 from src.EA_Image.constants import (
     NEW_SHAPE_ALLOWED_SIGNATURES,
     OLD_SHAPE_ALLOWED_SIGNATURES,

@@ -1,3 +1,8 @@
+"""
+Copyright © 2024-2025  Bartłomiej Duda
+License: GPL-3.0 License
+"""
+
 import sys
 
 from cx_Freeze import Executable, setup
@@ -12,7 +17,7 @@ if sys.platform == "win32":
 executables = [
     Executable(
         "src/main.py",
-        copyright="Copyright (C) 2024 Bartlomiej Duda",
+        copyright="Copyright (C) 2024-2025 Bartlomiej Duda",
         base=base,
         icon="src/data/img/ea_icon.ico",
         target_name="EA-Graphics-Manager-" + VERSION_NUM + ".exe",

@@ -9,11 +9,11 @@ from inc_noesis import *
 # More info here: https://github.com/bartlomiejduda/EA-Graphics-Manager
 
 
-# This script is still in development.
-# It may have some bugs. Some image types may be not supported.
+# This script is DEPRECATED.
+# Please use "EA Graphics Manager" instead.
 
-SCRIPT_VERSION = "0.6"
-SCRIPT_LAST_UPDATE = "27.04.2024"
+SCRIPT_VERSION = "0.7"
+SCRIPT_LAST_UPDATE = "04.04.2025"
 
 # fmt: off
 debug_mode_enabled = True
@@ -125,7 +125,6 @@ def ea_image_load(ea_image_file_data, tex_list):
         # here starts reading image data
 
 
-        # PAL4
         # e.g. Medal of Honor Frontline (PS2)
         if entry_type == 1:
             bits_per_pixel = 4
@@ -149,7 +148,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # PAL8
         # e.g. MVP Baseball 2005 (PS2)
         elif entry_type == 2:
             type2_decode_mode = 1   # 0 - standard (very rare, e.g. NHL 2002 PS2)
@@ -182,7 +180,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # ABGR1555
         # e.g. Cricket 2007 (PS2)
         elif entry_type == 3:
             bytes_per_pixel = 2
@@ -197,7 +194,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGB888
         # e.g. Medal of Honor Frontline (PS2)
         elif entry_type == 4:
             bytes_per_pixel = 3
@@ -212,7 +208,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGBA8888
         # e.g. Medal of Honor Frontline (PS2)
         elif entry_type == 5:
             bytes_per_pixel = 4
@@ -226,7 +221,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # PAL4_RGBP5551
         # e.g. NBA Live 97 (PS1)
         elif entry_type == 64:
             bits_per_pixel = 4
@@ -250,7 +244,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # PAL8_RGBP5551
         # e.g. NBA Live 97 (PS1)
         elif entry_type == 65:
             bits_per_pixel = 8
@@ -275,7 +268,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGBP5551
         # e.g. NBA Live 97 (PS1)
         elif entry_type == 66:
             bytes_per_pixel = 2
@@ -290,7 +282,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGB888 + empty palette (?)
         # e.g. ReBoot (PS1)
         elif entry_type == 67:
             bytes_per_pixel = 3
@@ -305,7 +296,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGB565 (?)
         # e.g. Need For Speed: Undercover (PSP)
         elif entry_type == 88:
                 bytes_per_pixel = 2
@@ -320,7 +310,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGB565 (?)
         # e.g. FIFA 2006 (PSP)
         elif entry_type == 89:
                 bytes_per_pixel = 2
@@ -335,7 +324,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGBA4444
         # e.g. FIFA 2006 (PSP)
         elif entry_type == 90:
             bytes_per_pixel = 2
@@ -350,7 +338,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGBA8888 (can be PSP swizzled)
         # e.g. FIFA 14 (PSP)
         elif entry_type == 91:
             bytes_per_pixel = 4
@@ -369,7 +356,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # PAL4 PSP
         # e.g. Madden 08 (PSP)
         elif entry_type == 92:
             bits_per_pixel = 4
@@ -394,7 +380,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # PAL8 PSP
         # e.g. Madden 08 (PSP)
         elif entry_type == 93:
             bits_per_pixel = 8
@@ -420,7 +405,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # DXT1
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 96:
             pixel_size = (img_width * img_height) // 2
@@ -434,7 +418,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # DXT3
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 97:
             pixel_size = (img_width * img_height)
@@ -448,7 +431,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # ARGB4444
         # e.g. Need For Speed: Porsche Unleashed (PC)
         elif entry_type == 109:
             bytes_per_pixel = 2
@@ -463,7 +445,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # PAL8 (image and palette in one data block)
         # e.g. Need for Speed Carbon: Own the City (PSP/Zeebo)
         elif entry_type == 115:
             bits_per_pixel = 8
@@ -480,7 +461,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # PAL4 (image and palette in one data block)
         # e.g. Need for Speed Carbon: Own the City (PSP/Zeebo)
         elif entry_type == 119:
             bits_per_pixel = 4
@@ -496,7 +476,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGB565
         # e.g. Need For Speed: Porsche Unleashed (PC)
         elif entry_type == 120:
                 bytes_per_pixel = 2
@@ -511,7 +490,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # PAL8_RGB888
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 123:
             bits_per_pixel = 8
@@ -536,7 +514,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # ARGB8888
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 125:
             bytes_per_pixel = 4
@@ -551,7 +528,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # ARGB1555
         # e.g. Need For Speed III: Hot Pursuit (PC)
         elif entry_type == 126:
             bytes_per_pixel = 2
@@ -566,7 +542,6 @@ def ea_image_load(ea_image_file_data, tex_list):
 
 
 
-        # RGB888
         # e.g. SimCity 4 Deluxe (PC)
         elif entry_type == 127:
             bytes_per_pixel = 3
@@ -595,4 +570,3 @@ def ea_image_load(ea_image_file_data, tex_list):
 
     print("\n")
     return 1
-# fmt: on

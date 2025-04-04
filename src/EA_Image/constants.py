@@ -1,4 +1,7 @@
-# EA Image constants
+"""
+Copyright © 2024-2025  Bartłomiej Duda
+License: GPL-3.0 License
+"""
 
 # fmt: off
 PALETTE_TYPES = (33, 34, 35, 36, 41, 42, 44, 45, 46, 47, 48, 49, 50, 58, 59)
@@ -26,4 +29,3 @@ NEW_SHAPE_ALLOWED_SIGNATURES = (
     "ShpG",  # WII/Gamecube games
     "ShpA",  # Game Boy Advance games
 )
-# fmt: on
