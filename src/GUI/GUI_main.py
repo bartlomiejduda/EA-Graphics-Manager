@@ -28,7 +28,9 @@ from src.EA_Image.constants import (
     OLD_SHAPE_ALLOWED_SIGNATURES,
     PALETTE_TYPES,
 )
+from src.EA_Image.dto import EncodeInfoDTO
 from src.EA_Image.ea_image_encoder import encode_ea_image
+from src.EA_Image.ea_image_main import EAImage
 from src.GUI.about_window import AboutWindow
 from src.GUI.GUI_entry_preview import GuiEntryPreview
 from src.GUI.GUI_menu import GuiMenu
@@ -393,16 +395,19 @@ class EAManGui:
         del ea_img  # removing object from memory
 
     def treeview_rclick_save_file_as(self, item_iid):
-        ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
-        with open(ea_img.f_path, "rb") as ea_img_file:
-            ea_img_file_data: bytes = ea_img_file.read()
+        ea_img: EAImage = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
+        ea_img_memory_file = io.BytesIO(ea_img.total_f_data)
 
-        ea_img_memory_file = io.BytesIO(ea_img_file_data)
-
+        # replace image with import data
         for ea_dir in ea_img.dir_entry_list:
             if ea_dir.entry_import_flag:
                 ea_img_memory_file.seek(ea_dir.raw_data_offset)
                 ea_img_memory_file.write(ea_dir.raw_data)
+
+                for bin_attach in ea_dir.bin_attachments_list:
+                    if bin_attach.import_flag:
+                        ea_img_memory_file.seek(bin_attach.raw_data_offset)
+                        ea_img_memory_file.write(bin_attach.raw_data)
 
         out_file_extension: str = get_file_extension(ea_img.f_path)
 
@@ -453,7 +458,6 @@ class EAManGui:
     def treeview_rclick_export_image(self, item_iid) -> bool:
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
-        out_data: Optional[bytes] = None
         ea_dir = None
         if "direntry" in item_iid and "binattach" not in item_iid:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
@@ -541,23 +545,30 @@ class EAManGui:
 
         # import logic (raw data replace)
         rgba_data: bytes = PillowWrapper().get_pil_rgba_data_for_import(in_file_path)
-        import_raw_data, import_palette = encode_ea_image(rgba_data, ea_dir, ea_img)
+        encode_info_dto: EncodeInfoDTO = encode_ea_image(rgba_data, ea_dir, ea_img)
 
-        if len(import_raw_data) > len(ea_dir.raw_data):
+        if len(encode_info_dto.encoded_img_data) > len(ea_dir.raw_data):
             message: str = "Image data for import is too big. Can't import image!"
             messagebox.showwarning("Warning", message)
             logger.error(message)
             return False
 
-        elif len(import_raw_data) < len(ea_dir.raw_data):
+        elif len(encode_info_dto.encoded_img_data) < len(ea_dir.raw_data):
             message: str = "Image data for import is too short. Can't import image!"
             messagebox.showwarning("Warning", message)
             logger.error(message)
-            logger.error(f"New data size: {len(import_raw_data)}, Old data size: {len(ea_dir.raw_data)}")
+            logger.error(f"New data size: {len(encode_info_dto.encoded_img_data)}, Old data size: {len(ea_dir.raw_data)}")
             return False
 
-        ea_dir.raw_data = import_raw_data
+        ea_dir.raw_data = encode_info_dto.encoded_img_data
         ea_dir.entry_import_flag = True
+
+        # replace palette data
+        if encode_info_dto.is_palette_imported_flag:
+            for bin_attach_entry in ea_dir.bin_attachments_list:
+                if bin_attach_entry.h_record_id == encode_info_dto.palette_entry_id:
+                    bin_attach_entry.raw_data = encode_info_dto.encoded_palette_data
+                    bin_attach_entry.import_flag = True
 
         # preview update logic start
         if len(ea_dir.img_convert_data) != len(rgba_data):
@@ -655,7 +666,7 @@ class EAManGui:
             messagebox.showwarning("Warning", "Failed to open file!")
             return
 
-        ea_img = ea_image_main.EAImage()
+        ea_img: EAImage = ea_image_main.EAImage()
         sign: bytes = in_file.read(2)
         if sign == b"\x10\xFB":
             in_file.seek(0)
@@ -663,8 +674,13 @@ class EAManGui:
             in_file = io.BytesIO(
                 RefpackHandler().decompress_data(in_file_data)
             )  # convert on-disk file to memory file with decompressed data
+            ea_img.is_total_f_data_compressed = True
         in_file.seek(0)
         check_result = ea_img.check_file_signature_and_size(in_file)
+
+        # save data for later export
+        ea_img.total_f_data = in_file.read()
+        in_file.seek(0)
 
         if check_result[0] != "OK":
             error_msg = "ERROR: " + str(check_result[0]) + "\n" + str(check_result[1]) + "\n\n" + "File not supported!"
@@ -756,9 +772,7 @@ class EAManGui:
                 self.set_text_in_box(self.tab_controller.new_shape_entry_header_info_box.eh_text_entry_flag_swizzled, ea_img.dir_entry_list[0].new_shape_flag_swizzled)
                 self._execute_new_shape_tab_logic()
 
-
         self.tree_view.tree_man.add_object(ea_img)
-
         in_file.close()
 
     def show_about_window(self):

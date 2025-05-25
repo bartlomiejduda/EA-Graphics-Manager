@@ -56,7 +56,7 @@ class AboutWindow:
         self.about_title_label_version_label.place(x=75, y=45, width=300, height=20)
 
         copyright_text: str = (
-            "Copyright 2021-2024 © Bartlomiej Duda. All Rights Reserved.\n"
+            "Copyright 2021-2025 © Bartlomiej Duda. All Rights Reserved.\n"
             "For the latest version visit EA Graphics Manager Github page at\n"
         )
         self.about_description_copyright_label = tk.Label(

@@ -6,6 +6,7 @@ License: GPL-3.0 License
 import os
 import struct
 import traceback
+from typing import Optional
 
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
@@ -41,6 +42,8 @@ class EAImage:
     def __init__(self):
         self.sign = None
         self.total_f_size = -1
+        self.total_f_data: Optional[bytes] = None
+        self.is_total_f_data_compressed: bool = False
         self.num_of_entries = -1
         self.format_version = None
         self.header_and_toc_size = None  # new shape only

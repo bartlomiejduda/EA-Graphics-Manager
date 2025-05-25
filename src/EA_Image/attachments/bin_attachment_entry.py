@@ -32,6 +32,7 @@ class BinAttachmentEntry(DirEntry):
         self.raw_header = None
         self.raw_data_offset = None
         self.raw_data = None
+        self.import_flag: bool = False
 
         self.h_record_id = None
         self.h_size_of_the_block = None

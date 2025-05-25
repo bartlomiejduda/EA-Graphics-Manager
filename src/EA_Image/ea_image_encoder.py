@@ -3,8 +3,6 @@ Copyright © 2024-2025  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
-from typing import Tuple
-
 from reversebox.common.common import fill_data_with_padding_to_desired_length
 from reversebox.common.logger import get_logger
 from reversebox.image.image_encoder import ImageEncoder
@@ -14,13 +12,13 @@ from reversebox.image.swizzling.swizzle_ps2 import swizzle_ps2_palette
 from src.EA_Image.common_ea_dir import get_palette_info_dto_from_dir_entry
 from src.EA_Image.constants import IMPORT_IMAGES_SUPPORTED_TYPES
 from src.EA_Image.dir_entry import DirEntry
-from src.EA_Image.dto import PaletteInfoDTO
+from src.EA_Image.dto import EncodeInfoDTO, PaletteInfoDTO
 from src.EA_Image.ea_image_main import EAImage
 
 logger = get_logger(__name__)
 
 
-def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> Tuple[bytes, bytes]:
+def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> EncodeInfoDTO:
     logger.info("Initializing encode_ea_image")
     entry_type: int = ea_dir.h_record_id
     encoded_palette_data: bytes = b""
@@ -35,16 +33,21 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> 
         encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
             rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.PAL4, ImageFormats.RGBA8888, max_color_count=16
         )
-        encoded_image_data = fill_data_with_padding_to_desired_length(
-            encoded_image_data, len(ea_dir.raw_data)
-        )  # TODO - remove this
     elif entry_type == 5:
         encoded_image_data = rgba8888_data
 
     else:
         raise Exception("Image type not supported for encoding!")
 
+    if len(encoded_image_data) < len(ea_dir.raw_data):  # TODO - remove this after implementing support for mipmaps
+        encoded_image_data = fill_data_with_padding_to_desired_length(encoded_image_data, len(ea_dir.raw_data))
+
     if palette_info_dto.swizzle_flag:
         encoded_palette_data = swizzle_ps2_palette(encoded_palette_data)
 
-    return encoded_image_data, encoded_palette_data
+    return EncodeInfoDTO(
+        encoded_img_data=encoded_image_data,
+        encoded_palette_data=encoded_palette_data,
+        palette_entry_id=palette_info_dto.entry_id,
+        is_palette_imported_flag=True if len(encoded_palette_data) > 0 else False,
+    )
