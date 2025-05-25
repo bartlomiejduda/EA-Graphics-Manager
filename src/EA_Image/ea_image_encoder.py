@@ -9,7 +9,16 @@ from reversebox.image.image_encoder import ImageEncoder
 from reversebox.image.image_formats import ImageFormats
 from reversebox.image.swizzling.swizzle_ps2 import swizzle_ps2_palette
 
-from src.EA_Image.common_ea_dir import get_palette_info_dto_from_dir_entry
+from src.EA_Image.common import (
+    get_bpp_for_image_type,
+    get_indexed_image_format,
+    get_indexed_palette_format,
+)
+from src.EA_Image.common_ea_dir import (
+    get_palette_info_dto_from_dir_entry,
+    handle_image_swizzle_logic,
+    is_image_swizzled,
+)
 from src.EA_Image.constants import IMPORT_IMAGES_SUPPORTED_TYPES
 from src.EA_Image.dir_entry import DirEntry
 from src.EA_Image.dto import EncodeInfoDTO, PaletteInfoDTO
@@ -27,17 +36,37 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> 
     if entry_type not in IMPORT_IMAGES_SUPPORTED_TYPES:
         raise Exception("Image type not supported for encoding!")
 
+    indexed_image_format: ImageFormats = get_indexed_image_format(get_bpp_for_image_type(entry_type))
     palette_info_dto: PaletteInfoDTO = get_palette_info_dto_from_dir_entry(ea_dir, ea_img)
+    palette_format: ImageFormats = get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data))
 
     if entry_type == 1:  # TODO - MIPMAPS!!!!!
         encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
-            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.PAL4, ImageFormats.RGBA8888, max_color_count=16
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format, max_color_count=16
+        )
+    elif entry_type == 2:  # TODO - MIPMAPS!!!!!
+        encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format, max_color_count=256
+        )
+    elif entry_type == 3:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.RGBA5551
+        )
+    elif entry_type == 4:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.RGB888
         )
     elif entry_type == 5:
         encoded_image_data = rgba8888_data
-
+    elif entry_type == 22:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.ARGB8888
+        )
     else:
         raise Exception("Image type not supported for encoding!")
+
+    if is_image_swizzled(ea_dir):
+        encoded_image_data = handle_image_swizzle_logic(encoded_image_data, entry_type, ea_dir, ea_img.sign, True)
 
     if len(encoded_image_data) < len(ea_dir.raw_data):  # TODO - remove this after implementing support for mipmaps
         encoded_image_data = fill_data_with_padding_to_desired_length(encoded_image_data, len(ea_dir.raw_data))

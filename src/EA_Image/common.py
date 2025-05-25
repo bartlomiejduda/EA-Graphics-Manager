@@ -4,6 +4,7 @@ License: GPL-3.0 License
 """
 
 from reversebox.common.logger import get_logger
+from reversebox.image.image_formats import ImageFormats
 
 # fmt: off
 
@@ -30,3 +31,46 @@ def get_bpp_for_image_type(ea_img_type: int) -> int:
     else:
         logger.warning(f"Image type {str(ea_img_type)} not supported! Can't get bpp info!")
         return 8  # default bpp
+
+
+def get_indexed_image_format(bpp: int) -> ImageFormats:
+    if bpp == 4:
+        return ImageFormats.PAL4
+    elif bpp == 8:
+        return ImageFormats.PAL8
+    elif bpp == 16:
+        return ImageFormats.PAL16
+    elif bpp == 32:
+        return ImageFormats.PAL32
+    else:
+        logger.warning(f"Image format not found for bpp={bpp}")
+        return ImageFormats.PAL8  # default
+
+
+def get_indexed_palette_format(palette_entry_id: int, palette_size: int) -> ImageFormats:
+
+    if palette_entry_id == 33:
+        return ImageFormats.RGBA8888
+    elif palette_entry_id == 34:
+        return ImageFormats.RGBX6666  # TODO
+    elif palette_entry_id == 35:
+        return ImageFormats.RGBX5551
+    elif palette_entry_id == 36:
+        return ImageFormats.RGB888
+    elif palette_entry_id == 41:
+        return ImageFormats.RGB565
+    elif palette_entry_id == 42:  # TODO - check RGB/BGR logic
+        return ImageFormats.BGRA8888 if palette_size == 1024 else ImageFormats.BGR888
+    elif palette_entry_id == 45:
+        return ImageFormats.XRGB1555  # TODO - check if format is ok
+    elif palette_entry_id == 50:
+        return ImageFormats.N64_RGB5A3
+    elif palette_entry_id == 58:
+        return ImageFormats.RGBA8888  # TODO - check if format is ok
+    elif palette_entry_id == 59:
+        return ImageFormats.RGBA8888
+    else:
+        logger.warning(f"Palette ID={palette_entry_id} not supported!")
+
+    logger.warning(f"Palette format has not been found for palette_id={palette_entry_id}")
+    return ImageFormats.RGB565  # default

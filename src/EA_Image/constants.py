@@ -9,7 +9,7 @@ CONVERT_IMAGES_SUPPORTED_TYPES = [1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14, 15, 2
                                   65, 66, 67, 88, 89, 90, 91, 92, 93, 96, 97, 98, 100, 101, 104, 109, 115, 119, 120,
                                   121, 123, 125, 126, 127, 130, 131, 192, 193, 194, 237, 248, 251]
 
-IMPORT_IMAGES_SUPPORTED_TYPES = [1, 5, ]
+IMPORT_IMAGES_SUPPORTED_TYPES = [1, 2, 3, 4, 5, 22]
 
 OLD_SHAPE_ALLOWED_SIGNATURES = (
     "SHPI",  # PC games
