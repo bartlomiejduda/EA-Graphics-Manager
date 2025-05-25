@@ -4,7 +4,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from reversebox.common.logger import get_logger
 
-from src.EA_Image.bin_attachment_entries import PaletteEntry
+from src.EA_Image.attachments.palette_entry import PaletteEntry
 
 logger = get_logger(__name__)
 

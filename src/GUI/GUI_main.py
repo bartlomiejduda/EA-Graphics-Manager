@@ -20,7 +20,7 @@ from reversebox.compression.compression_refpack import RefpackHandler
 from reversebox.image.pillow_wrapper import PillowWrapper
 
 from src.EA_Image import ea_image_main
-from src.EA_Image.bin_attachment_entries import PaletteEntry
+from src.EA_Image.attachments.palette_entry import PaletteEntry
 from src.EA_Image.constants import (
     CONVERT_IMAGES_SUPPORTED_TYPES,
     IMPORT_IMAGES_SUPPORTED_TYPES,
@@ -540,10 +540,8 @@ class EAManGui:
             return False
 
         # import logic (raw data replace)
-        pillow_wrapper = PillowWrapper()
-        rgba_data: bytes = pillow_wrapper.get_pil_rgba_data_for_import(in_file_path)
-        del pillow_wrapper
-        import_raw_data: bytes = encode_ea_image(rgba_data, ea_dir)
+        rgba_data: bytes = PillowWrapper().get_pil_rgba_data_for_import(in_file_path)
+        import_raw_data, import_palette = encode_ea_image(rgba_data, ea_dir, ea_img)
 
         if len(import_raw_data) > len(ea_dir.raw_data):
             message: str = "Image data for import is too big. Can't import image!"
@@ -555,6 +553,7 @@ class EAManGui:
             message: str = "Image data for import is too short. Can't import image!"
             messagebox.showwarning("Warning", message)
             logger.error(message)
+            logger.error(f"New data size: {len(import_raw_data)}, Old data size: {len(ea_dir.raw_data)}")
             return False
 
         ea_dir.raw_data = import_raw_data

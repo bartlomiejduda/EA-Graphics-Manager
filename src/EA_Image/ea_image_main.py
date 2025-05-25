@@ -11,21 +11,19 @@ from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
 from reversebox.image.image_decoder import ImageDecoder
 from reversebox.image.image_formats import ImageFormats
-from reversebox.image.palettes.palette_random import generate_random_palette
 from reversebox.image.swizzling.swizzle_gamecube import unswizzle_gamecube
 from reversebox.image.swizzling.swizzle_morton import unswizzle_morton
-from reversebox.image.swizzling.swizzle_ps2 import unswizzle_ps2, unswizzle_ps2_palette
+from reversebox.image.swizzling.swizzle_ps2 import unswizzle_ps2
 from reversebox.image.swizzling.swizzle_psp import unswizzle_psp
 
-from src.EA_Image.bin_attachment_entries import (
-    CommentEntry,
-    HotSpotEntry,
-    ImgNameEntry,
-    MetalBinEntry,
-    PaletteEntry,
-    UnknownEntry,
-)
+from src.EA_Image.attachments.comment_entry import CommentEntry
+from src.EA_Image.attachments.hot_spot_entry import HotSpotEntry
+from src.EA_Image.attachments.img_name_entry import ImgNameEntry
+from src.EA_Image.attachments.metal_bin_entry import MetalBinEntry
+from src.EA_Image.attachments.palette_entry import PaletteEntry
+from src.EA_Image.attachments.unknown_entry import UnknownEntry
 from src.EA_Image.common import get_bpp_for_image_type
+from src.EA_Image.common_ea_dir import get_palette_info_dto_from_dir_entry
 from src.EA_Image.constants import (
     CONVERT_IMAGES_SUPPORTED_TYPES,
     NEW_SHAPE_ALLOWED_SIGNATURES,
@@ -34,6 +32,7 @@ from src.EA_Image.constants import (
 )
 from src.EA_Image.data_read import get_null_terminated_string, get_string
 from src.EA_Image.dir_entry import DirEntry
+from src.EA_Image.dto import PaletteInfoDTO
 
 logger = get_logger(__name__)
 
@@ -285,37 +284,6 @@ class EAImage:
         return True
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry, entry_type, gui_main) -> bool:
-        def _get_palette_data_and_id_from_dir_entry(_ea_dir_entry) -> tuple:
-            # try to get palette from binary attachment first
-            _palette_data: bytes = b""
-            _entry_id: int = 33  # default palette
-            _h_default_x_position = -1
-            for attachment in _ea_dir_entry.bin_attachments_list:
-                if isinstance(attachment, PaletteEntry):
-                    _palette_data = attachment.raw_data
-                    _entry_id = attachment.h_record_id
-                    _h_default_x_position = attachment.h_default_x_position
-                    break
-
-            if _palette_data and len(_palette_data) > 0:
-                if _entry_id in (33, 59) and _h_default_x_position & 0x2000:  # check for palette swizzle flag
-                    return _entry_id, unswizzle_ps2_palette(_palette_data)
-
-                return _entry_id, _palette_data  # return palette from binary attachment
-
-            # try to get palette from other dir entry
-            for i in range(self.num_of_entries):
-                ea_dir_entry = self.dir_entry_list[i]
-                if ea_dir_entry.h_record_id in PALETTE_TYPES:
-                    if (
-                        ea_dir_entry.h_record_id in (33, 59) and ea_dir_entry.h_default_x_position & 0x2000
-                    ):  # check for palette swizzle flag
-                        return ea_dir_entry.h_record_id, unswizzle_ps2_palette(ea_dir_entry.raw_data)
-
-                    return ea_dir_entry.h_record_id, ea_dir_entry.raw_data  # return palette from other dir entry
-
-            logger.warn("Warning! Couldn't find palette data!")
-            return _entry_id, generate_random_palette()  # return random palette if no palette has been found
 
         def _get_indexed_image_format(bpp: int) -> ImageFormats:
             if bpp == 4:
@@ -405,32 +373,33 @@ class EAImage:
                 logger.error(f"Error while unswizzling images! Error: {error}")
                 logger.error(traceback.format_exc())
 
+        # palette info logic
+        palette_info_dto: PaletteInfoDTO = get_palette_info_dto_from_dir_entry(ea_dir_entry, self)
+
         # decoding logic
         try:
             if entry_type == 1:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                 )
             elif entry_type == 2:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
 
-                if len(palette_data) == 0:
+                if len(palette_info_dto.data) == 0:
                     logger.error("Error while converting palette data for type 2!")
                     return False
 
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                 )
             elif entry_type == 3:
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
@@ -443,99 +412,91 @@ class EAImage:
             elif entry_type == 5:
                 ea_dir_entry.img_convert_data = image_data  # r8g8b8a8
             elif entry_type == 8:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     ImageFormats.GST121,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     is_swizzled=_is_image_swizzled(),
                 )
             elif entry_type == 9:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     ImageFormats.GST221,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     is_swizzled=_is_image_swizzled(),
                 )
             elif entry_type == 10:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     ImageFormats.GST421,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     is_swizzled=_is_image_swizzled(),
                 )
             elif entry_type == 11:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     ImageFormats.GST821,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     is_swizzled=_is_image_swizzled(),
                 )
             elif entry_type == 12:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     ImageFormats.GST122,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     is_swizzled=_is_image_swizzled(),
                 )
             elif entry_type == 13:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     ImageFormats.GST222,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     is_swizzled=_is_image_swizzled(),
                 )
             elif entry_type == 14:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     ImageFormats.GST422,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     is_swizzled=_is_image_swizzled(),
                 )
             elif entry_type == 15:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_gst_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     ImageFormats.GST822,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     is_swizzled=_is_image_swizzled(),
                 )
             elif entry_type == 20:
@@ -547,25 +508,23 @@ class EAImage:
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.ARGB8888
                 )
             elif entry_type == 24:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     palette_endianess="big",
                 )
             elif entry_type == 25:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                     palette_endianess="big",
                 )
             elif entry_type == 30:
@@ -598,24 +557,22 @@ class EAImage:
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.XRGB1555
                 )  # palette
             elif entry_type == 64:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                 )
             elif entry_type == 65:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                 )
             elif entry_type == 66:
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(
@@ -640,24 +597,22 @@ class EAImage:
             elif entry_type == 91:
                 ea_dir_entry.img_convert_data = image_data  # r8g8b8a8
             elif entry_type == 92:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                 )
             elif entry_type == 93:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                 )
             elif entry_type == 96:
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_compressed_image(
@@ -710,26 +665,24 @@ class EAImage:
                     image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.BGR565
                 )
             elif entry_type == 121:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                 )
             elif entry_type == 123:
-                palette_id, palette_data = _get_palette_data_and_id_from_dir_entry(ea_dir_entry)
                 # for i in range(1024):
                 #     palette_data += b"\x00"  # workaround for Need For Speed 2 PC, e.g. "TR000_QFS.fsh"
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_indexed_image(
                     image_data,
-                    palette_data,
+                    palette_info_dto.data,
                     ea_dir_entry.h_width,
                     ea_dir_entry.h_height,
                     _get_indexed_image_format(get_bpp_for_image_type(entry_type)),
-                    _get_indexed_palette_format(palette_id, len(palette_data)),
+                    _get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data)),
                 )
             elif entry_type == 125:
                 ea_dir_entry.img_convert_data = ea_image_decoder.decode_image(

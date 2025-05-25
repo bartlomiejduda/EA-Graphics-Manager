@@ -5,17 +5,22 @@ License: GPL-3.0 License
 
 from typing import Tuple
 
+from reversebox.common.common import fill_data_with_padding_to_desired_length
 from reversebox.common.logger import get_logger
 from reversebox.image.image_encoder import ImageEncoder
 from reversebox.image.image_formats import ImageFormats
+from reversebox.image.swizzling.swizzle_ps2 import swizzle_ps2_palette
 
+from src.EA_Image.common_ea_dir import get_palette_info_dto_from_dir_entry
 from src.EA_Image.constants import IMPORT_IMAGES_SUPPORTED_TYPES
 from src.EA_Image.dir_entry import DirEntry
+from src.EA_Image.dto import PaletteInfoDTO
+from src.EA_Image.ea_image_main import EAImage
 
 logger = get_logger(__name__)
 
 
-def encode_ea_image(rgba_data: bytes, ea_dir: DirEntry) -> Tuple[bytes, bytes]:
+def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> Tuple[bytes, bytes]:
     logger.info("Initializing encode_ea_image")
     entry_type: int = ea_dir.h_record_id
     encoded_palette_data: bytes = b""
@@ -24,14 +29,22 @@ def encode_ea_image(rgba_data: bytes, ea_dir: DirEntry) -> Tuple[bytes, bytes]:
     if entry_type not in IMPORT_IMAGES_SUPPORTED_TYPES:
         raise Exception("Image type not supported for encoding!")
 
-    if entry_type == 1:  # TODO
+    palette_info_dto: PaletteInfoDTO = get_palette_info_dto_from_dir_entry(ea_dir, ea_img)
+
+    if entry_type == 1:  # TODO - MIPMAPS!!!!!
         encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
-            rgba_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.PAL4, ImageFormats.RGBA8888
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.PAL4, ImageFormats.RGBA8888, max_color_count=16
         )
+        encoded_image_data = fill_data_with_padding_to_desired_length(
+            encoded_image_data, len(ea_dir.raw_data)
+        )  # TODO - remove this
     elif entry_type == 5:
-        encoded_image_data = rgba_data
+        encoded_image_data = rgba8888_data
 
     else:
         raise Exception("Image type not supported for encoding!")
+
+    if palette_info_dto.swizzle_flag:
+        encoded_palette_data = swizzle_ps2_palette(encoded_palette_data)
 
     return encoded_image_data, encoded_palette_data
