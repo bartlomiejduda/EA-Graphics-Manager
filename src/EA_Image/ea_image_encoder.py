@@ -62,6 +62,28 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> 
         encoded_image_data = image_encoder.encode_image(
             rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.ARGB8888
         )
+    elif entry_type == 64:
+        encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format, max_color_count=16
+        )
+    elif entry_type == 65:
+        encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format, max_color_count=256
+        )
+    elif entry_type == 66:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.RGBT5551
+        )
+    elif entry_type in (88, 89):
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.RGB565
+        )
+    elif entry_type == 90:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.RGBX4444
+        )
+    elif entry_type == 91:
+        encoded_image_data = rgba8888_data
     else:
         raise Exception("Image type not supported for encoding!")
 
