@@ -547,17 +547,12 @@ class EAManGui:
         rgba_data: bytes = PillowWrapper().get_pil_rgba_data_for_import(in_file_path)
         encode_info_dto: EncodeInfoDTO = encode_ea_image(rgba_data, ea_dir, ea_img)
 
-        if len(encode_info_dto.encoded_img_data) > len(ea_dir.raw_data):
-            message: str = "Image data for import is too big. Can't import image!"
+        if len(encode_info_dto.encoded_img_data) != len(ea_dir.raw_data):
+            message: str = (f"Image data for import doesn't match. Can't import image! "
+                            f"New data size: {len(encode_info_dto.encoded_img_data)}, "
+                            f"Old data size: {len(ea_dir.raw_data)}")
             messagebox.showwarning("Warning", message)
             logger.error(message)
-            return False
-
-        elif len(encode_info_dto.encoded_img_data) < len(ea_dir.raw_data):
-            message: str = "Image data for import is too short. Can't import image!"
-            messagebox.showwarning("Warning", message)
-            logger.error(message)
-            logger.error(f"New data size: {len(encode_info_dto.encoded_img_data)}, Old data size: {len(ea_dir.raw_data)}")
             return False
 
         ea_dir.raw_data = encode_info_dto.encoded_img_data
@@ -572,10 +567,10 @@ class EAManGui:
 
         # preview update logic start
         if len(ea_dir.img_convert_data) != len(rgba_data):
-            message: str = "Wrong size of image preview data!"
-            messagebox.showwarning("Warning", message)
+            message: str = f"Wrong size of image preview data! Convert_data_size: {len(ea_dir.img_convert_data)}, Rgba_data_size: {len(rgba_data)}"
+            # messagebox.showwarning("Warning", message)
             logger.error(message)
-            return False
+            # return False  # TODO - uncomment this after adding support for mipmaps?
 
         # preview update
         logger.info("Preview update for imported image")

@@ -84,6 +84,42 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> 
         )
     elif entry_type == 91:
         encoded_image_data = rgba8888_data
+    elif entry_type == 92:
+        encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format, max_color_count=16
+        )
+    elif entry_type == 93:
+        encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format, max_color_count=256
+        )
+    elif entry_type == 109:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.BGRA4444
+        )
+    elif entry_type == 120:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.BGR565
+        )
+    elif entry_type == 121:
+        encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format, max_color_count=16
+        )
+    elif entry_type == 123:
+        encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format, max_color_count=256
+        )
+    elif entry_type == 125:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.BGRA8888
+        )
+    elif entry_type == 126:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.BGRA5551
+        )
+    elif entry_type == 127:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.BGR888
+        )
     else:
         raise Exception("Image type not supported for encoding!")
 
