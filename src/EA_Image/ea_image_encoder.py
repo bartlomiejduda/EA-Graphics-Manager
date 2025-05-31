@@ -92,6 +92,18 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> 
         encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
             rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format, max_color_count=256
         )
+    elif entry_type == 96:
+        encoded_image_data = image_encoder.encode_compressed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.BC1_DXT1
+        )
+    elif entry_type == 97:
+        encoded_image_data = image_encoder.encode_compressed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.BC2_DXT3
+        )
+    elif entry_type == 98:
+        encoded_image_data = image_encoder.encode_compressed_image(
+            rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.BC3_DXT5
+        )
     elif entry_type == 109:
         encoded_image_data = image_encoder.encode_image(
             rgba8888_data, ea_dir.h_width, ea_dir.h_height, ImageFormats.BGRA4444
