@@ -27,6 +27,7 @@ from src.EA_Image.common import (
 from src.EA_Image.common_ea_dir import (
     get_palette_info_dto_from_dir_entry,
     handle_image_swizzle_logic,
+    is_image_compressed,
     is_image_swizzled,
 )
 from src.EA_Image.constants import (
@@ -295,14 +296,16 @@ class EAImage:
         image_data: bytes = ea_dir_entry.raw_data
 
         # decompress logic
-        is_image_compressed: int = entry_type & 0x80  # 0 - not compressed / 128 - compressed
-        entry_type = entry_type & 0x7F
-        if is_image_compressed == 128:
+        if is_image_compressed(entry_type):
             image_data = RefpackHandler().decompress_data(image_data)
+
+        entry_type = entry_type & 0x7F
 
         # unswizzling logic
         if is_image_swizzled(ea_dir_entry):
-            image_data = handle_image_swizzle_logic(image_data, entry_type, ea_dir_entry, self.sign, False)
+            image_data = handle_image_swizzle_logic(
+                image_data, entry_type, ea_dir_entry.h_width, ea_dir_entry.h_height, self.sign, False
+            )
 
         # palette info logic
         palette_info_dto: PaletteInfoDTO = get_palette_info_dto_from_dir_entry(ea_dir_entry, self)

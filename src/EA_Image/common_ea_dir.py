@@ -77,8 +77,15 @@ def is_image_swizzled(ea_dir_entry: DirEntry) -> bool:
     return False
 
 
+def is_image_compressed(entry_type: int) -> bool:
+    compression_flag: int = entry_type & 0x80  # 0 - not compressed / 128 - compressed
+    if compression_flag == 128:
+        return True
+    return False
+
+
 def handle_image_swizzle_logic(
-    image_data: bytes, entry_type: int, ea_dir_entry: DirEntry, ea_img_signature: str, swizzle_flag: bool
+    image_data: bytes, entry_type: int, img_width: int, img_height: int, ea_img_signature: str, swizzle_flag: bool
 ) -> bytes:
     try:
         if entry_type >= 8 and entry_type <= 15:  # for PS2 games (GST textures)
@@ -87,46 +94,30 @@ def handle_image_swizzle_logic(
             pass  # swizzling handled by N64 decoder
         elif ea_img_signature in ("SHPX", "ShpX", "SHPI", "ShpF"):  # for XBOX and PC games
             if not swizzle_flag:
-                image_data = unswizzle_morton(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
-                )
+                image_data = unswizzle_morton(image_data, img_width, img_height, get_bpp_for_image_type(entry_type))
             else:
-                image_data = swizzle_morton(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
-                )
+                image_data = swizzle_morton(image_data, img_width, img_height, get_bpp_for_image_type(entry_type))
         elif ea_img_signature in ("SHPM", "ShpM"):  # for PSP games
             if not swizzle_flag:
-                image_data = unswizzle_psp(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
-                )
+                image_data = unswizzle_psp(image_data, img_width, img_height, get_bpp_for_image_type(entry_type))
             else:
-                image_data = swizzle_psp(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
-                )
+                image_data = swizzle_psp(image_data, img_width, img_height, get_bpp_for_image_type(entry_type))
         elif ea_img_signature in ("SHPS", "ShpS") and (
             entry_type < 8 or entry_type > 15
         ):  # for PS2 games (standard textures)
             bpp = get_bpp_for_image_type(entry_type)
             if bpp in (4, 8, 15, 16):
                 if not swizzle_flag:
-                    image_data = unswizzle_ps2(
-                        image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, bpp, swizzle_type=1
-                    )
+                    image_data = unswizzle_ps2(image_data, img_width, img_height, bpp, swizzle_type=1)
                 else:
-                    image_data = swizzle_ps2(
-                        image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, bpp, swizzle_type=1
-                    )
+                    image_data = swizzle_ps2(image_data, img_width, img_height, bpp, swizzle_type=1)
             else:
                 logger.warning(f"PS2 unswizzle for bpp {bpp} is not supported yet!")
         elif ea_img_signature in ("SHPG", "ShpG"):  # for WII/GameCube games
             if not swizzle_flag:
-                image_data = unswizzle_gamecube(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
-                )
+                image_data = unswizzle_gamecube(image_data, img_width, img_height, get_bpp_for_image_type(entry_type))
             else:
-                image_data = swizzle_gamecube(
-                    image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, get_bpp_for_image_type(entry_type)
-                )
+                image_data = swizzle_gamecube(image_data, img_width, img_height, get_bpp_for_image_type(entry_type))
         else:
             logger.warning(f"Swizzling for signature {ea_img_signature} is not supported yet!")
     except Exception as error:

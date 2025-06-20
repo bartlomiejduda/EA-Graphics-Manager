@@ -19,3 +19,9 @@ class EncodeInfoDTO:
     encoded_palette_data: bytes
     palette_entry_id: int
     is_palette_imported_flag: bool
+
+
+@dataclass
+class PartialEncodeInfoDTO:
+    encoded_image_data: bytes
+    encoded_palette_data: bytes
