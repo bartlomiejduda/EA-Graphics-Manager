@@ -26,6 +26,7 @@ from src.EA_Image.common_ea_dir import (
 from src.EA_Image.constants import IMPORT_IMAGES_SUPPORTED_TYPES
 from src.EA_Image.dir_entry import DirEntry
 from src.EA_Image.dto import EncodeInfoDTO, PaletteInfoDTO, PartialEncodeInfoDTO
+from src.EA_Image.ea_image_decoder import decode_image_data_by_entry_type
 from src.EA_Image.ea_image_main import EAImage
 
 logger = get_logger(__name__)
@@ -45,6 +46,8 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> 
     partial_main_image_info: PartialEncodeInfoDTO = encode_image_data_by_entry_type(
         entry_type, rgba8888_data, ea_dir.h_width, ea_dir.h_height, indexed_image_format, palette_format
     )
+    raw_encoded_image_data: bytes = partial_main_image_info.encoded_image_data
+
     if is_image_swizzled(ea_dir):
         partial_main_image_info.encoded_image_data = handle_image_swizzle_logic(
             partial_main_image_info.encoded_image_data, entry_type, ea_dir.h_width, ea_dir.h_height, ea_img.sign, True
@@ -54,8 +57,12 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage) -> 
     final_encoded_palette_data = partial_main_image_info.encoded_palette_data
 
     # handle mipmaps
+    # TODO - not working! Should be handled by ReverseBox instead?
+    decoded_main_tex_data: bytes = decode_image_data_by_entry_type(
+        entry_type, raw_encoded_image_data, palette_info_dto, ea_dir
+    )
     base_img: Image = PillowWrapper().get_pillow_image_from_rgba8888_data(
-        rgba8888_data, ea_dir.h_width, ea_dir.h_height
+        decoded_main_tex_data, ea_dir.h_width, ea_dir.h_height
     )
     mip_width: int = ea_dir.h_width
     mip_height: int = ea_dir.h_height
