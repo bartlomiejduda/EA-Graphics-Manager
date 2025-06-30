@@ -173,6 +173,11 @@ class EAImage:
 
             self.dir_entry_list.append(ea_dir_entry)  # dir entry is now initialized and can be added to the list
 
+        # sort dir entries by entry start offset
+        # it can solve issues when dir entries are listed in random order in archive TOC
+        # (e.g. The Need for Speed: Special Edition .FSH files)
+        self.dir_entry_list.sort(key=lambda d_entry: d_entry.start_offset)
+
         # updating end offset for each entry
         # and parsing DIR entry data
         entry_num = 0
