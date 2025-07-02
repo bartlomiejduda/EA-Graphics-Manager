@@ -66,6 +66,7 @@ class EAManGui:
         self.icon_path = self.MAIN_DIRECTORY + "\\data\\img\\ea_icon.ico"
         self.checkmark_path = self.MAIN_DIRECTORY + "\\data\\img\\checkmark.png"
         self.checkmark_image = None
+        self.current_mipmaps_resampling = tk.StringVar(value="nearest")
 
         try:
             self.master.iconbitmap(self.icon_path)
@@ -545,7 +546,7 @@ class EAManGui:
 
         # import logic (raw data replace)
         rgba_data: bytes = PillowWrapper().get_pil_rgba_data_for_import(in_file_path)
-        encode_info_dto: EncodeInfoDTO = encode_ea_image(rgba_data, ea_dir, ea_img)
+        encode_info_dto: EncodeInfoDTO = encode_ea_image(rgba_data, ea_dir, ea_img, self)
 
         if len(encode_info_dto.encoded_img_data) != len(ea_dir.raw_data):
             message: str = (f"Image data for import doesn't match. Can't import image! "
