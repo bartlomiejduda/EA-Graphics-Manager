@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 
-from src.GUI.GUI_entry_header_info_box import GuiEntryHeaderInfoBox
-from src.GUI.GUI_file_header_info_box import GuiFileHeaderInfoBox
-from src.GUI.GUI_new_shape_entry_header_info_box import GuiNewShapeEntryHeaderInfoBox
-from src.GUI.GUI_new_shape_file_header_info_box import GuiNewShapeFileHeaderInfoBox
+from src.GUI.GUI_info_box_entry_header import GuiEntryHeaderInfoBox
+from src.GUI.GUI_info_box_file_header import GuiFileHeaderInfoBox
+from src.GUI.GUI_info_box_new_shape_entry_header import GuiNewShapeEntryHeaderInfoBox
+from src.GUI.GUI_info_box_new_shape_file_header import GuiNewShapeFileHeaderInfoBox
 
 
 class GuiTabController(tk.Frame):
