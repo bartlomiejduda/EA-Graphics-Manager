@@ -6,7 +6,6 @@ License: GPL-3.0 License
 import traceback
 
 from reversebox.common.logger import get_logger
-from reversebox.image.palettes.palette_random import generate_random_palette
 from reversebox.image.swizzling.swizzle_gamecube import (
     swizzle_gamecube,
     unswizzle_gamecube,
@@ -24,6 +23,7 @@ from src.EA_Image.common import get_bpp_for_image_type
 from src.EA_Image.constants import PALETTE_TYPES
 from src.EA_Image.dir_entry import DirEntry
 from src.EA_Image.dto import PaletteInfoDTO
+from src.EA_Image.ea_default_palette import ea_default_palette_data
 
 logger = get_logger(__name__)
 
@@ -67,8 +67,8 @@ def get_palette_info_dto_from_dir_entry(_ea_dir_entry: DirEntry, ea_image) -> Pa
 
     logger.warn("Warning! Couldn't find palette data!")
     return PaletteInfoDTO(
-        entry_id=_entry_id, data=generate_random_palette(), swizzle_flag=False
-    )  # return random palette if no palette has been found
+        entry_id=_entry_id, data=bytes(ea_default_palette_data), swizzle_flag=False
+    )  # return default palette if no palette has been found
 
 
 def is_image_swizzled(ea_dir_entry: DirEntry) -> bool:
