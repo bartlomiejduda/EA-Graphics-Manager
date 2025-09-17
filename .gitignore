@@ -5,7 +5,6 @@ venv/
 .idea/
 dist/
 build/
-noesis*/
 log.txt
 config.ini
 build_final/
