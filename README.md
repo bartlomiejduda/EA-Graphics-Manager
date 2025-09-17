@@ -13,12 +13,11 @@ List of functionalities:
  - Importing image data from DDS/PNG/BMP texture files
 
 
-This program **<ins>is still in development stage</ins>**.
-It may not support all existing image types yet.
-
 <img src="src\data\img\usage.gif">
 
-More info about EA Image file format can be found on [Xentax Wiki](https://web.archive.org/web/20230817170521/http://wiki.xentax.com/index.php/EA_SSH_FSH_Image).
+More info about EA Image file format can be found on RE Wiki:
+ - [EA SSH FSH Image (Type 1)](https://rewiki.miraheze.org/wiki/EA_SSH_FSH_Image_(Type_1))
+ - [EA SSH FSH Image (Type 2)](https://rewiki.miraheze.org/wiki/EA_SSH_FSH_Image_(Type_2))
 
 
 # Dependencies
