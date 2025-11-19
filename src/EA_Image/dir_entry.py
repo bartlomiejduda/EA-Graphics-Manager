@@ -97,6 +97,8 @@ class DirEntry:
         127: "127 | 0x7F | BGR888",
         130: "130 | 0x82 | PAL8",
         131: "131 | 0x83 | XBGR1555",
+        132: "132 | 0x84 | BGRA8888",
+        133: "133 | 0x85 | ????????",  # TODO
         192: "192 | 0xC0 | PAL4",
         193: "193 | 0xC1 | PAL8",
         194: "194 | 0xC2 | XBGR1555",
@@ -229,8 +231,8 @@ class DirEntry:
                 return "REFPACK"
             elif img_compressed_flag == 128 and first_2_bytes in (b"\x18\xFB", b"\x1A\xFB", b"\x20\xFB"):
                 return "DXT"
-            elif img_compressed_flag == 128 and first_2_bytes == b"MG":
-                return "MPEG"
+            elif img_compressed_flag == 128 and first_2_bytes in (b"MG", b"GM"):
+                return "IDEC"
             elif img_compressed_flag == 0:
                 return "NONE"
             else:
