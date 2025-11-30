@@ -63,8 +63,8 @@ class EAManGui:
         master.resizable(width=0, height=0)
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.tree_rclick_popup = None
-        self.icon_path = self.MAIN_DIRECTORY + "\\data\\img\\ea_icon.ico"
-        self.checkmark_path = self.MAIN_DIRECTORY + "\\data\\img\\checkmark.png"
+        self.icon_path = os.path.join(self.MAIN_DIRECTORY, "data", "img", "ea_icon.ico")
+        self.checkmark_path = os.path.join(self.MAIN_DIRECTORY, "data", "img", "checkmark.png")
         self.checkmark_image = None
         self.current_mipmaps_resampling = tk.StringVar(value="nearest")
 
@@ -106,15 +106,15 @@ class EAManGui:
 
         # user config
         self.user_config = ConfigParser()
-        self.user_config_file_name: str = "config.ini"
+        self.user_config_file_path: str = os.path.join(self.MAIN_DIRECTORY, "config.ini")
         self.user_config.add_section("config")
         self.user_config.set("config", "save_directory_path", "")
         self.user_config.set("config", "open_directory_path", "")
-        if not os.path.exists(self.user_config_file_name):
-            with open(self.user_config_file_name, "w") as configfile:
+        if not os.path.exists(self.user_config_file_path):
+            with open(self.user_config_file_path, "w") as configfile:
                 self.user_config.write(configfile)
 
-        self.user_config.read(self.user_config_file_name)
+        self.user_config.read(self.user_config_file_path)
         try:
             self.current_save_directory_path = self.user_config.get("config", "save_directory_path")
             self.current_open_directory_path = self.user_config.get("config", "open_directory_path")
@@ -430,7 +430,7 @@ class EAManGui:
             self.user_config.set(
                 "config", "save_directory_path", selected_directory
             )  # save directory path to config file
-            with open(self.user_config_file_name, "w") as configfile:
+            with open(self.user_config_file_path, "w") as configfile:
                 self.user_config.write(configfile)
         except Exception as error:
             logger.error(f"Error: {error}")
@@ -486,7 +486,7 @@ class EAManGui:
             self.user_config.set(
                 "config", "save_directory_path", selected_directory
             )  # save directory path to config file
-            with open(self.user_config_file_name, "w") as configfile:
+            with open(self.user_config_file_path, "w") as configfile:
                 self.user_config.write(configfile)
         except Exception as error:
             logger.error(f"Error: {error}")
@@ -536,7 +536,7 @@ class EAManGui:
             self.user_config.set(
                 "config", "open_directory_path", selected_directory
             )  # save directory path to config file
-            with open(self.user_config_file_name, "w") as configfile:
+            with open(self.user_config_file_path, "w") as configfile:
                 self.user_config.write(configfile)
             in_file_path = in_file.name
         except Exception as error:
@@ -607,7 +607,7 @@ class EAManGui:
             self.user_config.set(
                 "config", "save_directory_path", selected_directory
             )  # save directory path to config file
-            with open(self.user_config_file_name, "w") as configfile:
+            with open(self.user_config_file_path, "w") as configfile:
                 self.user_config.write(configfile)
         except Exception as error:
             logger.error(f"Error: {error}")
@@ -653,7 +653,7 @@ class EAManGui:
             self.user_config.set(
                 "config", "open_directory_path", selected_directory
             )  # save directory path to config file
-            with open(self.user_config_file_name, "w") as configfile:
+            with open(self.user_config_file_path, "w") as configfile:
                 self.user_config.write(configfile)
             in_file_path = in_file.name
             in_file_name = in_file_path.split("/")[-1]

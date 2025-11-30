@@ -276,7 +276,7 @@ def decode_image_data_by_entry_type(
         )
     elif entry_type == 100:
         return ea_image_decoder.decode_image(
-            image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.N64_I8
+            image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.GRAY8
         )
     elif entry_type == 101:
         return ea_image_decoder.decode_n64_image(

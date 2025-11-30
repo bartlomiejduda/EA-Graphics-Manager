@@ -6,6 +6,7 @@ License: GPL-3.0 License
 # Program tested on Python 3.11.6
 
 import os
+import sys
 import tkinter as tk
 
 import center_tk_window
@@ -13,11 +14,14 @@ from reversebox.common.logger import get_logger
 
 from src.GUI.GUI_main import EAManGui
 
-VERSION_NUM = "v0.35.5"
+VERSION_NUM = "v0.36.0"
 
 logger = get_logger("main")
 
-MAIN_DIRECTORY = os.getcwd()
+if getattr(sys, "frozen", False):
+    MAIN_DIRECTORY = os.path.dirname(sys.executable)
+else:
+    MAIN_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 
 def main():
