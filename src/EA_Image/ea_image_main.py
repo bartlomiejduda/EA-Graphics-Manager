@@ -10,6 +10,7 @@ from typing import Optional
 
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
+from reversebox.image.image_padding import psp_image_padding
 
 from src.EA_Image.attachments.comment_entry import CommentEntry
 from src.EA_Image.attachments.hot_spot_entry import HotSpotEntry
@@ -303,6 +304,12 @@ class EAImage:
         if is_image_swizzled(ea_dir_entry):
             image_data = handle_image_swizzle_logic(
                 image_data, entry_type, ea_dir_entry.h_width, ea_dir_entry.h_height, self.sign, False
+            )
+
+        # padding logic
+        if self.sign in ("SHPM", "ShpM"):  # PSP padding
+            image_data = psp_image_padding(
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ea_dir_entry.h_image_bpp
             )
 
         # palette info logic
