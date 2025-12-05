@@ -230,6 +230,18 @@ def decode_image_data_by_entry_type(
         return ea_image_decoder.decode_image(
             image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.RGB888
         )
+    elif entry_type == 69:
+        return ea_image_decoder.decode_psp_dxt_image(
+            image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.PSP_DXT1
+        )
+    elif entry_type == 70:
+        return ea_image_decoder.decode_psp_dxt_image(
+            image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.PSP_DXT3
+        )
+    elif entry_type == 71:
+        return ea_image_decoder.decode_psp_dxt_image(
+            image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.PSP_DXT5
+        )
     elif entry_type == 88:
         return ea_image_decoder.decode_image(
             image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.RGB565
