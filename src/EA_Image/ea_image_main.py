@@ -10,6 +10,7 @@ from typing import Optional
 
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
+from reversebox.image.image_padding import psp_image_padding
 
 from src.EA_Image.attachments.comment_entry import CommentEntry
 from src.EA_Image.attachments.hot_spot_entry import HotSpotEntry
@@ -306,11 +307,10 @@ class EAImage:
             )
 
         # padding logic
-        # TODO - fix padding
-        # if self.sign in ("SHPM", "ShpM"):  # PSP padding
-        #     image_data = psp_image_padding(
-        #         image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ea_dir_entry.h_image_bpp
-        #     )
+        if self.sign in ("SHPM", "ShpM") and entry_type not in (69, 70, 71):  # PSP padding
+            image_data = psp_image_padding(
+                image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ea_dir_entry.h_image_bpp
+            )
 
         # palette info logic
         palette_info_dto: PaletteInfoDTO = get_palette_info_dto_from_dir_entry(ea_dir_entry, self)
