@@ -14,14 +14,18 @@ from reversebox.common.logger import get_logger
 
 from src.GUI.GUI_main import EAManGui
 
-VERSION_NUM = "v0.38.2"
+VERSION_NUM = "v0.38.3"
 
 logger = get_logger("main")
 
 if getattr(sys, "frozen", False):
     MAIN_DIRECTORY = os.path.dirname(sys.executable)
+    NIGHTLY_STR: str = os.getenv("NIGHTLY_STR", default="")
+    if len(NIGHTLY_STR) < 1:
+        NIGHTLY_STR = "(NIGHTLY)" if "nightly" in os.path.abspath(sys.executable).lower() else ""
 else:
     MAIN_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+    NIGHTLY_STR: str = os.getenv("NIGHTLY_STR", default="")
 
 
 def main():

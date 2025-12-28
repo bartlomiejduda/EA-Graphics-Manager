@@ -7,11 +7,13 @@ import sys
 
 from cx_Freeze import Executable, setup
 
-from src.main import VERSION_NUM
+from src.main import NIGHTLY_STR, VERSION_NUM
 
 base = None
 if sys.platform == "win32":
     base = "Win32GUI"
+
+target_name: str = "EA-Graphics-Manager-" + VERSION_NUM + ("_" + NIGHTLY_STR if len(NIGHTLY_STR) > 0 else "") + ".exe"
 
 
 executables = [
@@ -20,7 +22,7 @@ executables = [
         copyright="Copyright (C) 2024-2025 Bartlomiej Duda",
         base=base,
         icon="src/data/img/ea_icon.ico",
-        target_name="EA-Graphics-Manager-" + VERSION_NUM + ".exe",
+        target_name=target_name,
     )
 ]
 
