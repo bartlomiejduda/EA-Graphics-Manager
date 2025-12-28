@@ -14,7 +14,7 @@ from reversebox.common.logger import get_logger
 
 from src.GUI.GUI_main import EAManGui
 
-VERSION_NUM = "v0.38.3"
+VERSION_NUM = "v0.38.4"
 
 logger = get_logger("main")
 
@@ -37,7 +37,7 @@ def main():
     logger.info("Starting main...")
 
     root = tk.Tk()
-    EAManGui(root, VERSION_NUM, MAIN_DIRECTORY)  # start GUI
+    EAManGui(root, VERSION_NUM + (" " + NIGHTLY_STR if len(NIGHTLY_STR) > 0 else ""), MAIN_DIRECTORY)  # start GUI
     root.lift()
     center_tk_window.center_on_screen(root)
     try:
