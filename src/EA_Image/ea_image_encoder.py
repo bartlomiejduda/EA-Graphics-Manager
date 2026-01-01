@@ -54,7 +54,7 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage, gui
         ea_dir.h_height,
         indexed_image_format,
         palette_format,
-        ea_dir.h_mipmaps_count or ea_dir.new_shape_number_of_mipmaps,
+        ea_dir.h_mipmaps_count if isinstance(ea_dir.h_mipmaps_count, int) else ea_dir.new_shape_number_of_mipmaps,
         mipmaps_resampling_type,
     )
 
