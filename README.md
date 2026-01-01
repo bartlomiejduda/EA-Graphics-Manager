@@ -24,6 +24,10 @@ More info about EA Image file format can be found on RE Wiki:
 
 * **[ReverseBox](https://github.com/bartlomiejduda/ReverseBox)**
 
+# Nightly Builds
+
+You can always download newest nightly build **[here](https://github.com/bartlomiejduda/EA-Graphics-Manager/releases/tag/nightly)**.
+
 
 # Building on Windows
 
