@@ -171,6 +171,16 @@ def encode_image_data_by_entry_type(
         )
     elif entry_type == 5:
         encoded_image_data = rgba8888_data
+    elif entry_type == 21:
+        encoded_image_data = image_encoder.encode_image(
+            rgba8888_data,
+            img_width,
+            img_height,
+            ImageFormats.N64_BGR5A3,
+            image_endianess="big",
+            number_of_mipmaps=mipmaps_count,
+            mipmaps_resampling_type=mipmaps_resampling_type,
+        )
     elif entry_type == 22:
         encoded_image_data = image_encoder.encode_image(
             rgba8888_data,

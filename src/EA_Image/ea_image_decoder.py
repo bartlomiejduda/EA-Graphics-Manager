@@ -151,6 +151,10 @@ def decode_image_data_by_entry_type(
         return ea_image_decoder.decode_image(
             image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.RGB565, image_endianess="big"
         )
+    elif entry_type == 21:
+        return ea_image_decoder.decode_image(
+            image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.N64_BGR5A3, image_endianess="big"
+        )
     elif entry_type == 22:
         return ea_image_decoder.decode_image(
             image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ImageFormats.ARGB8888
