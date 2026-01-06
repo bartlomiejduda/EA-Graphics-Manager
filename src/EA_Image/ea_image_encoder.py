@@ -190,6 +190,17 @@ def encode_image_data_by_entry_type(
             number_of_mipmaps=mipmaps_count,
             mipmaps_resampling_type=mipmaps_resampling_type,
         )
+    elif entry_type == 24:
+        encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data,
+            img_width,
+            img_height,
+            indexed_image_format,
+            palette_format,
+            image_endianess="big",
+            max_color_count=16,
+            number_of_mipmaps=mipmaps_count,
+        )
     elif entry_type == 25:
         encoded_image_data, encoded_palette_data = image_encoder.encode_indexed_image(
             rgba8888_data,
