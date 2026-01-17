@@ -60,6 +60,7 @@ class DirEntry:
         48: "48 | 0x30 | PALETTE 16-BIT IA8",
         49: "49 | 0x31 | PALETTE 16-BIT 565",
         50: "50 | 0x32 | PALETTE BGR5A3",
+        51: "51 | 0x33 | PALETTE 2IA",
         58: "58 | 0x3A | PALETTE",
         59: "59 | 0x3B | PALETTE RGBA8888",
         64: "64 | 0x40 | PAL4",

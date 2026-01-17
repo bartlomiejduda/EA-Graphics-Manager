@@ -16,6 +16,7 @@ class BinAttachmentEntry(DirEntry):
         42: "palette 0x2A",
         45: "palette 0x2D",
         50: "palette 0x32",
+        51: "palette 0x33",
         58: "palette 0x3A",
         59: "palette 0x3B",
         105: "metal bin",

@@ -1,5 +1,5 @@
 """
-Copyright © 2024-2025  Bartłomiej Duda
+Copyright © 2024-2026  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
@@ -237,6 +237,7 @@ class EAManGui:
                     self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_x, bin_attach.h_center_x)
                     self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_y, bin_attach.h_center_y)
                     self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_left_x, bin_attach.h_default_x_position)
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag2_swizzled, "1" if bin_attach.h_default_x_position & 0x2000 else "0")
                     self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_top_y, bin_attach.h_default_y_position)
                 else:
                     self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_width, "")
@@ -244,6 +245,7 @@ class EAManGui:
                     self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_x, "")
                     self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_center_y, "")
                     self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_left_x, "")
+                    self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag2_swizzled, "")
                     self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_top_y, "")
 
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_header_offset, "")
@@ -253,7 +255,6 @@ class EAManGui:
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_record_id_masked, "")
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_img_compression_masked, "")
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag1_referenced, "")
-                self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag2_swizzled, "")
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag3_transposed, "")
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_flag4_reserved, "")
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_entry_image_bpp, "")
