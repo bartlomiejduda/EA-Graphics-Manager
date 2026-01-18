@@ -66,7 +66,7 @@ def get_indexed_palette_format(palette_entry_id: int, palette_size: int) -> Imag
     elif palette_entry_id == 50:
         return ImageFormats.N64_BGR5A3
     elif palette_entry_id == 51:
-        return ImageFormats.IA_X2
+        return ImageFormats.IA_X2_ARGB
     elif palette_entry_id == 58:
         return ImageFormats.RGBA8888  # TODO - check if format is ok
     elif palette_entry_id == 59:

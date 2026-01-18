@@ -7,4 +7,4 @@ pre-commit==4.0.1
 pyperclip==1.9.0
 pytest==8.3.3
 pytz==2024.2
-ReverseBox>=0.82.2
+ReverseBox>=0.82.3
