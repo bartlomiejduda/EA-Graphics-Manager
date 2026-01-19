@@ -10,11 +10,12 @@ import sys
 import tkinter as tk
 
 import center_tk_window
+import cffi  # noqa
 from reversebox.common.logger import get_logger
 
 from src.GUI.GUI_main import EAManGui
 
-VERSION_NUM = "v0.44.1"
+VERSION_NUM = "v0.44.2"
 
 logger = get_logger("main")
 
