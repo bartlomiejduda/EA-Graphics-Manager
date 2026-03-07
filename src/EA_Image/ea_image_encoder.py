@@ -100,7 +100,11 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage, gui
         partial_image_info.encoded_image_data = RefpackHandler().compress_data(partial_image_info.encoded_image_data)
 
     if len(partial_image_info.encoded_image_data) > len(ea_dir.raw_data):
-        raise Exception("Encoded data too big!")
+        raise Exception(
+            f"Encoded data too big! "
+            f"Encoded_data_size: {len(partial_image_info.encoded_image_data)}, "
+            f"Raw_data_size: {len(ea_dir.raw_data)}"
+        )
 
     if len(partial_image_info.encoded_image_data) < len(ea_dir.raw_data):
         partial_image_info.encoded_image_data = fill_data_with_padding_to_desired_length(
@@ -309,6 +313,29 @@ def encode_image_data_by_entry_type(
             number_of_mipmaps=mipmaps_count,
             mipmaps_resampling_type=mipmaps_resampling_type,
         )
+    elif entry_type == 115:
+        encoded_image_data, temp_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data,
+            img_width,
+            img_height,
+            indexed_image_format,
+            palette_format,
+            max_color_count=256,
+            number_of_mipmaps=mipmaps_count,
+        )
+        encoded_image_data = temp_palette_data + encoded_image_data
+    elif entry_type == 119:
+        encoded_image_data, temp_palette_data = image_encoder.encode_indexed_image(
+            rgba8888_data,
+            img_width,
+            img_height,
+            indexed_image_format,
+            palette_format,
+            max_color_count=16,
+            number_of_mipmaps=mipmaps_count,
+            image_endianess="little",  # TODO - should work on "big", but it doesn't
+        )
+        encoded_image_data = temp_palette_data + encoded_image_data
     elif entry_type == 120:
         encoded_image_data = image_encoder.encode_image(
             rgba8888_data,

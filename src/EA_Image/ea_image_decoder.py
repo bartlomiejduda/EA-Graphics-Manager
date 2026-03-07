@@ -316,6 +316,7 @@ def decode_image_data_by_entry_type(
             ea_dir_entry.h_height,
             ImageFormats.PAL8,
             ImageFormats.RGBA8888,
+            image_endianess="big",
         )
     elif entry_type == 119:
         return ea_image_decoder.decode_indexed_image(
@@ -325,6 +326,7 @@ def decode_image_data_by_entry_type(
             ea_dir_entry.h_height,
             ImageFormats.PAL4,
             ImageFormats.RGBA8888,
+            image_endianess="big",
         )
     elif entry_type == 120:
         return ea_image_decoder.decode_image(
