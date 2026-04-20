@@ -141,7 +141,7 @@ class EAImage:
             self.header_and_toc_size = struct.unpack(self.f_endianess + "L", in_file.read(4))[0]
 
         # set endianess for directory
-        if self.sign in ("SHPG", "ShpF", "ShpS", "ShpX"):
+        if self.sign in ("SHPG", "ShpG", "ShpF", "ShpS", "ShpX"):
             self.f_dir_endianess = ">"  # big
         else:
             self.f_dir_endianess = "<"  # little
