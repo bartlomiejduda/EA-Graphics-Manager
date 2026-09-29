@@ -1,5 +1,5 @@
 """
-Copyright © 2025  Bartłomiej Duda
+Copyright © 2025-2026  Bartłomiej Duda
 License: GPL-3.0 License
 """
 

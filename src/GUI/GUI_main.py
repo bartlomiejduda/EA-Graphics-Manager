@@ -364,6 +364,9 @@ class EAManGui:
                 label="Export Image as DDS/PNG/BMP", command=lambda: self.treeview_rclick_export_image(item_iid)
             )
             self.tree_rclick_popup.add_command(
+                label="Export Image as DDS (+ separate mipmaps)", command=lambda: self.treeview_rclick_export_image_with_mipmaps(item_iid)
+            )
+            self.tree_rclick_popup.add_command(
                 label="Import Image from DDS/PNG/BMP", command=lambda: self.treeview_rclick_import_image(item_iid)
             )
             self.tree_rclick_popup.tk_popup(event.x_root, event.y_root, entry="0")
@@ -457,6 +460,22 @@ class EAManGui:
         ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
         subprocess.Popen(rf'explorer /select,{Path(ea_img.f_path)}"')
 
+    def handle_save_directory_path_config(self, selected_directory: str) -> None:
+        self.current_save_directory_path = selected_directory  # set directory path from history
+        self.user_config.set(
+            "config", "save_directory_path", selected_directory
+        )  # save directory path to config file
+        with open(self.user_config_file_path, "w") as configfile:
+            self.user_config.write(configfile)
+
+    def is_new_shape(self, ea_img_signature: str) -> bool:
+        if ea_img_signature in NEW_SHAPE_ALLOWED_SIGNATURES:
+            return True
+        elif ea_img_signature in OLD_SHAPE_ALLOWED_SIGNATURES:
+            return False
+        else:
+            raise Exception(f"Not supported signature: {ea_img_signature}")
+
     def treeview_rclick_export_image(self, item_iid) -> bool:
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
@@ -483,12 +502,7 @@ class EAManGui:
                 selected_directory = os.path.dirname(out_file.name)
             except Exception:
                 selected_directory = ""
-            self.current_save_directory_path = selected_directory  # set directory path from history
-            self.user_config.set(
-                "config", "save_directory_path", selected_directory
-            )  # save directory path to config file
-            with open(self.user_config_file_path, "w") as configfile:
-                self.user_config.write(configfile)
+            self.handle_save_directory_path_config(selected_directory)  # save config
         except Exception as error:
             logger.error(f"Error: {error}")
             messagebox.showwarning("Warning", "Failed to save file!")
@@ -511,6 +525,85 @@ class EAManGui:
         out_file.close()
         messagebox.showinfo("Info", "File saved successfully!")
         logger.info(f"Image has been exported successfully to {out_file.name}")
+        return True
+
+    def treeview_rclick_export_image_with_mipmaps(self, item_iid) -> bool:
+        ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
+
+        ea_dir = None
+        if "direntry" in item_iid and "binattach" not in item_iid:
+            ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
+            if ea_dir.h_record_id not in CONVERT_IMAGES_SUPPORTED_TYPES:
+                messagebox.showwarning("Warning", f"Image type {ea_dir.h_record_id} is not supported for export!")
+                return False
+        else:
+            logger.warning("Warning! Unsupported entry while saving output binary data!")
+
+        save_directory = None
+
+        def get_mipmap_sizes(width: int, height: int, bpp: int, mip_count: int) -> list[int]:
+            sizes: list[int] = []
+
+            for mip in range(mip_count):
+                mip_width = max(1, width >> mip)
+                mip_height = max(1, height >> mip)
+
+                size: int = mip_width * mip_height * bpp
+                sizes.append(size)
+
+            return sizes
+
+        try:
+            save_directory = filedialog.askdirectory(
+                initialdir=self.current_save_directory_path
+            )
+
+            if save_directory:
+                self.handle_save_directory_path_config(save_directory)  # save config
+                base_output_file_name: str = f"{ea_img.f_name}_{item_iid}_MAIN.dds"
+                base_output_file_path: str = os.path.join(save_directory, base_output_file_name)
+                main_out_file = open(base_output_file_path, "wb")
+                total_mip_count: int = ea_dir.new_shape_number_of_mipmaps if self.is_new_shape(ea_img.sign) else ea_dir.h_mipmaps_count
+
+                mipmap_sizes: list[int] = get_mipmap_sizes(
+                    width=ea_dir.h_width,
+                    height=ea_dir.h_height,
+                    bpp=ea_dir.h_image_bpp,
+                    mip_count=total_mip_count + 1
+                )
+
+                # main image save logic
+                file_extension: str = get_file_extension_uppercase(base_output_file_name)
+                pillow_wrapper = PillowWrapper()
+                out_data = pillow_wrapper.get_pil_image_file_data_for_export(
+                    ea_dir.img_convert_data[0:mipmap_sizes[0]], ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
+                )
+                del pillow_wrapper
+                if not out_data:
+                    logger.error("Empty data to export!")
+                    messagebox.showwarning("Warning", "Empty image data! Export not possible!")
+                    return False
+
+                main_out_file.write(out_data)
+                main_out_file.close()
+                logger.info(f"Image has been exported successfully to {main_out_file.name}")
+
+                # mipmaps save logic
+                for i in range(total_mip_count):
+                    # base_mipmap_file_name: str = f"{ea_img.f_name}_{item_iid}_MIPMAP_{i}.dds"
+                    # base_mipmap_file_path: str = os.path.join(save_directory, base_mipmap_file_name)
+                    # mipmap_out_file = open(base_mipmap_file_path, "wb")
+                    pass
+
+                    # TODO - need new abstraction for mipmap data, because img_covert_data doesn't contain mipmap data after decoding
+
+
+
+        except Exception as error:
+            logger.error(f"Error: {error}")
+            messagebox.showwarning("Warning", "Failed to save file and mipmaps!")
+
+        logger.info(f"Image with mipmaps exported successfully to {save_directory}")
         return True
 
     def treeview_rclick_import_image(self, item_iid) -> bool:
