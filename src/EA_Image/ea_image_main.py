@@ -381,7 +381,7 @@ class EAImage:
                 mip_data_raw: bytes = uncompressed_raw_data[mip_offset: mip_offset + mip_size]
                 mip_data_decoded: bytes = decode_image_data_by_entry_type(
                     entry_type=entry_type,
-                    image_data=image_data,
+                    image_data=mip_data_raw,
                     palette_info_dto=palette_info_dto,
                     image_width=mip_width,
                     image_height=mip_height,

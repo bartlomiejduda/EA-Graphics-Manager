@@ -11,7 +11,7 @@ import traceback
 from configparser import ConfigParser
 from pathlib import Path
 from tkinter import filedialog, messagebox
-from typing import Optional
+from typing import IO, List, Optional
 
 from PIL import Image, ImageTk
 from reversebox.common.common import get_file_extension, get_file_extension_uppercase
@@ -53,7 +53,10 @@ logger = get_logger(__name__)
 # fmt: off
 
 class EAManGui:
-    def __init__(self, master, in_version_num, in_main_directory):
+    """
+    Main GUI class
+    """
+    def __init__(self, master: tk.Tk, in_version_num: str, in_main_directory: str) -> None:
         logger.info("GUI init...")
         self.master = master
         self.VERSION_NUM = in_version_num
@@ -61,7 +64,7 @@ class EAManGui:
         master.title("EA GRAPHICS MANAGER " + in_version_num)
         master.minsize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
         master.maxsize(MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT)
-        master.resizable(width=0, height=0)
+        master.resizable(width=False, height=False)
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.tree_rclick_popup = None
         self.icon_path = os.path.join(self.MAIN_DIRECTORY, "data", "img", "ea_icon.ico")
@@ -90,23 +93,23 @@ class EAManGui:
             ("All files", ["*.*"]),
         ]
 
-        self.ea_image_id = 0
-        self.opened_ea_images_count = 0
-        self.opened_ea_images = []
+        self.ea_image_id: int = 0
+        self.opened_ea_images_count: int = 0
+        self.opened_ea_images: List[EAImage] = []
 
         # main frame
-        self.main_frame = tk.Frame(master, bg="#f0f0f0")
+        self.main_frame: tk.Frame = tk.Frame(master, bg="#f0f0f0")
         self.main_frame.place(x=0, y=0, relwidth=1, relheight=1)
 
         # gui objects
-        self.tree_view = GuiTreeView(self.main_frame, self)
-        self.tab_controller = GuiTabController(self.main_frame, self)
-        self.entry_preview = GuiEntryPreview(self.main_frame, self)
-        self.menu = GuiMenu(self.master, self)
+        self.tree_view: GuiTreeView = GuiTreeView(self.main_frame, self)
+        self.tab_controller: GuiTabController = GuiTabController(self.main_frame, self)
+        self.entry_preview: GuiEntryPreview = GuiEntryPreview(self.main_frame, self)
+        self.menu: GuiMenu = GuiMenu(self.master, self)
         self.loading_label = None
 
         # user config
-        self.user_config = ConfigParser()
+        self.user_config: ConfigParser = ConfigParser()
         self.user_config_file_path: str = os.path.join(self.MAIN_DIRECTORY, "config.ini")
         self.user_config.add_section("config")
         self.user_config.set("config", "save_directory_path", "")
@@ -128,25 +131,25 @@ class EAManGui:
     #                                             methods                                                #
     ######################################################################################################
 
-    def _execute_old_shape_tab_logic(self):
+    def _execute_old_shape_tab_logic(self) -> None:
         self.tab_controller.tab_controller_box.tab(0, state="normal")
         self.tab_controller.tab_controller_box.tab(1, state="disabled")
         self.tab_controller.tab_controller_box.select(0)
 
-    def _execute_new_shape_tab_logic(self):
+    def _execute_new_shape_tab_logic(self) -> None:
         self.tab_controller.tab_controller_box.tab(0, state="disabled")
         self.tab_controller.tab_controller_box.tab(1, state="normal")
         self.tab_controller.tab_controller_box.select(1)
 
-    def treeview_widget_select(self, event):
-        item_iid = self.tree_view.treeview_widget.identify_row(event.y)
+    def treeview_widget_select(self, event) -> None:
+        item_iid: str = self.tree_view.treeview_widget.identify_row(event.y)
 
         if item_iid == "":
             return  # quit if nothing is selected
 
-        item_id = item_iid.split("_")[0]
+        item_id: str = item_iid.split("_")[0]
 
-        ea_img = self.tree_view.tree_man.get_object(item_id, self.opened_ea_images)
+        ea_img: EAImage = self.tree_view.tree_man.get_object(item_id, self.opened_ea_images)
 
         # set text for header
         if ea_img.sign in OLD_SHAPE_ALLOWED_SIGNATURES:
@@ -164,7 +167,7 @@ class EAManGui:
 
         # set text for dir entry
         if "direntry" in item_iid and "binattach" not in item_iid:
-            ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
+            ea_dir: DirEntry = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
 
             if ea_img.sign in OLD_SHAPE_ALLOWED_SIGNATURES:
                 self.set_text_in_box(self.tab_controller.entry_header_info_box.eh_text_rec_type, ea_dir.get_entry_type())
@@ -344,7 +347,7 @@ class EAManGui:
             self.tree_view.treeview_widget.selection_set(item_iid)
             self.treeview_rightclick_popup(event, item_iid)
 
-    def treeview_rightclick_popup(self, event, item_iid):
+    def treeview_rightclick_popup(self, event, item_iid: str) -> None:
         # create right-click popup menu
         self.tree_rclick_popup = tk.Menu(self.master, tearoff=0)
         if "direntry" not in item_iid and "binattach" not in item_iid:
@@ -381,8 +384,8 @@ class EAManGui:
         else:
             logger.warning("Warning! Unsupported entry in right-click popup!")
 
-    def treeview_rclick_close(self, item_iid):
-        ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
+    def treeview_rclick_close(self, item_iid: str) -> None:
+        ea_img: EAImage = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
         self.tree_view.treeview_widget.delete(item_iid)  # removing item from treeview
 
         if ea_img.sign in OLD_SHAPE_ALLOWED_SIGNATURES:
@@ -400,7 +403,7 @@ class EAManGui:
 
         del ea_img  # removing object from memory
 
-    def treeview_rclick_save_file_as(self, item_iid):
+    def treeview_rclick_save_file_as(self, item_iid: str) -> bool:
         ea_img: EAImage = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
         ea_img_memory_file = io.BytesIO(ea_img.total_f_data)
 
@@ -418,7 +421,7 @@ class EAManGui:
         out_file_extension: str = get_file_extension(ea_img.f_path)
 
         logger.info(f"Opening save file dialog for file {ea_img.f_name}...")
-        out_file = None
+        out_file: Optional[IO] = None
         try:
             out_file = filedialog.asksaveasfile(
                 mode="wb",
@@ -457,8 +460,8 @@ class EAManGui:
         logger.info(f"EA Image has been exported successfully to {out_file.name}")
         return True
 
-    def treeview_rclick_open_in_explorer(self, item_iid):
-        ea_img = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
+    def treeview_rclick_open_in_explorer(self, item_iid: str) -> None:
+        ea_img: EAImage = self.tree_view.tree_man.get_object(item_iid, self.opened_ea_images)
         subprocess.Popen(rf'explorer /select,{Path(ea_img.f_path)}"')
 
     def handle_save_directory_path_config(self, selected_directory: str) -> None:
@@ -469,18 +472,10 @@ class EAManGui:
         with open(self.user_config_file_path, "w") as configfile:
             self.user_config.write(configfile)
 
-    # def is_new_shape(self, ea_img_signature: str) -> bool:
-    #     if ea_img_signature in NEW_SHAPE_ALLOWED_SIGNATURES:
-    #         return True
-    #     elif ea_img_signature in OLD_SHAPE_ALLOWED_SIGNATURES:
-    #         return False
-    #     else:
-    #         raise Exception(f"Not supported signature: {ea_img_signature}")
+    def treeview_rclick_export_image(self, item_iid: str) -> bool:
+        ea_img: EAImage = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
-    def treeview_rclick_export_image(self, item_iid) -> bool:
-        ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
-
-        ea_dir = None
+        ea_dir: Optional[DirEntry] = None
         if "direntry" in item_iid and "binattach" not in item_iid:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
             if ea_dir.h_record_id not in CONVERT_IMAGES_SUPPORTED_TYPES:
@@ -490,7 +485,7 @@ class EAManGui:
         else:
             logger.warning("Warning! Unsupported entry while saving output binary data!")
 
-        out_file = None
+        out_file: Optional[IO] = None
         try:
             out_file = filedialog.asksaveasfile(
                 mode="wb",
@@ -528,7 +523,7 @@ class EAManGui:
         logger.info(f"Image has been exported successfully to {out_file.name}")
         return True
 
-    def treeview_rclick_export_image_with_mipmaps(self, item_iid) -> bool:
+    def treeview_rclick_export_image_with_mipmaps(self, item_iid: str) -> bool:
         ea_img: EAImage = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
         ea_dir: Optional[DirEntry] = None
@@ -552,7 +547,6 @@ class EAManGui:
                 base_output_file_name: str = f"{ea_img.f_name}_{item_iid}_MAIN.dds"
                 base_output_file_path: str = os.path.join(save_directory_path, base_output_file_name)
                 main_out_file = open(base_output_file_path, "wb")
-                total_mip_count: int = ea_dir.new_shape_number_of_mipmaps if ea_img.is_new_shape(ea_img.sign) else ea_dir.h_mipmaps_count
 
                 # main image save logic
                 file_extension: str = get_file_extension_uppercase(base_output_file_name)
@@ -560,7 +554,6 @@ class EAManGui:
                 out_data = pillow_wrapper.get_pil_image_file_data_for_export(
                     ea_dir.img_convert_data, ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
                 )
-                del pillow_wrapper
                 if not out_data:
                     logger.error("Empty data to export!")
                     messagebox.showwarning("Warning", "Empty image data! Export not possible!")
@@ -571,20 +564,34 @@ class EAManGui:
                 logger.info(f"Image has been exported successfully to {main_out_file.name}")
 
                 # mipmaps save logic
-                for i in range(total_mip_count):
-                    # base_mipmap_file_name: str = f"{ea_img.f_name}_{item_iid}_MIPMAP_{i}.dds"
-                    # base_mipmap_file_path: str = os.path.join(save_directory_path, base_mipmap_file_name)
-                    # mipmap_out_file = open(base_mipmap_file_path, "wb")
-                    pass
+                mip_counter: int = 0
+                for ea_mipmap in ea_dir.mipmap_list:
+                    mip_counter += 1
+                    base_mipmap_file_name: str = f"{ea_img.f_name}_{item_iid}_MIPMAP_{mip_counter}.dds"
+                    base_mipmap_file_path: str = os.path.join(save_directory_path, base_mipmap_file_name)
+                    mipmap_out_file = open(base_mipmap_file_path, "wb")
 
-                    # TODO - need new abstraction for mipmap data, because img_covert_data doesn't contain mipmap data after decoding
+                    output_mipmap_data: bytes = pillow_wrapper.get_pil_image_file_data_for_export(
+                        image_data=ea_mipmap.mipmap_decoded_data,
+                        img_width=ea_mipmap.mipmap_width,
+                        img_height=ea_mipmap.mipmap_height,
+                        pillow_format=file_extension
+                    )
+                    if not output_mipmap_data:
+                        logger.error("Empty mipmap data to export!")
+                        messagebox.showwarning("Warning", "Empty mipmap data! Export not possible!")
+                        return False
 
-
+                    mipmap_out_file.write(output_mipmap_data)
+                    mipmap_out_file.close()
+                    logger.info(f"Image has been exported successfully to {mipmap_out_file.name}")
 
         except Exception as error:
             logger.error(f"Error: {error}")
             messagebox.showwarning("Warning", "Failed to save file and mipmaps!")
 
+        del pillow_wrapper
+        messagebox.showinfo("Info", "File and all mipmaps saved successfully!")
         logger.info(f"Image with mipmaps exported successfully to {save_directory_path}")
         return True
 
