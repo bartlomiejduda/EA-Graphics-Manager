@@ -3,7 +3,7 @@ Copyright © 2023-2025  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
-from typing import Optional
+from typing import List, Optional
 
 from reversebox.common.common import convert_int_to_hex_string
 
@@ -22,6 +22,7 @@ from src.EA_Image.data_read import (
     get_uint24,
     get_uint32,
 )
+from src.EA_Image.ea_mipmap import EAMipmap
 
 
 class DirEntry:
@@ -121,6 +122,7 @@ class DirEntry:
         self.raw_data_offset = None
         self.raw_data_size = None
         self.raw_data = None
+        self.mipmap_list: List[Optional[EAMipmap]] = []
 
         self.h_record_id = None
         self.h_record_id_masked = None

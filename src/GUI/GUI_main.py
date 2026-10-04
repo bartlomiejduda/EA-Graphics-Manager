@@ -28,6 +28,7 @@ from src.EA_Image.constants import (
     OLD_SHAPE_ALLOWED_SIGNATURES,
     PALETTE_TYPES,
 )
+from src.EA_Image.dir_entry import DirEntry
 from src.EA_Image.dto import EncodeInfoDTO
 from src.EA_Image.ea_image_encoder import encode_ea_image
 from src.EA_Image.ea_image_main import EAImage
@@ -468,13 +469,13 @@ class EAManGui:
         with open(self.user_config_file_path, "w") as configfile:
             self.user_config.write(configfile)
 
-    def is_new_shape(self, ea_img_signature: str) -> bool:
-        if ea_img_signature in NEW_SHAPE_ALLOWED_SIGNATURES:
-            return True
-        elif ea_img_signature in OLD_SHAPE_ALLOWED_SIGNATURES:
-            return False
-        else:
-            raise Exception(f"Not supported signature: {ea_img_signature}")
+    # def is_new_shape(self, ea_img_signature: str) -> bool:
+    #     if ea_img_signature in NEW_SHAPE_ALLOWED_SIGNATURES:
+    #         return True
+    #     elif ea_img_signature in OLD_SHAPE_ALLOWED_SIGNATURES:
+    #         return False
+    #     else:
+    #         raise Exception(f"Not supported signature: {ea_img_signature}")
 
     def treeview_rclick_export_image(self, item_iid) -> bool:
         ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
@@ -528,9 +529,9 @@ class EAManGui:
         return True
 
     def treeview_rclick_export_image_with_mipmaps(self, item_iid) -> bool:
-        ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
+        ea_img: EAImage = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
-        ea_dir = None
+        ea_dir: Optional[DirEntry] = None
         if "direntry" in item_iid and "binattach" not in item_iid:
             ea_dir = self.tree_view.tree_man.get_object_dir(ea_img, item_iid)
             if ea_dir.h_record_id not in CONVERT_IMAGES_SUPPORTED_TYPES:
@@ -539,44 +540,25 @@ class EAManGui:
         else:
             logger.warning("Warning! Unsupported entry while saving output binary data!")
 
-        save_directory = None
-
-        def get_mipmap_sizes(width: int, height: int, bpp: int, mip_count: int) -> list[int]:
-            sizes: list[int] = []
-
-            for mip in range(mip_count):
-                mip_width = max(1, width >> mip)
-                mip_height = max(1, height >> mip)
-
-                size: int = mip_width * mip_height * bpp
-                sizes.append(size)
-
-            return sizes
+        save_directory_path: Optional[str] = None
 
         try:
-            save_directory = filedialog.askdirectory(
+            save_directory_path = filedialog.askdirectory(
                 initialdir=self.current_save_directory_path
             )
 
-            if save_directory:
-                self.handle_save_directory_path_config(save_directory)  # save config
+            if save_directory_path:
+                self.handle_save_directory_path_config(save_directory_path)  # save config
                 base_output_file_name: str = f"{ea_img.f_name}_{item_iid}_MAIN.dds"
-                base_output_file_path: str = os.path.join(save_directory, base_output_file_name)
+                base_output_file_path: str = os.path.join(save_directory_path, base_output_file_name)
                 main_out_file = open(base_output_file_path, "wb")
-                total_mip_count: int = ea_dir.new_shape_number_of_mipmaps if self.is_new_shape(ea_img.sign) else ea_dir.h_mipmaps_count
-
-                mipmap_sizes: list[int] = get_mipmap_sizes(
-                    width=ea_dir.h_width,
-                    height=ea_dir.h_height,
-                    bpp=ea_dir.h_image_bpp,
-                    mip_count=total_mip_count + 1
-                )
+                total_mip_count: int = ea_dir.new_shape_number_of_mipmaps if ea_img.is_new_shape(ea_img.sign) else ea_dir.h_mipmaps_count
 
                 # main image save logic
                 file_extension: str = get_file_extension_uppercase(base_output_file_name)
                 pillow_wrapper = PillowWrapper()
                 out_data = pillow_wrapper.get_pil_image_file_data_for_export(
-                    ea_dir.img_convert_data[0:mipmap_sizes[0]], ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
+                    ea_dir.img_convert_data, ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
                 )
                 del pillow_wrapper
                 if not out_data:
@@ -591,7 +573,7 @@ class EAManGui:
                 # mipmaps save logic
                 for i in range(total_mip_count):
                     # base_mipmap_file_name: str = f"{ea_img.f_name}_{item_iid}_MIPMAP_{i}.dds"
-                    # base_mipmap_file_path: str = os.path.join(save_directory, base_mipmap_file_name)
+                    # base_mipmap_file_path: str = os.path.join(save_directory_path, base_mipmap_file_name)
                     # mipmap_out_file = open(base_mipmap_file_path, "wb")
                     pass
 
@@ -603,7 +585,7 @@ class EAManGui:
             logger.error(f"Error: {error}")
             messagebox.showwarning("Warning", "Failed to save file and mipmaps!")
 
-        logger.info(f"Image with mipmaps exported successfully to {save_directory}")
+        logger.info(f"Image with mipmaps exported successfully to {save_directory_path}")
         return True
 
     def treeview_rclick_import_image(self, item_iid) -> bool:
@@ -669,7 +651,7 @@ class EAManGui:
 
         # preview update
         logger.info("Preview update for imported image")
-        ea_img.convert_image_data_for_export_and_preview(ea_dir, ea_dir.h_record_id, self)
+        ea_img.convert_image_data_for_export_and_preview(ea_dir, ea_dir.h_record_id)
         self.entry_preview.init_image_preview_logic(ea_dir, item_iid)  # refresh preview for imported image
 
         # update tree view entry

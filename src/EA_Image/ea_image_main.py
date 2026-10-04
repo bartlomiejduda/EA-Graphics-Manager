@@ -1,12 +1,12 @@
 """
-Copyright © 2023-2025  Bartłomiej Duda
+Copyright © 2023-2026  Bartłomiej Duda
 License: GPL-3.0 License
 """
 
 import os
 import struct
 import traceback
-from typing import Optional
+from typing import List, Optional
 
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
@@ -34,8 +34,11 @@ from src.EA_Image.data_read import get_null_terminated_string, get_string
 from src.EA_Image.dir_entry import DirEntry
 from src.EA_Image.dto import PaletteInfoDTO
 from src.EA_Image.ea_image_decoder import decode_image_data_by_entry_type
+from src.EA_Image.ea_mipmap import EAMipmap
 
 logger = get_logger(__name__)
+
+# fmt: off
 
 
 class EAImage:
@@ -47,6 +50,7 @@ class EAImage:
         self.num_of_entries = -1
         self.format_version = None
         self.header_and_toc_size = None  # new shape only
+        self.mipmap_list: List[Optional[EAMipmap]] = []
 
         self.f_name = None
         self.f_path = None
@@ -60,6 +64,15 @@ class EAImage:
 
     def set_ea_image_id(self, in_ea_image_id):
         self.ea_image_id = in_ea_image_id
+
+    # checks if image is "new shape" or "old shape"
+    def is_new_shape(self, ea_img_signature: str) -> bool:
+        if ea_img_signature in NEW_SHAPE_ALLOWED_SIGNATURES:
+            return True
+        elif ea_img_signature in OLD_SHAPE_ALLOWED_SIGNATURES:
+            return False
+        else:
+            raise Exception(f"Not supported signature: {ea_img_signature}")
 
     def check_file_signature_and_size(self, in_file) -> tuple:
         try:
@@ -270,6 +283,33 @@ class EAImage:
 
         return True
 
+    @staticmethod
+    def get_mipmap_sizes(
+        width: int,
+        height: int,
+        bpp: int,
+        mip_count: int,
+        block_size: int | None = None,
+    ) -> list[int]:
+        sizes: list[int] = []
+
+        for mip in range(mip_count):
+            mip_width = max(1, width >> mip)
+            mip_height = max(1, height >> mip)
+
+            if block_size:
+                blocks_width = max(1, (mip_width + block_size - 1) // block_size)
+                blocks_height = max(1, (mip_height + block_size - 1) // block_size)
+
+                bytes_per_block = bpp * block_size * block_size // 8
+                size = blocks_width * blocks_height * bytes_per_block
+            else:
+                size = mip_width * mip_height * bpp // 8
+
+            sizes.append(size)
+
+        return sizes
+
     def convert_images(self, gui_main) -> bool:
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
@@ -285,20 +325,78 @@ class EAImage:
                 f'Starting conversion for image {str(i+1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
             )
             ea_dir_entry.is_img_convert_supported = True
-            self.convert_image_data_for_export_and_preview(ea_dir_entry, entry_type, gui_main)
+            self.convert_image_data_for_export_and_preview(ea_dir_entry, entry_type)
             logger.info(
                 f'Finished conversion for image {str(i + 1)}, img_type={str(entry_type)}, img_tag="{ea_dir_entry.tag}"...'
             )
         return True
 
-    def convert_image_data_for_export_and_preview(self, ea_dir_entry: DirEntry, entry_type: int, gui_main) -> bool:
-        image_data: bytes = ea_dir_entry.raw_data
+    def convert_image_data_for_export_and_preview(self, ea_dir_entry: DirEntry, entry_type: int) -> bool:
+        logger.info(f"Init image convert for entry_type={entry_type}")
 
         # decompress logic
         if is_image_compressed(entry_type):
-            image_data = RefpackHandler().decompress_data(image_data)
+            uncompressed_raw_data: bytes = RefpackHandler().decompress_data(ea_dir_entry.raw_data)
+        else:
+            uncompressed_raw_data: bytes = ea_dir_entry.raw_data
 
         entry_type = entry_type & 0x7F
+
+        # palette info logic
+        palette_info_dto: PaletteInfoDTO = get_palette_info_dto_from_dir_entry(ea_dir_entry, self)
+
+        # mipmaps logic
+        number_of_mipmaps: int = (
+            ea_dir_entry.new_shape_number_of_mipmaps if self.is_new_shape(self.sign) else ea_dir_entry.h_mipmaps_count
+        )
+
+        if number_of_mipmaps == 0:
+            image_data: bytes = uncompressed_raw_data  # there are no mipmaps so take everything
+        else:
+
+            mipmap_sizes: list[int] = self.get_mipmap_sizes(
+                width=ea_dir_entry.h_width,
+                height=ea_dir_entry.h_height,
+                bpp=ea_dir_entry.h_image_bpp,
+                mip_count=number_of_mipmaps + 1,
+                block_size=(
+                    4
+                    if ea_dir_entry.h_record_id in (69, 70, 71, 96, 97, 98)  # 4 for 4x4 block-compressed formats,
+                    # number of pixels in block, NOT block_size in bytes!
+                    else None
+                ),  # for all other formats (NOT block-compressed)
+            )
+
+            image_data: bytes = uncompressed_raw_data[0: mipmap_sizes[0]]  # get data only for mipmap 0 (main image)
+
+            # get all mipmaps objects for easy processing
+            mip_width: int = ea_dir_entry.h_width
+            mip_height: int = ea_dir_entry.h_height
+            mip_offset: int = 0
+            for i in range(number_of_mipmaps):
+                mip_size: int = mipmap_sizes[i + 1]
+                mip_width //= 2
+                mip_height //= 2
+                mip_offset += mipmap_sizes[i]
+                mip_data_raw: bytes = uncompressed_raw_data[mip_offset: mip_offset + mip_size]
+                mip_data_decoded: bytes = decode_image_data_by_entry_type(
+                    entry_type=entry_type,
+                    image_data=image_data,
+                    palette_info_dto=palette_info_dto,
+                    image_width=mip_width,
+                    image_height=mip_height,
+                    is_image_swizzled_flag=is_image_swizzled(
+                        ea_dir_entry
+                    ),  # TODO - move GST swizzle to swizzle logic below
+                )
+                ea_mipmap: EAMipmap = EAMipmap(
+                    width=mip_width,
+                    height=mip_height,
+                    size=mip_size,
+                    raw_data=mip_data_raw,
+                    decoded_data=mip_data_decoded,
+                )
+                ea_dir_entry.mipmap_list.append(ea_mipmap)
 
         # unswizzling logic
         if is_image_swizzled(ea_dir_entry):
@@ -312,13 +410,17 @@ class EAImage:
                 image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ea_dir_entry.h_image_bpp
             )
 
-        # palette info logic
-        palette_info_dto: PaletteInfoDTO = get_palette_info_dto_from_dir_entry(ea_dir_entry, self)
-
         # decoding logic
         try:
             ea_dir_entry.img_convert_data = decode_image_data_by_entry_type(
-                entry_type, image_data, palette_info_dto, ea_dir_entry
+                entry_type=entry_type,
+                image_data=image_data,
+                palette_info_dto=palette_info_dto,
+                image_width=ea_dir_entry.h_width,
+                image_height=ea_dir_entry.h_height,
+                is_image_swizzled_flag=is_image_swizzled(
+                    ea_dir_entry
+                ),  # TODO - move GST swizzle to swizzle logic above
             )
         except Exception as error:
             logger.error(f"Error while decoding EA image! Error: {error}")
@@ -327,6 +429,10 @@ class EAImage:
 
         if not ea_dir_entry.img_convert_data:
             logger.error("Decoded image data is empty!")
+            return False
+
+        if number_of_mipmaps > 0 and len(ea_dir_entry.mipmap_list) < 1:
+            logger.error("Mipmap data is empty!")
             return False
 
         return True
