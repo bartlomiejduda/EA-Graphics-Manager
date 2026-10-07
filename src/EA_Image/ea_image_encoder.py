@@ -42,20 +42,23 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage, gui
     palette_format: ImageFormats = get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data))
     mipmaps_resampling_type_str: str = gui_main.current_mipmaps_resampling.get()
     mipmaps_resampling_type: PIL.Image.Resampling = mipmaps_resampling_mapping[mipmaps_resampling_type_str]
+    total_number_of_mipmaps: int = (
+        ea_dir.h_mipmaps_count if isinstance(ea_dir.h_mipmaps_count, int) else ea_dir.new_shape_number_of_mipmaps
+    )
 
     if entry_type not in IMPORT_IMAGES_SUPPORTED_TYPES:
         raise Exception("Image type not supported for encoding!")
 
     # encode logic (main + mipmaps)
     partial_image_info: PartialEncodeInfoDTO = encode_image_data_by_entry_type(
-        entry_type,
-        rgba8888_data,
-        ea_dir.h_width,
-        ea_dir.h_height,
-        indexed_image_format,
-        palette_format,
-        ea_dir.h_mipmaps_count if isinstance(ea_dir.h_mipmaps_count, int) else ea_dir.new_shape_number_of_mipmaps,
-        mipmaps_resampling_type,
+        entry_type=entry_type,
+        rgba8888_data=rgba8888_data,
+        img_width=ea_dir.h_width,
+        img_height=ea_dir.h_height,
+        indexed_image_format=indexed_image_format,
+        palette_format=palette_format,
+        mipmaps_count=total_number_of_mipmaps,
+        mipmaps_resampling_type=mipmaps_resampling_type,
     )
 
     # swizzle logic
@@ -73,10 +76,10 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage, gui
         )
 
         # mipmaps swizzle logic
-        if ea_dir.h_mipmaps_count and ea_dir.h_mipmaps_count > 0:
+        if total_number_of_mipmaps > 0:
             mip_width: int = ea_dir.h_width
             mip_height: int = ea_dir.h_height
-            for i in range(ea_dir.h_mipmaps_count):
+            for i in range(total_number_of_mipmaps):
                 mip_width //= 2
                 mip_height //= 2
                 mipmap_size = get_linear_image_data_size(ea_dir.h_image_bpp, mip_width, mip_height)
@@ -99,21 +102,23 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage, gui
     if is_image_compressed(entry_type):
         partial_image_info.encoded_image_data = RefpackHandler().compress_data(partial_image_info.encoded_image_data)
 
+    # optional palette swizzle
+    if palette_info_dto.swizzle_flag:
+        partial_image_info.encoded_palette_data = swizzle_ps2_palette(partial_image_info.encoded_palette_data)
+
+    # final checks
     if len(partial_image_info.encoded_image_data) > len(ea_dir.raw_data):
         raise Exception(
             f"Encoded data too big! "
             f"Encoded_data_size: {len(partial_image_info.encoded_image_data)}, "
             f"Raw_data_size: {len(ea_dir.raw_data)}"
         )
-
     if len(partial_image_info.encoded_image_data) < len(ea_dir.raw_data):
         partial_image_info.encoded_image_data = fill_data_with_padding_to_desired_length(
             partial_image_info.encoded_image_data, len(ea_dir.raw_data)
         )
 
-    if palette_info_dto.swizzle_flag:
-        partial_image_info.encoded_palette_data = swizzle_ps2_palette(partial_image_info.encoded_palette_data)
-
+    # return encoded info object
     return EncodeInfoDTO(
         encoded_img_data=partial_image_info.encoded_image_data,
         encoded_palette_data=partial_image_info.encoded_palette_data,
