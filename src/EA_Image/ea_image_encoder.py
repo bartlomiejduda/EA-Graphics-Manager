@@ -294,15 +294,30 @@ def encode_image_data_by_entry_type(
         )
     elif entry_type == 96:
         encoded_image_data = image_encoder.encode_compressed_image(
-            rgba8888_data, img_width, img_height, ImageFormats.BC1_DXT1  # TODO - mipmaps
+            rgba8888_data,
+            img_width,
+            img_height,
+            ImageFormats.BC1_DXT1,
+            number_of_mipmaps=mipmaps_count,
+            mipmaps_resampling_type=mipmaps_resampling_type,
         )
     elif entry_type == 97:
         encoded_image_data = image_encoder.encode_compressed_image(
-            rgba8888_data, img_width, img_height, ImageFormats.BC2_DXT3  # TODO - mipmaps
+            rgba8888_data,
+            img_width,
+            img_height,
+            ImageFormats.BC2_DXT3,
+            number_of_mipmaps=mipmaps_count,
+            mipmaps_resampling_type=mipmaps_resampling_type,
         )
     elif entry_type == 98:
         encoded_image_data = image_encoder.encode_compressed_image(
-            rgba8888_data, img_width, img_height, ImageFormats.BC3_DXT5  # TODO - mipmaps
+            rgba8888_data,
+            img_width,
+            img_height,
+            ImageFormats.BC3_DXT5,
+            number_of_mipmaps=mipmaps_count,
+            mipmaps_resampling_type=mipmaps_resampling_type,
         )
     elif entry_type == 109:
         encoded_image_data = image_encoder.encode_image(
