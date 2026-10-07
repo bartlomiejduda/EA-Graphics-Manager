@@ -542,49 +542,51 @@ class EAManGui:
                 initialdir=self.current_save_directory_path
             )
 
-            if save_directory_path:
-                self.handle_save_directory_path_config(save_directory_path)  # save config
-                base_output_file_name: str = f"{ea_img.f_name}_{item_iid}_MAIN.dds"
-                base_output_file_path: str = os.path.join(save_directory_path, base_output_file_name)
-                main_out_file = open(base_output_file_path, "wb")
+            if not save_directory_path or len(save_directory_path) == 0:
+                return False  # user closed "askdirectory" window
 
-                # main image save logic
-                file_extension: str = get_file_extension_uppercase(base_output_file_name)
-                pillow_wrapper = PillowWrapper()
-                out_data = pillow_wrapper.get_pil_image_file_data_for_export(
-                    ea_dir.img_convert_data, ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
+            self.handle_save_directory_path_config(save_directory_path)  # save config
+            base_output_file_name: str = f"{ea_img.f_name}_{item_iid}_MAIN.dds"
+            base_output_file_path: str = os.path.join(save_directory_path, base_output_file_name)
+            main_out_file = open(base_output_file_path, "wb")
+
+            # main image save logic
+            file_extension: str = get_file_extension_uppercase(base_output_file_name)
+            pillow_wrapper = PillowWrapper()
+            out_data = pillow_wrapper.get_pil_image_file_data_for_export(
+                ea_dir.img_convert_data, ea_dir.h_width, ea_dir.h_height, pillow_format=file_extension
+            )
+            if not out_data:
+                logger.error("Empty data to export!")
+                messagebox.showwarning("Warning", "Empty image data! Export not possible!")
+                return False
+
+            main_out_file.write(out_data)
+            main_out_file.close()
+            logger.info(f"Image has been exported successfully to {main_out_file.name}")
+
+            # mipmaps save logic
+            mip_counter: int = 0
+            for ea_mipmap in ea_dir.mipmap_list:
+                mip_counter += 1
+                base_mipmap_file_name: str = f"{ea_img.f_name}_{item_iid}_MIPMAP_{mip_counter}.dds"
+                base_mipmap_file_path: str = os.path.join(save_directory_path, base_mipmap_file_name)
+                mipmap_out_file = open(base_mipmap_file_path, "wb")
+
+                output_mipmap_data: bytes = pillow_wrapper.get_pil_image_file_data_for_export(
+                    image_data=ea_mipmap.mipmap_decoded_data,
+                    img_width=ea_mipmap.mipmap_width,
+                    img_height=ea_mipmap.mipmap_height,
+                    pillow_format=file_extension
                 )
-                if not out_data:
-                    logger.error("Empty data to export!")
-                    messagebox.showwarning("Warning", "Empty image data! Export not possible!")
+                if not output_mipmap_data:
+                    logger.error("Empty mipmap data to export!")
+                    messagebox.showwarning("Warning", "Empty mipmap data! Export not possible!")
                     return False
 
-                main_out_file.write(out_data)
-                main_out_file.close()
-                logger.info(f"Image has been exported successfully to {main_out_file.name}")
-
-                # mipmaps save logic
-                mip_counter: int = 0
-                for ea_mipmap in ea_dir.mipmap_list:
-                    mip_counter += 1
-                    base_mipmap_file_name: str = f"{ea_img.f_name}_{item_iid}_MIPMAP_{mip_counter}.dds"
-                    base_mipmap_file_path: str = os.path.join(save_directory_path, base_mipmap_file_name)
-                    mipmap_out_file = open(base_mipmap_file_path, "wb")
-
-                    output_mipmap_data: bytes = pillow_wrapper.get_pil_image_file_data_for_export(
-                        image_data=ea_mipmap.mipmap_decoded_data,
-                        img_width=ea_mipmap.mipmap_width,
-                        img_height=ea_mipmap.mipmap_height,
-                        pillow_format=file_extension
-                    )
-                    if not output_mipmap_data:
-                        logger.error("Empty mipmap data to export!")
-                        messagebox.showwarning("Warning", "Empty mipmap data! Export not possible!")
-                        return False
-
-                    mipmap_out_file.write(output_mipmap_data)
-                    mipmap_out_file.close()
-                    logger.info(f"Image has been exported successfully to {mipmap_out_file.name}")
+                mipmap_out_file.write(output_mipmap_data)
+                mipmap_out_file.close()
+                logger.info(f"Image has been exported successfully to {mipmap_out_file.name}")
 
         except Exception as error:
             logger.error(f"Error: {error}")

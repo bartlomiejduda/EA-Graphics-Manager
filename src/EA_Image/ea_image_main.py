@@ -332,7 +332,7 @@ class EAImage:
         return True
 
     def convert_image_data_for_export_and_preview(self, ea_dir_entry: DirEntry, entry_type: int) -> bool:
-        logger.info(f"Init image convert for entry_type={entry_type}")
+        logger.info(f"Init image convert for tag={ea_dir_entry.tag}, entry_type={entry_type}")
 
         # decompress logic
         if is_image_compressed(entry_type):
@@ -379,6 +379,17 @@ class EAImage:
                 mip_height //= 2
                 mip_offset += mipmap_sizes[i]
                 mip_data_raw: bytes = uncompressed_raw_data[mip_offset: mip_offset + mip_size]
+
+                # unswizzle mipmap image data
+                if is_image_swizzled(ea_dir_entry):
+                    try:  # TODO - remove this try/except after fixing PSP unswizzle for mipmaps
+                        mip_data_raw = handle_image_swizzle_logic(
+                            mip_data_raw, entry_type, mip_width, mip_height, self.sign, False
+                        )
+                    except Exception as error:
+                        logger.warn(f"Error while unswizzling mipmaps! Error: {error}")
+
+                # decode mipmap
                 mip_data_decoded: bytes = decode_image_data_by_entry_type(
                     entry_type=entry_type,
                     image_data=mip_data_raw,
@@ -398,7 +409,7 @@ class EAImage:
                 )
                 ea_dir_entry.mipmap_list.append(ea_mipmap)
 
-        # unswizzling logic
+        # main image (mip 0) unswizzling logic
         if is_image_swizzled(ea_dir_entry):
             image_data = handle_image_swizzle_logic(
                 image_data, entry_type, ea_dir_entry.h_width, ea_dir_entry.h_height, self.sign, False
