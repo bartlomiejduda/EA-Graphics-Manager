@@ -4,6 +4,7 @@ License: GPL-3.0 License
 """
 
 import traceback
+from typing import Optional
 
 from reversebox.common.logger import get_logger
 from reversebox.image.swizzling.swizzle_gamecube import (
@@ -20,7 +21,7 @@ from reversebox.image.swizzling.swizzle_psp import swizzle_psp, unswizzle_psp
 
 from src.EA_Image.attachments.palette_entry import PaletteEntry
 from src.EA_Image.common import get_bpp_for_image_type
-from src.EA_Image.constants import PALETTE_TYPES
+from src.EA_Image.constants import IMAGE_TYPES_USING_PALETTES, PALETTE_TYPES
 from src.EA_Image.dir_entry import DirEntry
 from src.EA_Image.dto import PaletteInfoDTO
 from src.EA_Image.ea_default_palette import ea_default_palette_data
@@ -28,7 +29,13 @@ from src.EA_Image.ea_default_palette import ea_default_palette_data
 logger = get_logger(__name__)
 
 
-def get_palette_info_dto_from_dir_entry(_ea_dir_entry: DirEntry, ea_image) -> PaletteInfoDTO:
+def get_palette_info_dto_from_dir_entry(_ea_dir_entry: DirEntry, ea_image) -> Optional[PaletteInfoDTO]:
+
+    # skip finding palette logic and return None
+    # if palette data is not needed for specific entry type
+    if _ea_dir_entry.h_record_id not in IMAGE_TYPES_USING_PALETTES:
+        return None
+
     # try to get palette from binary attachment first
     _palette_data: bytes = b""
     _entry_id: int = 33  # default palette

@@ -342,8 +342,8 @@ class EAImage:
 
         entry_type = entry_type & 0x7F
 
-        # palette info logic
-        palette_info_dto: PaletteInfoDTO = get_palette_info_dto_from_dir_entry(ea_dir_entry, self)
+        # get palette info (only if it is needed for decoding)
+        palette_info_dto: Optional[PaletteInfoDTO] = get_palette_info_dto_from_dir_entry(ea_dir_entry, self)
 
         # mipmaps logic
         number_of_mipmaps: int = (

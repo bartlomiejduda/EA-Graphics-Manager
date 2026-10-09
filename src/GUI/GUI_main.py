@@ -597,8 +597,8 @@ class EAManGui:
         logger.info(f"Image with mipmaps exported successfully to {save_directory_path}")
         return True
 
-    def treeview_rclick_import_image(self, item_iid) -> bool:
-        ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
+    def treeview_rclick_import_image(self, item_iid: str) -> bool:
+        ea_img: EAImage = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
         ea_dir = None
         if "direntry" in item_iid and "binattach" not in item_iid:
@@ -608,7 +608,7 @@ class EAManGui:
                 return False
 
         try:
-            in_file = filedialog.askopenfile(
+            in_file: Optional[IO] = filedialog.askopenfile(
                 filetypes=self.allowed_import_image_filetypes, mode="rb", initialdir=self.current_open_directory_path
             )
             if not in_file:
@@ -645,7 +645,7 @@ class EAManGui:
         ea_dir.entry_import_flag = True
 
         # replace palette data
-        if encode_info_dto.is_palette_imported_flag:
+        if encode_info_dto.is_palette_imported_flag and encode_info_dto.palette_entry_id:
             for bin_attach_entry in ea_dir.bin_attachments_list:
                 if bin_attach_entry.h_record_id == encode_info_dto.palette_entry_id:
                     bin_attach_entry.raw_data = encode_info_dto.encoded_palette_data
@@ -672,10 +672,10 @@ class EAManGui:
         logger.info("Image has been imported successfully")
         return True
 
-    def treeview_rclick_export_raw(self, item_iid):
-        ea_img = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
+    def treeview_rclick_export_raw(self, item_iid: str):
+        ea_img: EAImage = self.tree_view.tree_man.get_object(item_iid.split("_")[0], self.opened_ea_images)
 
-        out_file = None
+        out_file: Optional[IO] = None
         try:
             out_file = filedialog.asksaveasfile(
                 mode="wb",
@@ -700,7 +700,7 @@ class EAManGui:
         if out_file is None:
             return
 
-        out_data = None
+        out_data: Optional[bytes] = None
 
         if "direntry" in item_iid and "binattach" not in item_iid:
             # get raw image data
@@ -719,13 +719,13 @@ class EAManGui:
         out_file.close()
         messagebox.showinfo("Info", "File saved successfully!")
 
-    def quit_program(self):
+    def quit_program(self) -> None:
         logger.info("Quit GUI...")
         self.master.destroy()
 
-    def open_file(self):
+    def open_file(self) -> None:
         try:
-            in_file = filedialog.askopenfile(
+            in_file: Optional[IO] = filedialog.askopenfile(
                 filetypes=self.allowed_filetypes, mode="rb", initialdir=self.current_open_directory_path
             )
             if not in_file:
@@ -856,19 +856,17 @@ class EAManGui:
         self.tree_view.tree_man.add_object(ea_img)
         in_file.close()
 
-    def show_about_window(self):
+    def show_about_window(self) -> None:
         if not any(isinstance(x, tk.Toplevel) for x in self.master.winfo_children()):
             AboutWindow(self)
 
     @staticmethod
-    def set_text_in_box(in_box, in_text):
+    def set_text_in_box(in_box, in_text) -> None:
         in_box.config(state="normal")
         in_box.delete("1.0", tk.END)
         in_box.insert(tk.END, in_text)
         in_box.config(state="disabled")
 
     @staticmethod
-    def close_toplevel_window(wind):
+    def close_toplevel_window(wind) -> None:
         wind.destroy()
-
-# fmt: on

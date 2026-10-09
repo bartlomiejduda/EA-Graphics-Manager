@@ -22,7 +22,7 @@ logger = get_logger(__name__)
 def decode_image_data_by_entry_type(
     entry_type: int,
     image_data: bytes,
-    palette_info_dto: PaletteInfoDTO,
+    palette_info_dto: Optional[PaletteInfoDTO],
     image_width: int,
     image_height: int,
     is_image_swizzled_flag: bool,

@@ -4,6 +4,7 @@ License: GPL-3.0 License
 """
 
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -17,7 +18,7 @@ class PaletteInfoDTO:
 class EncodeInfoDTO:
     encoded_img_data: bytes
     encoded_palette_data: bytes
-    palette_entry_id: int
+    palette_entry_id: Optional[int]
     is_palette_imported_flag: bool
 
 

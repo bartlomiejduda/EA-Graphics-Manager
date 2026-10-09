@@ -1,7 +1,9 @@
 """
-Copyright © 2024-2025  Bartłomiej Duda
+Copyright © 2024-2026  Bartłomiej Duda
 License: GPL-3.0 License
 """
+
+from typing import Optional
 
 import PIL.Image
 from reversebox.common.common import fill_data_with_padding_to_desired_length
@@ -38,7 +40,7 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage, gui
     logger.info("Initializing encode_ea_image")
     entry_type: int = ea_dir.h_record_id & 0x7F
     indexed_image_format: ImageFormats = get_indexed_image_format(get_bpp_for_image_type(entry_type))
-    palette_info_dto: PaletteInfoDTO = get_palette_info_dto_from_dir_entry(ea_dir, ea_img)
+    palette_info_dto: Optional[PaletteInfoDTO] = get_palette_info_dto_from_dir_entry(ea_dir, ea_img)
     palette_format: ImageFormats = get_indexed_palette_format(palette_info_dto.entry_id, len(palette_info_dto.data))
     mipmaps_resampling_type_str: str = gui_main.current_mipmaps_resampling.get()
     mipmaps_resampling_type: PIL.Image.Resampling = mipmaps_resampling_mapping[mipmaps_resampling_type_str]
@@ -103,8 +105,9 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage, gui
         partial_image_info.encoded_image_data = RefpackHandler().compress_data(partial_image_info.encoded_image_data)
 
     # optional palette swizzle
-    if palette_info_dto.swizzle_flag:
-        partial_image_info.encoded_palette_data = swizzle_ps2_palette(partial_image_info.encoded_palette_data)
+    if palette_info_dto:
+        if palette_info_dto.swizzle_flag:
+            partial_image_info.encoded_palette_data = swizzle_ps2_palette(partial_image_info.encoded_palette_data)
 
     # final checks
     if len(partial_image_info.encoded_image_data) > len(ea_dir.raw_data):
@@ -122,7 +125,7 @@ def encode_ea_image(rgba8888_data: bytes, ea_dir: DirEntry, ea_img: EAImage, gui
     return EncodeInfoDTO(
         encoded_img_data=partial_image_info.encoded_image_data,
         encoded_palette_data=partial_image_info.encoded_palette_data,
-        palette_entry_id=palette_info_dto.entry_id,
+        palette_entry_id=palette_info_dto.entry_id if palette_info_dto else None,
         is_palette_imported_flag=True if len(partial_image_info.encoded_palette_data) > 0 else False,
     )
 
