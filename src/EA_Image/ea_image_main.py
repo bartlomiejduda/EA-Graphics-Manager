@@ -6,7 +6,7 @@ License: GPL-3.0 License
 import os
 import struct
 import traceback
-from typing import List, Optional
+from typing import IO, List, Optional
 
 from reversebox.common.logger import get_logger
 from reversebox.compression.compression_refpack import RefpackHandler
@@ -42,7 +42,7 @@ logger = get_logger(__name__)
 
 
 class EAImage:
-    def __init__(self):
+    def __init__(self) -> None:
         self.sign = None
         self.total_f_size = -1
         self.total_f_data: Optional[bytes] = None
@@ -62,7 +62,7 @@ class EAImage:
         self.ea_image_id = -1
         self.dir_entry_id = 0
 
-    def set_ea_image_id(self, in_ea_image_id):
+    def set_ea_image_id(self, in_ea_image_id: int) -> None:
         self.ea_image_id = in_ea_image_id
 
     # checks if image is "new shape" or "old shape"
@@ -74,11 +74,11 @@ class EAImage:
         else:
             raise Exception(f"Not supported signature: {ea_img_signature}")
 
-    def check_file_signature_and_size(self, in_file) -> tuple:
+    def check_file_signature_and_size(self, in_file: IO) -> tuple:
         try:
             # checking signature
             back_offset = in_file.tell()
-            sign = get_string(in_file, 4)
+            sign: str = get_string(in_file, 4)
             in_file.seek(back_offset)
             if len(sign) == 0:
                 error_msg = "File is empty. No data to read!"
@@ -90,27 +90,27 @@ class EAImage:
                 return "SIGN_NOT_SUPPORTED", error_msg
 
             # checking file size
-            back_offset = in_file.tell()
+            back_offset: int = in_file.tell()
             in_file.seek(0, os.SEEK_END)
-            real_file_size = in_file.tell()
+            real_file_size: int = in_file.tell()
             in_file.seek(4)
-            file_size_le = struct.unpack("<L", in_file.read(4))[0]
+            file_size_le: int = struct.unpack("<L", in_file.read(4))[0]
             in_file.seek(4)
-            file_size_be = struct.unpack(">L", in_file.read(4))[0]
+            file_size_be: int = struct.unpack(">L", in_file.read(4))[0]
             in_file.seek(back_offset)
             # fmt: off
             if (file_size_le != real_file_size) and (file_size_be != real_file_size):
 
                 # fix for "CRCF" tail in some EA files
-                sign = b''
+                tail_sign: Optional[bytes] = None
                 try:
                     in_file.seek(real_file_size - 12)
-                    sign = in_file.read(4)
+                    tail_sign = in_file.read(4)
                     in_file.seek(back_offset)
                 except Exception as error:
                     logger.error(f"Can't check for CRCF signature! Error: {error}")
 
-                if sign != b'CRCF':
+                if tail_sign != b'CRCF':
                     error_msg = (
                         "Real file size doesn't match file total file size from header:\n"
                         + "Real_file_size: " + str(real_file_size) + "\n"
@@ -128,11 +128,11 @@ class EAImage:
             return "CANT_READ_ERROR", error_msg
 
     def parse_header(self, in_file, in_file_path, in_file_name) -> bool:
-        def _set_big_endianess():
+        def _set_big_endianess() -> None:
             self.f_endianess = ">"
             self.f_endianess_desc = "big"
 
-        def _set_little_endianess():
+        def _set_little_endianess() -> None:
             self.f_endianess = "<"
             self.f_endianess_desc = "little"
 
@@ -167,7 +167,7 @@ class EAImage:
 
         return True  # header has been parsed
 
-    def parse_directory(self, in_file) -> bool:
+    def parse_directory(self, in_file: IO) -> bool:
         # creating directory entries
         for i in range(self.num_of_entries):
             self.dir_entry_id += 1
@@ -210,7 +210,7 @@ class EAImage:
 
         return True  # directory has been parsed
 
-    def parse_dir_entry_header_and_data(self, in_file, ea_dir_entry) -> bool:
+    def parse_dir_entry_header_and_data(self, in_file: IO, ea_dir_entry: DirEntry) -> bool:
         ea_dir_entry.set_entry_header(in_file, self.f_endianess, self.sign)  # read entry header and set all values
 
         ea_dir_entry.set_raw_data(
@@ -225,7 +225,7 @@ class EAImage:
 
         return True
 
-    def parse_bin_attachments(self, in_file) -> bool:
+    def parse_bin_attachments(self, in_file: IO) -> bool:
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
 
@@ -310,7 +310,7 @@ class EAImage:
 
         return sizes
 
-    def convert_images(self, gui_main) -> bool:
+    def convert_images(self) -> bool:
         for i in range(self.num_of_entries):
             ea_dir_entry = self.dir_entry_list[i]
             entry_type = ea_dir_entry.h_record_id
@@ -363,8 +363,8 @@ class EAImage:
                     4
                     if ea_dir_entry.h_record_id in (69, 70, 71, 96, 97, 98)  # 4 for 4x4 block-compressed formats,
                     # number of pixels in block, NOT block_size in bytes!
-                    else None
-                ),  # for all other formats (NOT block-compressed)
+                    else None  # for all other formats (NOT block-compressed)
+                ),
             )
 
             image_data: bytes = uncompressed_raw_data[0: mipmap_sizes[0]]  # get data only for mipmap 0 (main image)
@@ -384,7 +384,12 @@ class EAImage:
                 if is_image_swizzled(ea_dir_entry):
                     try:  # TODO - remove this try/except after fixing PSP unswizzle for mipmaps
                         mip_data_raw = handle_image_swizzle_logic(
-                            mip_data_raw, entry_type, mip_width, mip_height, self.sign, False
+                            image_data=mip_data_raw,
+                            entry_type=entry_type,
+                            img_width=mip_width,
+                            img_height=mip_height,
+                            ea_img_signature=self.sign,
+                            swizzle_flag=False
                         )
                     except Exception as error:
                         logger.warn(f"Error while unswizzling mipmaps! Error: {error}")
@@ -411,8 +416,13 @@ class EAImage:
 
         # main image (mip 0) unswizzling logic
         if is_image_swizzled(ea_dir_entry):
-            image_data = handle_image_swizzle_logic(
-                image_data, entry_type, ea_dir_entry.h_width, ea_dir_entry.h_height, self.sign, False
+            image_data: bytes = handle_image_swizzle_logic(
+                image_data=image_data,
+                entry_type=entry_type,
+                img_width=ea_dir_entry.h_width,
+                img_height=ea_dir_entry.h_height,
+                ea_img_signature=self.sign,
+                swizzle_flag=False
             )
 
         # padding logic
@@ -421,7 +431,7 @@ class EAImage:
                 image_data, ea_dir_entry.h_width, ea_dir_entry.h_height, ea_dir_entry.h_image_bpp
             )
 
-        # decoding logic
+        # decoding main image (mip0) logic
         try:
             ea_dir_entry.img_convert_data = decode_image_data_by_entry_type(
                 entry_type=entry_type,

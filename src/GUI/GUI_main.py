@@ -790,7 +790,7 @@ class EAManGui:
             if ea_img.total_f_size > 200000:
                 self.loading_label.place(x=0, y=0, relwidth=1, relheight=1)
                 self.loading_label.update()
-            ea_img.convert_images(self)
+            ea_img.convert_images()
             self.loading_label.destroy()
         except Exception as error:
             logger.error(f"Error while converting images! Error: {error}")
